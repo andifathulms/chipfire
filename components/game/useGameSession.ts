@@ -29,7 +29,11 @@ export type Session = {
   readonly legal: ReadonlySet<number>
   readonly hash: string
   readonly longestCascade: number
-  play: (index: number) => void
+  /** Returns the resulting state, or null if the move was refused. The caller
+   *  needs it to hash the position for the peer. */
+  play: (index: number) => GameState | null
+  /** Adopt a move list wholesale — replay, never a transplanted board. */
+  load: (moves: readonly number[]) => GameState
   settle: () => void
   undo: () => void
   reset: (config?: GameConfig) => void
@@ -46,7 +50,7 @@ export function useGameSession(initial: GameConfig): Session {
     (index: number) => {
       // Guarded here rather than inside a state updater: updaters must stay
       // pure, and React runs them twice in development.
-      if (state.winner !== null || pending !== null) return
+      if (state.winner !== null || pending !== null) return null
 
       const result = applyMove(state, toMove(state, index))
 
@@ -54,11 +58,24 @@ export function useGameSession(initial: GameConfig): Session {
       setMoves((list) => [...list, index])
       setPending({ frames: buildFrames(state.board, result.events), events: result.events })
       setLongestCascade((best) => Math.max(best, countExplosions(result.events)))
+
+      return result.state
     },
     [pending, state],
   )
 
   const settle = useCallback(() => setPending(null), [])
+
+  const load = useCallback(
+    (next: readonly number[]) => {
+      const rebuilt = replay({ config, moves: next })
+      setMoves(next)
+      setState(rebuilt)
+      setPending(null)
+      return rebuilt
+    },
+    [config],
+  )
 
   const undo = useCallback(() => {
     if (moves.length === 0) return
@@ -90,6 +107,7 @@ export function useGameSession(initial: GameConfig): Session {
     hash,
     longestCascade,
     play,
+    load,
     settle,
     undo,
     reset,
