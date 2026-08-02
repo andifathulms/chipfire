@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
@@ -15,6 +15,8 @@ import { NO_OWNER } from '@/lib/engine/board'
 import { DEFAULT_CONFIG, type GameConfig } from '@/lib/engine/state'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
+import { GameSummary } from '@/components/hud/GameSummary'
+import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 
 const COPY = {
   title: { id: 'Main', en: 'Play' },
@@ -74,6 +76,22 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     }
     return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${count} orb, ${COPY.mass[locale]} ${mass}`
   }
+
+  const [stats, setStats] = useState<Stats>(EMPTY_STATS)
+  const recordedFor = useRef<number>(-1)
+
+  useEffect(() => setStats(readStats()), [])
+
+  // Recorded once per finished game: the move count identifies which one, so a
+  // re-render (or a double-invoked effect in development) cannot double-count.
+  useEffect(() => {
+    if (!finished) return
+    const moveCount = session.record.moves.length
+    if (recordedFor.current === moveCount) return
+    recordedFor.current = moveCount
+    const humanWon = mode === 'ai' ? session.state.winner === 0 : true
+    setStats(recordResult(mode === 'ai' ? 'ai' : 'hotseat', humanWon, session.longestCascade))
+  }, [finished, mode, session.longestCascade, session.record.moves.length, session.state.winner])
 
   const applyConfig = (config: GameConfig) => session.reset(config)
 
@@ -149,6 +167,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
         canUndo={session.record.moves.length > 0 && !animating}
         longestCascade={session.longestCascade}
       />
+
+      {finished ? <GameSummary locale={locale} record={session.record} stats={stats} /> : null}
 
       <Setup locale={locale} config={session.config} onApply={applyConfig} />
     </main>
