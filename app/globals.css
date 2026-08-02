@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Type per PRD §12. Families are declared by name with system fallbacks rather
+ * than fetched at build time, so the static export never depends on a font CDN.
+ */
+:root {
+  --font-display: 'Space Grotesk';
+  --font-sans: 'IBM Plex Sans';
+  --font-mono: 'IBM Plex Mono';
+
+  /* The printed lattice: chart paper exists before the game starts. */
+  --grid-line: #d6d1c4;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background-color: theme('colors.chart.DEFAULT');
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: theme('colors.trace.DEFAULT');
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-numeral {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
