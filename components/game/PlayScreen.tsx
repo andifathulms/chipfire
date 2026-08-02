@@ -8,16 +8,24 @@ import { Controls } from '@/components/hud/Controls'
 import { Setup } from '@/components/hud/Setup'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useGameSession } from '@/components/game/useGameSession'
+import { useAiOpponent } from '@/components/game/useAiOpponent'
+import { ModePicker, type Mode } from '@/components/hud/ModePicker'
+import type { Difficulty } from '@/lib/ai/search'
 import { NO_OWNER } from '@/lib/engine/board'
 import { DEFAULT_CONFIG, type GameConfig } from '@/lib/engine/state'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
 
 const COPY = {
-  title: { id: 'Hotseat', en: 'Hotseat' },
+  title: { id: 'Main', en: 'Play' },
   subtitle: {
     id: 'Satu perangkat, bergantian. Sel kosong atau selmu sendiri.',
     en: 'One device, taking turns. An empty cell or one of your own.',
+  },
+  thinking: { id: 'AI berpikir', en: 'AI thinking' },
+  aiFailed: {
+    id: 'AI gagal dijalankan. Ganti ke hotseat untuk melanjutkan.',
+    en: 'The AI failed to start. Switch to hotseat to keep playing.',
   },
   wins: { id: 'menang', en: 'wins' },
   again: { id: 'Main lagi', en: 'Play again' },
@@ -27,8 +35,10 @@ const COPY = {
   mass: { id: 'massa kritis', en: 'critical mass' },
 } as const
 
-export function HotseatGame({ locale }: { locale: Locale }) {
+export function PlayScreen({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState<Speed>('normal')
+  const [mode, setMode] = useState<Mode>('hotseat')
+  const [difficulty, setDifficulty] = useState<Difficulty>('sedang')
   const session = useGameSession(DEFAULT_CONFIG)
   const frames = session.pending?.frames ?? []
   const player = useCascadePlayer(frames, speed, session.settle)
@@ -36,6 +46,20 @@ export function HotseatGame({ locale }: { locale: Locale }) {
   const view = player.frame ?? session.state.board
   const animating = session.pending !== null
   const finished = session.state.winner !== null && !animating
+
+  // Player 0 is the human; everyone else is the machine. It gets no hidden
+  // information and no illegal moves — only a deeper search.
+  const aiTurn =
+    mode === 'ai' && !animating && session.state.winner === null && session.state.current !== 0
+
+  const ai = useAiOpponent({
+    enabled: mode === 'ai',
+    isAiTurn: aiTurn,
+    record: session.record,
+    difficulty,
+    seed: session.config.seed,
+    onMove: session.play,
+  })
 
   const labelFor = (index: number) => {
     const row = Math.floor(index / session.state.board.cols) + 1
@@ -65,7 +89,24 @@ export function HotseatGame({ locale }: { locale: Locale }) {
         </Link>
       </header>
 
+      <ModePicker
+        locale={locale}
+        mode={mode}
+        difficulty={difficulty}
+        onMode={(next) => {
+          setMode(next)
+          session.reset()
+        }}
+        onDifficulty={setDifficulty}
+      />
+
       <TurnIndicator state={session.state} locale={locale} busy={animating} />
+
+      {ai.error !== null ? (
+        <p role="alert" className="border border-p1 px-3 py-2 text-sm text-p1">
+          {COPY.aiFailed[locale]}
+        </p>
+      ) : null}
 
       <div className="relative">
         <Board
@@ -73,7 +114,7 @@ export function HotseatGame({ locale }: { locale: Locale }) {
           view={view}
           legal={session.legal}
           exploding={player.frame?.exploding ?? []}
-          interactive={!animating && !finished}
+          interactive={!animating && !finished && !aiTurn}
           onSelect={session.play}
           labelFor={labelFor}
         />
@@ -96,6 +137,7 @@ export function HotseatGame({ locale }: { locale: Locale }) {
 
       <p aria-live="polite" className="font-numeral text-xs text-trace-faint">
         {COPY.turn[locale]} {session.state.turn} · {session.hash}
+        {ai.thinking ? ` · ${COPY.thinking[locale]}` : ''}
       </p>
 
       <Controls

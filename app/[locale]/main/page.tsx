@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { HotseatGame } from '@/components/game/HotseatGame'
+import { PlayScreen } from '@/components/game/PlayScreen'
 import { LOCALES, isLocale } from '@/lib/i18n'
 
 export function generateStaticParams() {
@@ -8,5 +8,5 @@ export function generateStaticParams() {
 
 export default function MainPage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
-  return <HotseatGame locale={params.locale} />
+  return <PlayScreen locale={params.locale} />
 }
