@@ -13,6 +13,12 @@ multiplayer peer-to-peer lewat WebRTC. Situs statis, tanpa backend.
    menerima orb berpindah kepemilikan ke pemain yang meledak.
 3. Ledakan bisa memicu ledakan lain. Menang bila semua orb di papan milikmu.
 
+## Status
+
+Hotseat, lawan AI, dan tanding peer-to-peer lewat tempel kode sudah bisa dimainkan.
+Penelusur ulang dan kode berbagi permainan juga sudah ada. Belum ada: QR untuk kode
+koneksi, pratinjau rambatan, dan sinyal lewat broker (PeerJS).
+
 ## Development
 
 ```bash

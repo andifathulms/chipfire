@@ -139,4 +139,13 @@ tests/
 
 ## Current state
 
-M0 — not yet scaffolded. Next: static export deploying to Pages, then the engine with rules fixtures. No UI work until `applyMove` and the cascade pass their fixtures.
+M0–M4 done, plus most of M6. Deploys to Pages via `.github/workflows/deploy.yml`.
+
+- **M1 engine** — `lib/engine` complete. Rules fixtures, cascade termination, replay and cross-instance agreement, 3000-game simulation all green.
+- **M2 hotseat** — playable. Board, cascade animation off the event stream, speed control, undo, board config.
+- **M3 AI** — minimax with alpha-beta and iterative deepening in `workers/ai.worker.ts`. Difficulty is depth plus seeded noise.
+- **M4 P2P manual** — offer/answer paste with compressed codes, per-turn hash exchange, halt-and-report on desync with an explicit resync. **QR encoding is not implemented** — codes are copy/paste only.
+- **M5 brokered signalling (PeerJS)** — not started. Layer 1 works standalone, which is the point.
+- **M6 polish** — replay viewer, share codes, and local stats are in. Cascade preview (§9.2) is not.
+
+Next, in order: QR for the connection codes, cascade preview, then PeerJS as optional sugar over the paste flow.

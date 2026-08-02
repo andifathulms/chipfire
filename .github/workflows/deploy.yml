@@ -1,0 +1,66 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+      - run: pnpm lint
+
+      # The engine and the AI both rest on determinism, so the full suite —
+      # replay, cross-instance agreement, cascade termination, simulation —
+      # gates every deploy rather than running on demand.
+      - run: pnpm test:run
+
+      # basePath must match the repository name or every asset 404s under the
+      # Pages subpath.
+      - run: pnpm build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}
+
+      - name: Verify the export
+        run: |
+          test -f out/index.html
+          test -f out/.nojekyll
+          test -f out/id/main/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
