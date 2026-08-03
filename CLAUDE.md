@@ -1,4 +1,4 @@
-# CLAUDE.md — Rantai
+# CLAUDE.md — Chipfire
 
 Chain Reaction: grid strategy game with cascading explosions. Hotseat, AI opponent, and WebRTC peer-to-peer multiplayer. Static site, GitHub Pages, no backend, no server anywhere.
 

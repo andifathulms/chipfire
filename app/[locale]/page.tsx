@@ -23,7 +23,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center gap-10 px-6 py-16">
       <header className="flex flex-col gap-4">
-        <h1 className="font-numeral text-6xl leading-none tracking-tight sm:text-7xl">Rantai</h1>
+        <h1 className="font-numeral text-6xl leading-none tracking-tight sm:text-7xl">Chipfire</h1>
         <p className="max-w-prose text-lg leading-snug text-trace-soft">{t.tagline}</p>
       </header>
 

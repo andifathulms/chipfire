@@ -21,7 +21,7 @@ export default function RootPage() {
   return (
     <main className="flex min-h-screen items-center justify-center">
       <Link href={target} className="font-numeral text-2xl underline">
-        Rantai
+        Chipfire
       </Link>
     </main>
   )

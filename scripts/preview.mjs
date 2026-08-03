@@ -8,7 +8,7 @@ import { createServer } from 'node:http'
 import { readFile, stat } from 'node:fs/promises'
 import { join, extname, normalize } from 'node:path'
 
-const BASE_PATH = process.env.BASE_PATH ?? '/rantai'
+const BASE_PATH = process.env.BASE_PATH ?? '/chipfire'
 const PORT = Number(process.env.PORT ?? 4173)
 const ROOT = join(process.cwd(), 'out')
 

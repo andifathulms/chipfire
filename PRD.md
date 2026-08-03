@@ -1,9 +1,21 @@
-# PRD — Rantai
+# PRD — Chipfire
 
 **Chain Reaction: a grid strategy game of cascading explosions. Hotseat, AI opponent, and browser-to-browser multiplayer with no server anywhere.**
 
-> *rantai* (Indonesian) — chain. *Reaksi berantai* is the standing Indonesian term for a chain reaction.
-> Rename freely; the slug is used throughout as `rantai`.
+> *chipfire* — from the **chip-firing game**, the graph-theory name for this mechanic: a vertex
+> *fires* when it holds at least as many chips as its degree, sending one along each edge.
+> That is `applyMove`, exactly. The slug is used throughout as `chipfire`.
+
+Formally this is the **abelian sandpile model** (Dhar 1990, on Bak–Tang–Wiesenfeld 1987) with
+territorial capture layered on top. This is not decoration: the two rules most often got wrong
+in Chain Reaction implementations are the defining properties of the model, which is why they
+are invariants rather than preferences.
+
+- An exploding cell **subtracts** its critical mass rather than being zeroed — the toppling rule.
+- A cell's critical mass **is** its neighbour count — the vertex degree.
+
+A run of topplings has a name in that literature too: an **avalanche**. Indonesian copy keeps
+*reaksi berantai*, which is what a player will actually search for.
 
 | | |
 |---|---|

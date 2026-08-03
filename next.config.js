@@ -5,7 +5,7 @@
  * subpath — a failure that does not reproduce in `next dev`, only in `pnpm preview`.
  * Set BASE_PATH="" locally to preview at the root.
  */
-const basePath = process.env.BASE_PATH ?? '/rantai'
+const basePath = process.env.BASE_PATH ?? '/chipfire'
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

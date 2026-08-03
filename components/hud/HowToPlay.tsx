@@ -15,7 +15,10 @@ import type { Locale } from '@/lib/i18n'
  *
  * Indonesian first, plain and short.
  */
-const SEEN_KEY = 'rantai.seen-help.v1'
+const SEEN_KEY = 'chipfire.seen-help.v1'
+/** Pre-rebrand key. Someone who already read this should not be shown it again
+ *  just because the app changed its name. */
+const LEGACY_SEEN_KEY = 'rantai.seen-help.v1'
 const COPY = {
   title: { id: 'Cara main', en: 'How to play' },
   goal: {
@@ -58,7 +61,9 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
   // First visit gets the panel; later visits get the button.
   useEffect(() => {
     try {
-      if (window.localStorage.getItem(SEEN_KEY) === null) setOpen(true)
+      const seen =
+        window.localStorage.getItem(SEEN_KEY) ?? window.localStorage.getItem(LEGACY_SEEN_KEY)
+      if (seen === null) setOpen(true)
     } catch {
       // Storage unavailable. Not worth blocking on.
     }

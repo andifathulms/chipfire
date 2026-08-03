@@ -3,7 +3,15 @@
  * Everything here is best-effort: storage can be full, disabled, or private,
  * and none of that is worth interrupting a game over.
  */
-const KEY = 'rantai.stats.v1'
+const KEY = 'chipfire.stats.v1'
+
+/**
+ * The name this shipped under before the rebrand. Read once, on the first load
+ * after the rename, so nobody who has been playing loses their record to a
+ * decision that had nothing to do with them. Safe to delete once enough time
+ * has passed that no returning player still holds the old key.
+ */
+const LEGACY_KEY = 'rantai.stats.v1'
 
 export type Mode = 'hotseat' | 'ai' | 'p2p'
 
@@ -22,7 +30,7 @@ export const EMPTY_STATS: Stats = {
 export function readStats(): Stats {
   if (typeof window === 'undefined') return EMPTY_STATS
   try {
-    const raw = window.localStorage.getItem(KEY)
+    const raw = window.localStorage.getItem(KEY) ?? window.localStorage.getItem(LEGACY_KEY)
     if (raw === null) return EMPTY_STATS
     const parsed = JSON.parse(raw) as Partial<Stats>
     return {

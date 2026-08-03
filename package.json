@@ -1,5 +1,5 @@
 {
-  "name": "rantai",
+  "name": "chipfire",
   "version": "0.1.0",
   "private": true,
   "description": "Chain Reaction: grid strategy game with cascading explosions. Static, no backend.",

@@ -110,7 +110,7 @@ export async function createOffer(
 ): Promise<string> {
   handlers.onStatus('generating')
 
-  const channel = link.connection.createDataChannel('rantai', { ordered: true })
+  const channel = link.connection.createDataChannel('chipfire', { ordered: true })
   attach(link, channel, handlers)
 
   const offer = await link.connection.createOffer()

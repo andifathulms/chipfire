@@ -144,7 +144,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace/20 pb-3">
         <div className="flex items-baseline gap-3">
           <Link href={`/${locale}/`} className="font-numeral text-sm text-trace-soft underline">
-            Rantai
+            Chipfire
           </Link>
           <span aria-hidden="true" className="text-trace-faint">
             /

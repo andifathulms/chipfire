@@ -34,7 +34,7 @@ const mono = localFont({
 })
 
 export const metadata: Metadata = {
-  title: 'Rantai — reaksi berantai',
+  title: 'Chipfire — reaksi berantai',
   description:
     'Permainan strategi grid dengan ledakan berantai. Hotseat, lawan AI, dan multiplayer peer-to-peer tanpa server.',
 }
