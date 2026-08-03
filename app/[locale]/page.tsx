@@ -21,7 +21,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   ]
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-4xl flex-col justify-center gap-10 px-6 py-16">
+    <main className="mx-auto flex w-full flex-1 max-w-4xl flex-col justify-center gap-10 px-6 py-16">
       <header className="flex flex-col gap-4">
         <h1 className="font-numeral text-6xl leading-none tracking-tight sm:text-7xl">Chipfire</h1>
         <p className="max-w-prose text-lg leading-snug text-trace-soft">{t.tagline}</p>
@@ -71,12 +71,8 @@ export default function HomePage({ params }: { params: { locale: string } }) {
         ))}
       </ol>
 
-      <footer className="flex items-center justify-between gap-4 border-t border-trace/20 pt-4 text-xs text-trace-faint">
-        <span>{t.footer}</span>
-        <Link href={locale === 'id' ? '/en/' : '/id/'} className="underline">
-          {locale === 'id' ? 'English' : 'Bahasa Indonesia'}
-        </Link>
-      </footer>
+      {/* The bottom bar that used to live here is now SiteFooter, shared by
+          every page — one seam for the whole site rather than one per page. */}
     </main>
   )
 }

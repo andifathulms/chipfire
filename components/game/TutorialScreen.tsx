@@ -102,7 +102,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex w-full flex-1 max-w-2xl flex-col gap-6 px-4 py-8">
       <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
         <div>
           <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>

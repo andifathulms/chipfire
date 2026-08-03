@@ -63,7 +63,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
   const frame = frames[Math.min(step, Math.max(0, frames.length - 1))]
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
       <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
         <div>
           <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>
@@ -109,7 +109,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
       {frame !== undefined && record !== null ? (
         <>
           <div
-            className="mx-auto w-full [--chrome:24rem] sm:[--chrome:20rem]"
+            className="mx-auto w-full [--chrome:30rem] sm:[--chrome:24rem]"
             style={{
               maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
                 frame.state.board.cols / frame.state.board.rows

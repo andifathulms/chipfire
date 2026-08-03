@@ -140,7 +140,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const board = session.state.board
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
+    <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace/20 pb-3">
         <div className="flex items-baseline gap-3">
           <Link href={`/${locale}/`} className="font-numeral text-sm text-trace-soft underline">
@@ -180,7 +180,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
              * to make. --chrome is the vertical space the rest of the page needs.
              */}
             <div
-              className="mx-auto w-full [--chrome:26rem] sm:[--chrome:22rem] lg:[--chrome:13rem]"
+              className="mx-auto w-full [--chrome:32rem] sm:[--chrome:27rem] lg:[--chrome:17rem]"
               style={{
                 // The max() floor matters: on a short viewport (a phone in
                 // landscape) the subtraction goes negative and the board would

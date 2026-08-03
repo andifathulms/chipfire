@@ -55,7 +55,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8">
+    <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
       <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
         <h1 className="font-numeral text-3xl">Tanding</h1>
         <Link href={`/${locale}/`} className="text-sm underline">
@@ -141,7 +141,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           </p>
 
           <div
-            className="mx-auto w-full [--chrome:24rem] sm:[--chrome:21rem]"
+            className="mx-auto w-full [--chrome:30rem] sm:[--chrome:25rem]"
             style={{
               maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
                 session.state.board.cols / session.state.board.rows
