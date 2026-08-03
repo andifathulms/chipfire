@@ -3,14 +3,11 @@
 @tailwind utilities;
 
 /*
- * Type per PRD §12. Families are declared by name with system fallbacks rather
- * than fetched at build time, so the static export never depends on a font CDN.
+ * --font-display / --font-sans / --font-mono are supplied by next/font in
+ * app/layout.tsx, which self-hosts the vendored woff2 files. Nothing here
+ * names a family the user might not have.
  */
 :root {
-  --font-display: 'Space Grotesk';
-  --font-sans: 'IBM Plex Sans';
-  --font-mono: 'IBM Plex Mono';
-
   /* The printed lattice: chart paper exists before the game starts. */
   --grid-line: #d6d1c4;
 }
@@ -31,9 +28,38 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/*
+ * Counters, hashes and move numbers change in place. Tabular figures keep them
+ * from shifting the layout a pixel at a time as they tick.
+ */
 .font-numeral {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
+}
+
+/*
+ * The instrument label: small, spaced, uppercase — the lettering on a machine
+ * panel rather than prose. Pairs with .font-numeral for the value beneath it.
+ */
+.label-micro {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.6875rem;
+  line-height: 1;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: theme('colors.trace.faint');
+}
+
+/*
+ * One focus treatment for the whole app. It must read against chart stock and
+ * against a cell already tinted by a preview, so it is an offset ring in trace
+ * ink rather than a tint. Mouse users never see it; keyboard users always do.
+ */
+:where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid theme('colors.trace.DEFAULT');
+  outline-offset: 2px;
+  border-radius: 1px;
 }
 
 @media (prefers-reduced-motion: reduce) {
