@@ -17,7 +17,15 @@ import type { Config } from 'tailwindcss'
  * Every value below was measured against #EDEAE3 and #E3DFD5, not eyeballed.
  */
 const config: Config = {
-  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
+  /*
+   * lib/ has to be scanned. The player colour classes exist only as string
+   * literals in lib/players.ts, and Tailwind generates nothing it has not
+   * literally seen — so without this glob `bg-p1`, `text-p1` and every `-ink`
+   * variant are silently absent from the stylesheet and every orb falls back
+   * to inheriting the body's trace ink. Colour is half of PRD §12's ownership
+   * signal; shape was carrying it alone.
+   */
+  content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
