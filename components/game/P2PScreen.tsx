@@ -25,6 +25,7 @@ const COPY = {
   accept: { id: 'Terima dan putar ulang', en: 'Accept and replay' },
   disconnect: { id: 'Putuskan', en: 'Disconnect' },
   moves: { id: 'langkah', en: 'moves' },
+  board: { id: 'Papan permainan', en: 'Game board' },
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
@@ -81,39 +82,25 @@ export function P2PScreen({ locale }: { locale: Locale }) {
         <>
           <TurnIndicator state={session.state} locale={locale} busy={animating} />
 
-          <p className="font-numeral text-sm">
-            {finished
-              ? `${playerName(session.state.winner ?? 0, locale)} ${COPY.wins[locale]}`
-              : myTurn
-                ? COPY.yourTurn[locale]
-                : COPY.theirTurn[locale]}
-          </p>
-
-          <Board
-            board={session.state.board}
-            view={view}
-            legal={session.legal}
-            exploding={player.frame?.exploding ?? []}
-            interactive={myTurn && !animating && !finished}
-            onSelect={game.play}
-            labelFor={labelFor}
-          />
-
-          <p className="font-mono text-xs text-trace-faint">
-            {session.record.moves.length} {COPY.moves[locale]} · {session.hash}
-          </p>
-
+          {/*
+           * Desync halts the game, so it is reported above the board rather
+           * than below it. Below, on a board tall enough to fill the viewport,
+           * the one message that explains why nothing responds is off-screen.
+           */}
           {game.desync !== null ? (
-            <section role="alert" className="flex flex-col gap-3 border border-p1 p-4 text-sm">
-              <p className="font-numeral text-base">{COPY.desyncTitle[locale]}</p>
+            <section
+              role="alert"
+              className="flex flex-col gap-3 border-l-2 border-p1 bg-chart-deep p-4 text-sm"
+            >
+              <p className="font-numeral text-base text-p1-ink">{COPY.desyncTitle[locale]}</p>
               <p className="max-w-prose text-trace-soft">{COPY.desyncBody[locale]}</p>
-              <p className="font-mono text-xs">
+              <p className="break-all font-mono text-xs">
                 {game.desync.expected} ≠ {game.desync.received}
               </p>
               <button
                 type="button"
                 onClick={game.offerResync}
-                className="self-start border border-trace px-3 py-1 transition-colors hover:bg-chart-deep"
+                className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
               >
                 {COPY.offerList[locale]}
               </button>
@@ -121,19 +108,63 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           ) : null}
 
           {game.offeredMoves !== null ? (
-            <section className="flex flex-col gap-2 border border-trace/40 p-4 text-sm">
+            <section className="flex flex-col gap-2 border border-trace p-4 text-sm">
               <p>
                 {COPY.incoming[locale]} — {game.offeredMoves.length} {COPY.moves[locale]}
               </p>
               <button
                 type="button"
                 onClick={game.acceptResync}
-                className="self-start border border-trace px-3 py-1 transition-colors hover:bg-chart-deep"
+                className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
               >
                 {COPY.accept[locale]}
               </button>
             </section>
           ) : null}
+
+          {/*
+           * Across two devices there is nobody sitting beside you to make the
+           * turn obvious, so it is stated at full size rather than in a caption.
+           */}
+          <p
+            aria-live="polite"
+            className={[
+              'border px-3 py-2 font-numeral text-base',
+              finished || myTurn ? 'border-trace bg-chart-deep' : 'border-trace/25 text-trace-soft',
+            ].join(' ')}
+          >
+            {finished
+              ? `${playerName(session.state.winner ?? 0, locale)} ${COPY.wins[locale]}`
+              : myTurn
+                ? COPY.yourTurn[locale]
+                : COPY.theirTurn[locale]}
+          </p>
+
+          <div
+            className="mx-auto w-full [--chrome:24rem] sm:[--chrome:21rem]"
+            style={{
+              maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
+                session.state.board.cols / session.state.board.rows
+              }))`,
+            }}
+          >
+            <Board
+              board={session.state.board}
+              view={view}
+              legal={session.legal}
+              exploding={player.frame?.exploding ?? []}
+              interactive={myTurn && !animating && !finished}
+              onSelect={game.play}
+              labelFor={labelFor}
+              label={COPY.board[locale]}
+            />
+          </div>
+
+          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
+            <span className="font-numeral text-trace">{session.record.moves.length}</span>
+            <span className="text-trace-soft">{COPY.moves[locale]}</span>
+            <span className="break-all font-mono text-trace-faint">{session.hash}</span>
+          </p>
 
           <button
             type="button"

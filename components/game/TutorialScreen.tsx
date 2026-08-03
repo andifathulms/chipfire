@@ -41,6 +41,7 @@ const COPY = {
     id: 'Sel yang bisa diklik ditandai. Sel lain sengaja tidak aktif.',
     en: 'The cells you can click are marked. The others are inert on purpose.',
   },
+  board: { id: 'Papan latihan', en: 'Practice board' },
   playable: { id: 'bisa dimainkan', en: 'playable' },
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
@@ -129,7 +130,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
       {step !== undefined ? (
         <>
           <div className="flex flex-col gap-1">
-            <p className="font-numeral text-xs uppercase tracking-widest text-trace-faint">
+            <p className="label-micro">
               {COPY.step[locale]} {position + 1} {COPY.of[locale]} {TUTORIAL.length}
             </p>
             <h2 className="font-numeral text-xl">{step.title[locale]}</h2>
@@ -147,6 +148,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
               interactive={!done && !animating}
               onSelect={select}
               labelFor={labelFor}
+              label={COPY.board[locale]}
               preview={preview}
               previewIndex={hovered}
               onPreview={setHovered}
@@ -154,26 +156,30 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
             />
           </div>
 
-          {!done ? (
-            <p className="text-xs text-trace-faint">{COPY.hint[locale]}</p>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => goTo(position + 1)}
-                className="border border-trace px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
-              >
-                {COPY.next[locale]}
-              </button>
-              <button
-                type="button"
-                onClick={() => goTo(position)}
-                className="border border-trace/30 px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
-              >
-                {COPY.again[locale]}
-              </button>
-            </div>
-          )}
+          {/* Fixed height: the hint and the buttons that replace it are the
+              same block, so completing a step does not jog the page. */}
+          <div className="flex min-h-[2.75rem] items-center">
+            {!done ? (
+              <p className="text-sm text-trace-soft">{COPY.hint[locale]}</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => goTo(position + 1)}
+                  className="animate-settle border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+                >
+                  {COPY.next[locale]}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goTo(position)}
+                  className="border border-trace/30 px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+                >
+                  {COPY.again[locale]}
+                </button>
+              </div>
+            )}
+          </div>
         </>
       ) : (
         <section className="flex flex-col gap-3">
@@ -182,7 +188,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/${locale}/main/`}
-              className="border border-trace px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+              className="border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
             >
               {COPY.play[locale]}
             </Link>

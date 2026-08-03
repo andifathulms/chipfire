@@ -29,6 +29,9 @@ const COPY = {
   wins: { id: 'menang', en: 'wins' },
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
+  codeLabel: { id: 'Kode permainan', en: 'Game code' },
+  board: { id: 'Papan permainan', en: 'Game board' },
+  scrub: { id: 'Geser ke langkah', en: 'Scrub to move' },
 } as const
 
 export function ReplayScreen({ locale }: { locale: Locale }) {
@@ -78,11 +81,15 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
           load(code)
         }}
       >
+        {/* The textarea had no label at all: a screen reader announced an
+            unnamed edit box on a page whose entire purpose is pasting into it. */}
         <textarea
           value={code}
           onChange={(event) => setCode(event.target.value)}
           rows={2}
           spellCheck={false}
+          aria-label={COPY.codeLabel[locale]}
+          placeholder={COPY.codeLabel[locale]}
           className="min-w-[16rem] flex-1 resize-none border border-trace/30 bg-chart p-2 font-mono text-xs"
         />
         <button
@@ -94,53 +101,84 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
       </form>
 
       {error !== null ? (
-        <p role="alert" className="border border-p1 px-3 py-2 text-sm text-p1">
+        <p role="alert" className="border-l-2 border-p1 bg-chart-deep px-3 py-2 text-sm text-p1-ink">
           {error}
         </p>
       ) : null}
 
       {frame !== undefined && record !== null ? (
         <>
-          <Board
-            board={frame.state.board}
-            view={frame.state.board}
-            legal={new Set()}
-            exploding={[]}
-            interactive={false}
-            onSelect={() => undefined}
-            labelFor={(index) => {
-              const owner = frame.state.board.owners[index]
-              if (owner === NO_OWNER) return COPY.empty[locale]
-              return `${COPY.owned[locale]} ${playerName(owner, locale)}`
+          <div
+            className="mx-auto w-full [--chrome:24rem] sm:[--chrome:20rem]"
+            style={{
+              maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
+                frame.state.board.cols / frame.state.board.rows
+              }))`,
             }}
-          />
+          >
+            <Board
+              board={frame.state.board}
+              view={frame.state.board}
+              legal={new Set()}
+              exploding={[]}
+              interactive={false}
+              onSelect={() => undefined}
+              label={COPY.board[locale]}
+              labelFor={(index) => {
+                const owner = frame.state.board.owners[index]
+                if (owner === NO_OWNER) return COPY.empty[locale]
+                return `${COPY.owned[locale]} ${playerName(owner, locale)}`
+              }}
+            />
+          </div>
 
-          <div className="flex flex-wrap items-center gap-3 text-sm">
-            <button
-              type="button"
-              onClick={() => setStep((value) => Math.max(0, value - 1))}
-              disabled={step === 0}
-              className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
-            >
-              {COPY.prev[locale]}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep((value) => Math.min(frames.length - 1, value + 1))}
-              disabled={step >= frames.length - 1}
-              className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
-            >
-              {COPY.next[locale]}
-            </button>
-            <span className="font-numeral text-xs text-trace-soft">
-              {COPY.step[locale]} {step} / {frames.length - 1} · {countExplosions(frame.events)}{' '}
-              {COPY.explosions[locale]} · {frame.hash}
-            </span>
-            {frame.state.winner !== null ? (
+          <div className="flex flex-col gap-3">
+            {/*
+             * A scrubber, not just step buttons. Reviewing a game means jumping
+             * to the move where it turned, and clicking Forward forty times to
+             * reach it is not review — it is transcription.
+             */}
+            <input
+              type="range"
+              min={0}
+              max={Math.max(0, frames.length - 1)}
+              value={step}
+              aria-label={COPY.scrub[locale]}
+              onChange={(event) => setStep(Number(event.target.value))}
+              className="w-full accent-trace"
+            />
+
+            <div className="flex flex-wrap items-center gap-3 text-sm">
+              <button
+                type="button"
+                onClick={() => setStep((value) => Math.max(0, value - 1))}
+                disabled={step === 0}
+                className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+              >
+                {COPY.prev[locale]}
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep((value) => Math.min(frames.length - 1, value + 1))}
+                disabled={step >= frames.length - 1}
+                className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+              >
+                {COPY.next[locale]}
+              </button>
               <span className="font-numeral text-sm">
-                {playerName(frame.state.winner, locale)} {COPY.wins[locale]}
+                {COPY.step[locale]} {step}
+                <span className="text-trace-faint"> / {frames.length - 1}</span>
               </span>
-            ) : null}
+              <span className="text-xs text-trace-soft">
+                {countExplosions(frame.events)} {COPY.explosions[locale]}
+              </span>
+              {frame.state.winner !== null ? (
+                <span className="font-numeral text-sm">
+                  {playerName(frame.state.winner, locale)} {COPY.wins[locale]}
+                </span>
+              ) : null}
+              <span className="ml-auto font-mono text-xs text-trace-faint">{frame.hash}</span>
+            </div>
           </div>
         </>
       ) : null}
