@@ -22,6 +22,7 @@ type Copy = {
   versusHint: string
   footer: string
   back: string
+  rules: readonly string[]
 }
 
 const DICTIONARY: Record<Locale, Copy> = {
@@ -36,6 +37,12 @@ const DICTIONARY: Record<Locale, Copy> = {
     versusHint: 'Dua perangkat, sambungan langsung antar-browser.',
     footer: 'Statis, tanpa server. Sebuah permainan adalah daftar langkahnya.',
     back: 'Kembali',
+    rules: [
+      'Taruh satu orb di sel kosong atau sel milikmu.',
+      'Tiap sel punya batas: 2 di sudut, 3 di tepi, 4 di tengah.',
+      'Saat batasnya tercapai sel meledak, dan setiap tetangga yang kena jadi milikmu.',
+      'Ledakan bisa memicu ledakan lain. Menang bila semua orb di papan milikmu.',
+    ],
   },
   en: {
     tagline:
@@ -48,6 +55,12 @@ const DICTIONARY: Record<Locale, Copy> = {
     versusHint: 'Two devices, a direct browser-to-browser connection.',
     footer: 'Static, no server. A game is its move list.',
     back: 'Back',
+    rules: [
+      'Place one orb in an empty cell or one you already own.',
+      'Every cell has a limit: 2 in corners, 3 on edges, 4 in the middle.',
+      'On reaching the limit it explodes, and every neighbour it reaches becomes yours.',
+      'Explosions trigger explosions. You win when every orb on the board is yours.',
+    ],
   },
 }
 

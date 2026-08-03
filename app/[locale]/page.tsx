@@ -22,6 +22,15 @@ export default function HomePage({ params }: { params: { locale: string } }) {
         <p className="mt-3 max-w-prose text-trace-soft">{t.tagline}</p>
       </header>
 
+      <ol className="flex max-w-prose flex-col gap-2 border-l border-trace/30 pl-4 text-sm text-trace-soft">
+        {t.rules.map((rule, position) => (
+          <li key={rule} className="flex gap-3">
+            <span className="font-numeral text-trace">{position + 1}</span>
+            <span>{rule}</span>
+          </li>
+        ))}
+      </ol>
+
       <nav className="grid gap-3 sm:grid-cols-3">
         {links.map((link) => (
           <Link

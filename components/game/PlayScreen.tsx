@@ -16,6 +16,8 @@ import { DEFAULT_CONFIG, type GameConfig } from '@/lib/engine/state'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
+import { HowToPlay } from '@/components/hud/HowToPlay'
+import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 
 const COPY = {
@@ -25,6 +27,13 @@ const COPY = {
     en: 'One device, taking turns. An empty cell or one of your own.',
   },
   thinking: { id: 'AI berpikir', en: 'AI thinking' },
+  confirmTap: {
+    id: 'Ketuk sekali lagi di sel yang sama untuk menaruh orb.',
+    en: 'Tap the same cell once more to place your orb.',
+  },
+  reach: { id: 'ledakan beruntun', en: 'chained explosions' },
+  captures: { id: 'sel direbut', en: 'cells captured' },
+  winning: { id: 'langkah ini memenangkan permainan', en: 'this move wins the game' },
   aiFailed: {
     id: 'AI gagal dijalankan. Ganti ke hotseat untuk melanjutkan.',
     en: 'The AI failed to start. Switch to hotseat to keep playing.',
@@ -95,6 +104,25 @@ export function PlayScreen({ locale }: { locale: Locale }) {
 
   const applyConfig = (config: GameConfig) => session.reset(config)
 
+  // Considered, not committed. The engine answers what the move would do.
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const [awaitingTap, setAwaitingTap] = useState<number | null>(null)
+
+  const preview: MovePreview | null =
+    previewIndex === null || animating || finished ? null : previewMove(session.state, previewIndex)
+
+  const select = (index: number, viaTouch: boolean) => {
+    // Touch has no hover, so the first tap shows the reach and the second commits.
+    if (viaTouch && awaitingTap !== index) {
+      setAwaitingTap(index)
+      setPreviewIndex(index)
+      return
+    }
+    setAwaitingTap(null)
+    setPreviewIndex(null)
+    session.play(index)
+  }
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8">
       <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
@@ -106,6 +134,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           {copy(locale).back}
         </Link>
       </header>
+
+      <HowToPlay locale={locale} players={session.state.players} />
 
       <ModePicker
         locale={locale}
@@ -133,8 +163,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           legal={session.legal}
           exploding={player.frame?.exploding ?? []}
           interactive={!animating && !finished && !aiTurn}
-          onSelect={session.play}
+          onSelect={select}
           labelFor={labelFor}
+          preview={preview}
+          previewIndex={previewIndex}
+          onPreview={(index) => {
+            if (awaitingTap !== null) return
+            setPreviewIndex(index)
+          }}
         />
 
         {finished ? (
@@ -152,6 +188,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           </div>
         ) : null}
       </div>
+
+      {preview !== null ? (
+        <p className="font-numeral text-xs text-trace-soft">
+          {preview.explosions} {COPY.reach[locale]} · {preview.capturedCount} {COPY.captures[locale]}
+          {preview.wins ? ` · ${COPY.winning[locale]}` : ''}
+          {awaitingTap !== null ? ` · ${COPY.confirmTap[locale]}` : ''}
+        </p>
+      ) : null}
 
       <p aria-live="polite" className="font-numeral text-xs text-trace-faint">
         {COPY.turn[locale]} {session.state.turn} · {session.hash}
