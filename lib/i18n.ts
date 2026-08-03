@@ -23,6 +23,8 @@ type Copy = {
   footer: string
   back: string
   rules: readonly string[]
+  learn: string
+  learnHint: string
 }
 
 const DICTIONARY: Record<Locale, Copy> = {
@@ -43,6 +45,8 @@ const DICTIONARY: Record<Locale, Copy> = {
       'Saat batasnya tercapai sel meledak, dan setiap tetangga yang kena jadi milikmu.',
       'Ledakan bisa memicu ledakan lain. Menang bila semua orb di papan milikmu.',
     ],
+    learn: 'Belajar',
+    learnHint: 'Lima langkah singkat sampai paham. Sekitar dua menit.',
   },
   en: {
     tagline:
@@ -61,6 +65,8 @@ const DICTIONARY: Record<Locale, Copy> = {
       'On reaching the limit it explodes, and every neighbour it reaches becomes yours.',
       'Explosions trigger explosions. You win when every orb on the board is yours.',
     ],
+    learn: 'Learn',
+    learnHint: 'Five short steps until it clicks. About two minutes.',
   },
 }
 

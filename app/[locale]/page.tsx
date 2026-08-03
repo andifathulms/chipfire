@@ -10,6 +10,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   const t = copy(locale)
 
   const links = [
+    { href: `/${locale}/belajar/`, title: t.learn, hint: t.learnHint },
     { href: `/${locale}/main/`, title: t.play, hint: t.playHint },
     { href: `/${locale}/tanding/`, title: t.versus, hint: t.versusHint },
     { href: `/${locale}/ulang/`, title: t.replay, hint: t.replayHint },
@@ -31,7 +32,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
         ))}
       </ol>
 
-      <nav className="grid gap-3 sm:grid-cols-3">
+      <nav className="grid gap-3 sm:grid-cols-2">
         {links.map((link) => (
           <Link
             key={link.href}

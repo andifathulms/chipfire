@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { Orbs } from '@/components/board/Orbs'
 import { playerName } from '@/lib/players'
 import type { Locale } from '@/lib/i18n'
@@ -48,6 +49,7 @@ const COPY = {
     ],
   },
   close: { id: 'Mengerti', en: 'Got it' },
+  tryIt: { id: 'Coba langsung, 2 menit', en: 'Try it hands-on, 2 minutes' },
   reopen: { id: 'Cara main', en: 'How to play' },
 } as const
 
@@ -119,13 +121,18 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
         </ul>
       </div>
 
-      <button
-        type="button"
-        onClick={dismiss}
-        className="self-start border border-trace px-4 py-1 text-sm transition-colors hover:bg-chart"
-      >
-        {COPY.close[locale]}
-      </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={dismiss}
+          className="border border-trace px-4 py-1 text-sm transition-colors hover:bg-chart"
+        >
+          {COPY.close[locale]}
+        </button>
+        <Link href={`/${locale}/belajar/`} className="text-sm underline">
+          {COPY.tryIt[locale]}
+        </Link>
+      </div>
     </section>
   )
 }

@@ -31,6 +31,9 @@ type BoardProps = {
   readonly preview?: MovePreview | null
   readonly previewIndex?: number | null
   readonly onPreview?: (index: number | null) => void
+  /** Outline the playable cells. Useful where only a few cells are offered —
+   *  in a real game every empty cell is legal, so marking them all is noise. */
+  readonly markLegal?: boolean
 }
 
 export function Board({
@@ -44,6 +47,7 @@ export function Board({
   preview = null,
   previewIndex = null,
   onPreview,
+  markLegal = false,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
@@ -89,6 +93,7 @@ export function Board({
           // itself rather than as a floating overlay.
           origin ? 'bg-trace/10' : touched ? 'bg-trace/[0.06]' : '',
           captured ? 'outline outline-1 -outline-offset-1 outline-trace/50' : '',
+          markLegal && playable ? 'outline outline-1 outline-dashed -outline-offset-2 outline-trace/45' : '',
         ].join(' ')}
       >
         {/* Capacity ticks: how many orbs this cell holds before it goes. The
