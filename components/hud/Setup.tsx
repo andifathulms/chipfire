@@ -16,6 +16,10 @@ const COPY = {
   cols: { id: 'Kolom', en: 'Columns' },
   players: { id: 'Pemain', en: 'Players' },
   apply: { id: 'Mulai papan baru', en: 'New board' },
+  warning: {
+    id: 'Papan baru mengakhiri permainan yang sedang berjalan.',
+    en: 'A new board ends the game in progress.',
+  },
 } as const
 
 function clamp(value: number, min: number, max: number): number {
@@ -33,7 +37,7 @@ export function Setup({
 }) {
   return (
     <form
-      className="flex flex-wrap items-end gap-3 text-sm"
+      className="flex flex-col gap-3 text-sm"
       onSubmit={(event) => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
@@ -45,31 +49,35 @@ export function Setup({
         })
       }}
     >
-      {(
-        [
-          ['rows', config.rows, MIN_ROWS, MAX_ROWS],
-          ['cols', config.cols, MIN_COLS, MAX_COLS],
-          ['players', config.players, MIN_PLAYERS, MAX_PLAYERS],
-        ] as const
-      ).map(([name, value, min, max]) => (
-        <label key={name} className="flex flex-col gap-1">
-          <span className="text-xs uppercase tracking-widest text-trace-faint">
-            {COPY[name][locale]}
-          </span>
-          <input
-            type="number"
-            name={name}
-            defaultValue={value}
-            min={min}
-            max={max}
-            className="w-20 border border-trace/30 bg-chart px-2 py-1 font-numeral"
-          />
-        </label>
-      ))}
+      <div className="grid grid-cols-3 gap-2">
+        {(
+          [
+            ['rows', config.rows, MIN_ROWS, MAX_ROWS],
+            ['cols', config.cols, MIN_COLS, MAX_COLS],
+            ['players', config.players, MIN_PLAYERS, MAX_PLAYERS],
+          ] as const
+        ).map(([name, value, min, max]) => (
+          <label key={name} className="flex flex-col gap-1">
+            <span className="label-micro">{COPY[name][locale]}</span>
+            <input
+              type="number"
+              name={name}
+              defaultValue={value}
+              min={min}
+              max={max}
+              className="w-full border border-trace/30 bg-chart px-2 py-1 font-numeral"
+            />
+          </label>
+        ))}
+      </div>
+
+      {/* Stated plainly, because the button discards the game in progress and
+          nothing else on the rail does. */}
+      <p className="text-xs leading-snug text-trace-faint">{COPY.warning[locale]}</p>
 
       <button
         type="submit"
-        className="border border-trace px-3 py-1 transition-colors hover:bg-chart-deep"
+        className="border border-trace px-3 py-1.5 transition-colors hover:bg-chart-deep"
       >
         {COPY.apply[locale]}
       </button>

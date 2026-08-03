@@ -37,10 +37,12 @@ export function Controls({
   const speeds = Object.keys(SPEED_LABELS) as Speed[]
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-trace/20 pt-4 text-sm">
-      <div className="flex items-center gap-2">
-        <span className="text-trace-soft">{COPY.speed[locale]}</span>
-        <div className="flex border border-trace/30">
+    <div className="flex flex-col gap-3 border-t border-trace/20 pt-4 text-sm">
+      <div className="flex flex-col gap-1.5">
+        <span className="label-micro">{COPY.speed[locale]}</span>
+        {/* A segmented control that fills the rail: equal columns, so the
+            options read as one instrument rather than four loose buttons. */}
+        <div className="grid grid-cols-4 border border-trace/30">
           {speeds.map((option) => (
             <button
               key={option}
@@ -48,7 +50,7 @@ export function Controls({
               onClick={() => onSpeed(option)}
               aria-pressed={speed === option}
               className={[
-                'px-2 py-1 text-xs transition-colors',
+                'px-1 py-1.5 text-xs transition-colors',
                 speed === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
               ].join(' ')}
             >
@@ -58,26 +60,30 @@ export function Controls({
         </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="font-numeral text-xs text-trace-faint">
-          {COPY.longest[locale]}: {longestCascade}
-        </span>
+      {/* Undo and restart are peers, so they get equal width. Both are large
+          enough to be a comfortable touch target on a phone. */}
+      <div className="grid grid-cols-2 gap-2">
         <button
           type="button"
           onClick={onUndo}
           disabled={!canUndo}
-          className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+          className="border border-trace/30 px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
         >
           {COPY.undo[locale]}
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep"
+          className="border border-trace/30 px-3 py-1.5 transition-colors hover:bg-chart-deep"
         >
           {COPY.reset[locale]}
         </button>
       </div>
+
+      <p className="flex items-baseline justify-between gap-2">
+        <span className="label-micro">{COPY.longest[locale]}</span>
+        <span className="font-numeral text-base leading-none">{longestCascade}</span>
+      </p>
     </div>
   )
 }

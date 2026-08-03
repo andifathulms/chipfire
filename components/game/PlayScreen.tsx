@@ -14,7 +14,7 @@ import type { Difficulty } from '@/lib/ai/search'
 import { NO_OWNER } from '@/lib/engine/board'
 import { DEFAULT_CONFIG, type GameConfig } from '@/lib/engine/state'
 import { copy, type Locale } from '@/lib/i18n'
-import { playerName } from '@/lib/players'
+import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -23,27 +23,40 @@ import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 const COPY = {
   title: { id: 'Main', en: 'Play' },
   subtitle: {
-    id: 'Satu perangkat, bergantian. Sel kosong atau selmu sendiri.',
-    en: 'One device, taking turns. An empty cell or one of your own.',
+    id: 'Satu perangkat, bergantian.',
+    en: 'One device, taking turns.',
   },
   thinking: { id: 'AI berpikir', en: 'AI thinking' },
   confirmTap: {
-    id: 'Ketuk sekali lagi di sel yang sama untuk menaruh orb.',
-    en: 'Tap the same cell once more to place your orb.',
+    id: 'Ketuk lagi untuk menaruh orb.',
+    en: 'Tap again to place your orb.',
   },
-  reach: { id: 'ledakan beruntun', en: 'chained explosions' },
-  captures: { id: 'sel direbut', en: 'cells captured' },
-  winning: { id: 'langkah ini memenangkan permainan', en: 'this move wins the game' },
+  board: { id: 'Papan permainan', en: 'Game board' },
+  readout: { id: 'Langkah yang dipertimbangkan', en: 'Move under consideration' },
+  reach: { id: 'Ledakan', en: 'Explosions' },
+  captures: { id: 'Sel direbut', en: 'Cells taken' },
+  winning: { id: 'Langkah ini menang', en: 'This move wins' },
+  idle: {
+    id: 'Arahkan kursor ke sel untuk melihat sejauh mana ledakannya merambat.',
+    en: 'Point at a cell to see how far its chain would reach.',
+  },
+  idleTouch: {
+    id: 'Ketuk sel untuk melihat rambatan ledakannya.',
+    en: 'Tap a cell to see how far its chain would reach.',
+  },
   aiFailed: {
     id: 'AI gagal dijalankan. Ganti ke hotseat untuk melanjutkan.',
     en: 'The AI failed to start. Switch to hotseat to keep playing.',
   },
   wins: { id: 'menang', en: 'wins' },
   again: { id: 'Main lagi', en: 'Play again' },
+  finalOrbs: { id: 'orb di akhir', en: 'orbs at the end' },
+  inMoves: { id: 'langkah', en: 'moves' },
   turn: { id: 'Langkah', en: 'Move' },
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
+  boardSetup: { id: 'Ukuran papan', en: 'Board size' },
 } as const
 
 export function PlayScreen({ locale }: { locale: Locale }) {
@@ -123,98 +136,188 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     session.play(index)
   }
 
+  const winner = session.state.winner ?? 0
+  const board = session.state.board
+
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
-        <div>
-          <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>
-          <p className="text-sm text-trace-soft">{COPY.subtitle[locale]}</p>
+    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace/20 pb-3">
+        <div className="flex items-baseline gap-3">
+          <Link href={`/${locale}/`} className="font-numeral text-sm text-trace-soft underline">
+            Rantai
+          </Link>
+          <span aria-hidden="true" className="text-trace-faint">
+            /
+          </span>
+          <h1 className="font-numeral text-2xl leading-none">{COPY.title[locale]}</h1>
+          <p className="hidden text-sm text-trace-soft sm:block">{COPY.subtitle[locale]}</p>
         </div>
-        <Link href={`/${locale}/`} className="text-sm underline">
-          {copy(locale).back}
-        </Link>
+        <HowToPlay locale={locale} players={session.state.players} />
       </header>
 
-      <HowToPlay locale={locale} players={session.state.players} />
-
-      <ModePicker
-        locale={locale}
-        mode={mode}
-        difficulty={difficulty}
-        onMode={(next) => {
-          setMode(next)
-          session.reset()
-        }}
-        onDifficulty={setDifficulty}
-      />
-
-      <TurnIndicator state={session.state} locale={locale} busy={animating} />
-
       {ai.error !== null ? (
-        <p role="alert" className="border border-p1 px-3 py-2 text-sm text-p1">
+        <p role="alert" className="border-l-2 border-p1 bg-chart-deep px-3 py-2 text-sm text-p1-ink">
           {COPY.aiFailed[locale]}
         </p>
       ) : null}
 
-      <div className="relative">
-        <Board
-          board={session.state.board}
-          view={view}
-          legal={session.legal}
-          exploding={player.frame?.exploding ?? []}
-          interactive={!animating && !finished && !aiTurn}
-          onSelect={select}
-          labelFor={labelFor}
-          preview={preview}
-          previewIndex={previewIndex}
-          onPreview={(index) => {
-            if (awaitingTap !== null) return
-            setPreviewIndex(index)
-          }}
-        />
+      {/*
+       * The board is the product, so on a wide screen it takes the space and
+       * everything else becomes a rail beside it. The explicit placement keeps
+       * the phone order right — whose turn it is has to sit above the board,
+       * not below the fold — without rendering the scoreboard twice.
+       */}
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+        <div className="lg:col-start-2 lg:row-start-1">
+          <TurnIndicator state={session.state} locale={locale} busy={animating} />
+        </div>
 
-        {finished ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-chart/85">
-            <p className="font-numeral text-2xl">
-              {playerName(session.state.winner ?? 0, locale)} {COPY.wins[locale]}
-            </p>
-            <button
-              type="button"
-              onClick={() => session.reset()}
-              className="border border-trace px-4 py-2 transition-colors hover:bg-chart-deep"
+        <div className="flex flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+          <div className="relative">
+            {/*
+             * The board is sized to fit the viewport rather than the column, so
+             * a tall board never demands a scroll to see the move you are about
+             * to make. --chrome is the vertical space the rest of the page needs.
+             */}
+            <div
+              className="mx-auto w-full [--chrome:26rem] sm:[--chrome:22rem] lg:[--chrome:13rem]"
+              style={{
+                // The max() floor matters: on a short viewport (a phone in
+                // landscape) the subtraction goes negative and the board would
+                // collapse to nothing.
+                maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
+                  board.cols / board.rows
+                }))`,
+              }}
             >
-              {COPY.again[locale]}
-            </button>
+              <Board
+                board={board}
+                view={view}
+                legal={session.legal}
+                exploding={player.frame?.exploding ?? []}
+                interactive={!animating && !finished && !aiTurn}
+                onSelect={select}
+                labelFor={labelFor}
+                label={COPY.board[locale]}
+                preview={preview}
+                previewIndex={previewIndex}
+                onPreview={(index) => {
+                  if (awaitingTap !== null) return
+                  setPreviewIndex(index)
+                }}
+              />
+            </div>
+
+            {finished ? (
+              <div className="absolute inset-0 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
+                <p className="font-numeral text-3xl">
+                  <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>{' '}
+                  {COPY.wins[locale]}
+                </p>
+                <p className="font-numeral text-sm text-trace-soft">
+                  {session.state.orbs[winner]} {COPY.finalOrbs[locale]} ·{' '}
+                  {session.record.moves.length} {COPY.inMoves[locale]}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => session.reset()}
+                  className="border border-trace bg-trace px-5 py-2 text-chart transition-opacity hover:opacity-85"
+                >
+                  {COPY.again[locale]}
+                </button>
+              </div>
+            ) : null}
           </div>
-        ) : null}
+
+          {/*
+           * The readout is always mounted. Rendering it only while a preview
+           * exists made every cell hover shift the whole page beneath the board
+           * — in an interface driven entirely by hovering cells.
+           */}
+          <div
+            aria-live="polite"
+            className="flex min-h-[3.25rem] items-center gap-5 border border-trace/20 bg-chart-deep/50 px-3 py-2"
+          >
+            {preview !== null ? (
+              <>
+                <span className="flex flex-col gap-0.5">
+                  <span className="label-micro">{COPY.reach[locale]}</span>
+                  <span className="font-numeral text-lg leading-none">{preview.explosions}</span>
+                </span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="label-micro">{COPY.captures[locale]}</span>
+                  <span className="font-numeral text-lg leading-none">
+                    {preview.capturedCount}
+                  </span>
+                </span>
+                <span className="ml-auto text-right text-sm text-trace-soft">
+                  {preview.wins ? (
+                    <span className="font-medium text-trace">{COPY.winning[locale]}</span>
+                  ) : null}
+                  {awaitingTap !== null ? (
+                    <span className="block">{COPY.confirmTap[locale]}</span>
+                  ) : null}
+                </span>
+              </>
+            ) : (
+              <span className="text-sm text-trace-faint">
+                <span className="hidden sm:inline">{COPY.idle[locale]}</span>
+                <span className="sm:hidden">{COPY.idleTouch[locale]}</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
+          <ModePicker
+            locale={locale}
+            mode={mode}
+            difficulty={difficulty}
+            onMode={(next) => {
+              setMode(next)
+              session.reset()
+            }}
+            onDifficulty={setDifficulty}
+          />
+
+          <Controls
+            locale={locale}
+            speed={speed}
+            onSpeed={setSpeed}
+            onUndo={session.undo}
+            onReset={() => session.reset()}
+            canUndo={session.record.moves.length > 0 && !animating}
+            longestCascade={session.longestCascade}
+          />
+
+          {/*
+           * Board size is a between-games decision, not a mid-game one, so it
+           * folds away instead of competing with the controls that are used
+           * every turn.
+           */}
+          <details className="border-t border-trace/20 pt-3">
+            <summary className="label-micro cursor-pointer select-none py-1">
+              {COPY.boardSetup[locale]}
+            </summary>
+            <div className="pt-3">
+              <Setup locale={locale} config={session.config} onApply={applyConfig} />
+            </div>
+          </details>
+
+          <p aria-live="polite" className="flex flex-wrap items-baseline gap-x-2 text-xs">
+            <span className="label-micro">{COPY.turn[locale]}</span>
+            <span className="font-numeral text-trace">{session.state.turn}</span>
+            <span className="font-mono text-trace-faint">{session.hash}</span>
+            {ai.thinking ? (
+              <span className="label-micro animate-pulse text-trace-soft">
+                {COPY.thinking[locale]}
+              </span>
+            ) : null}
+          </p>
+        </div>
       </div>
 
-      {preview !== null ? (
-        <p className="font-numeral text-xs text-trace-soft">
-          {preview.explosions} {COPY.reach[locale]} · {preview.capturedCount} {COPY.captures[locale]}
-          {preview.wins ? ` · ${COPY.winning[locale]}` : ''}
-          {awaitingTap !== null ? ` · ${COPY.confirmTap[locale]}` : ''}
-        </p>
-      ) : null}
-
-      <p aria-live="polite" className="font-numeral text-xs text-trace-faint">
-        {COPY.turn[locale]} {session.state.turn} · {session.hash}
-        {ai.thinking ? ` · ${COPY.thinking[locale]}` : ''}
-      </p>
-
-      <Controls
-        locale={locale}
-        speed={speed}
-        onSpeed={setSpeed}
-        onUndo={session.undo}
-        onReset={() => session.reset()}
-        canUndo={session.record.moves.length > 0 && !animating}
-        longestCascade={session.longestCascade}
-      />
-
       {finished ? <GameSummary locale={locale} record={session.record} stats={stats} /> : null}
-
-      <Setup locale={locale} config={session.config} onApply={applyConfig} />
     </main>
   )
 }

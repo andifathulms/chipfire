@@ -1,20 +1,21 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Orbs } from '@/components/board/Orbs'
 import { playerName } from '@/lib/players'
 import type { Locale } from '@/lib/i18n'
-
 /**
  * Chain Reaction is not self-evident: the conversion rule is the whole game,
  * and nothing on the board announces it. This panel opens by itself the first
  * time and stays one click away afterwards.
  *
+ * It is a dialog rather than an inline block. Inline, it pushed the board off
+ * the first screen on every visit — the rules explaining a board the reader
+ * could no longer see. Over the board, the two are read together.
+ *
  * Indonesian first, plain and short.
  */
 const SEEN_KEY = 'rantai.seen-help.v1'
-
 const COPY = {
   title: { id: 'Cara main', en: 'How to play' },
   goal: {
@@ -52,10 +53,8 @@ const COPY = {
   tryIt: { id: 'Coba langsung, 2 menit', en: 'Try it hands-on, 2 minutes' },
   reopen: { id: 'Cara main', en: 'How to play' },
 } as const
-
 export function HowToPlay({ locale, players }: { locale: Locale; players: number }) {
   const [open, setOpen] = useState(false)
-
   // First visit gets the panel; later visits get the button.
   useEffect(() => {
     try {
@@ -64,7 +63,6 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
       // Storage unavailable. Not worth blocking on.
     }
   }, [])
-
   const dismiss = () => {
     setOpen(false)
     try {
@@ -73,66 +71,86 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
       // As above.
     }
   }
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="self-start border border-trace/30 px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
-      >
-        {COPY.reopen[locale]}
-      </button>
-    )
-  }
-
+  // Escape closes it, because a dialog that only closes by hitting one small
+  // button is a dialog people feel trapped in.
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') dismiss()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+  const trigger = (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="border border-trace/30 px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+    >
+      {COPY.reopen[locale]}
+    </button>
+  )
+  if (!open) return trigger
   return (
-    <section className="flex flex-col gap-4 border border-trace bg-chart-deep/70 p-5">
-      <h2 className="font-numeral text-xl">{COPY.title[locale]}</h2>
-      <p className="text-sm">{COPY.goal[locale]}</p>
-
-      <ol className="flex flex-col gap-2 text-sm text-trace-soft">
-        {COPY.rules[locale].map((rule, position) => (
-          <li key={rule} className="flex gap-3">
-            <span className="font-numeral text-trace">{position + 1}</span>
-            <span className="max-w-prose">{rule}</span>
-          </li>
-        ))}
-      </ol>
-
-      <div className="flex flex-col gap-2 border-t border-trace/20 pt-3">
-        <p className="text-sm">{COPY.legendTitle[locale]}</p>
-        <div className="flex flex-wrap gap-4">
-          {Array.from({ length: players }, (_, player) => (
-            <span key={player} className="flex items-center gap-2 text-xs text-trace-soft">
-              <span className="h-5 w-5">
-                <Orbs player={player} count={1} />
-              </span>
-              {playerName(player, locale)}
-            </span>
-          ))}
-        </div>
-        <ul className="flex flex-col gap-1 text-sm text-trace-soft">
-          {COPY.legend[locale].map((line) => (
-            <li key={line} className="max-w-prose">
-              — {line}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={dismiss}
-          className="border border-trace px-4 py-1 text-sm transition-colors hover:bg-chart"
+    <>
+      {trigger}
+      <div
+        role="presentation"
+        onClick={dismiss}
+        className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-trace/30 p-4 sm:items-center"
+      >
+        <section
+          role="dialog"
+          aria-modal="true"
+          aria-label={COPY.title[locale]}
+          onClick={(event) => event.stopPropagation()}
+          className="flex w-full max-w-xl animate-settle flex-col gap-4 border border-trace bg-chart p-5 shadow-lg sm:p-6"
         >
-          {COPY.close[locale]}
-        </button>
-        <Link href={`/${locale}/belajar/`} className="text-sm underline">
-          {COPY.tryIt[locale]}
-        </Link>
+          <h2 className="font-numeral text-xl">{COPY.title[locale]}</h2>
+          <p className="text-sm">{COPY.goal[locale]}</p>
+          <ol className="flex flex-col gap-2 text-sm text-trace-soft">
+            {COPY.rules[locale].map((rule, position) => (
+              <li key={rule} className="flex gap-3">
+                <span className="font-numeral text-trace">{position + 1}</span>
+                <span className="max-w-prose">{rule}</span>
+              </li>
+            ))}
+          </ol>
+          <div className="flex flex-col gap-2 border-t border-trace/20 pt-3">
+            <p className="text-sm">{COPY.legendTitle[locale]}</p>
+            <div className="flex flex-wrap gap-4">
+              {Array.from({ length: players }, (_, player) => (
+                <span key={player} className="flex items-center gap-2 text-xs text-trace-soft">
+                  <span className="h-5 w-5">
+                    <Orbs player={player} count={1} />
+                  </span>
+                  {playerName(player, locale)}
+                </span>
+              ))}
+            </div>
+            <ul className="flex flex-col gap-1 text-sm text-trace-soft">
+              {COPY.legend[locale].map((line) => (
+                <li key={line} className="max-w-prose">
+                  — {line}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex flex-wrap items-center gap-4 border-t border-trace/20 pt-4">
+            <button
+              type="button"
+              onClick={dismiss}
+              autoFocus
+              className="border border-trace bg-trace px-4 py-1.5 text-sm text-chart transition-opacity hover:opacity-85"
+            >
+              {COPY.close[locale]}
+            </button>
+            <Link href={`/${locale}/belajar/`} className="text-sm underline">
+              {COPY.tryIt[locale]}
+            </Link>
+          </div>
+        </section>
       </div>
-    </section>
+    </>
   )
 }

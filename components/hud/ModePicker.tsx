@@ -17,6 +17,7 @@ const DIFFICULTY_LABELS: Record<Difficulty, Record<Locale, string>> = {
 }
 
 const COPY = {
+  opponent: { id: 'Lawan', en: 'Opponent' },
   difficulty: { id: 'Tingkat', en: 'Level' },
   fair: {
     id: 'AI melihat papan yang sama denganmu. Tingkat hanya mengubah kedalaman pencarian.',
@@ -41,40 +42,51 @@ export function ModePicker({
   const levels = Object.keys(DIFFICULTY_LABELS) as Difficulty[]
 
   return (
-    <div className="flex flex-wrap items-center gap-4 text-sm">
-      <div className="flex border border-trace/30">
-        {modes.map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => onMode(option)}
-            aria-pressed={mode === option}
-            className={[
-              'px-3 py-1 transition-colors',
-              mode === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-            ].join(' ')}
-          >
-            {MODE_LABELS[option][locale]}
-          </button>
-        ))}
+    <div className="flex flex-col gap-3 text-sm">
+      <div className="flex flex-col gap-1.5">
+        <span className="label-micro">{COPY.opponent[locale]}</span>
+        <div className="grid grid-cols-2 border border-trace/30">
+          {modes.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onMode(option)}
+              aria-pressed={mode === option}
+              className={[
+                'px-3 py-1.5 transition-colors',
+                mode === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
+              ].join(' ')}
+            >
+              {MODE_LABELS[option][locale]}
+            </button>
+          ))}
+        </div>
       </div>
 
       {mode === 'ai' ? (
-        <label className="flex items-center gap-2">
-          <span className="text-trace-soft">{COPY.difficulty[locale]}</span>
-          <select
-            value={difficulty}
-            onChange={(event) => onDifficulty(event.target.value as Difficulty)}
-            className="border border-trace/30 bg-chart px-2 py-1"
-          >
+        <div className="flex flex-col gap-1.5">
+          <span className="label-micro">{COPY.difficulty[locale]}</span>
+          {/* Three levels, so they are shown rather than hidden behind a select:
+              a menu you must open to see your options is a menu you compare
+              badly. */}
+          <div className="grid grid-cols-3 border border-trace/30">
             {levels.map((level) => (
-              <option key={level} value={level}>
+              <button
+                key={level}
+                type="button"
+                onClick={() => onDifficulty(level)}
+                aria-pressed={difficulty === level}
+                className={[
+                  'px-2 py-1.5 transition-colors',
+                  difficulty === level ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
+                ].join(' ')}
+              >
                 {DIFFICULTY_LABELS[level][locale]}
-              </option>
+              </button>
             ))}
-          </select>
-          <span className="max-w-xs text-xs text-trace-faint">{COPY.fair[locale]}</span>
-        </label>
+          </div>
+          <p className="text-xs leading-snug text-trace-faint">{COPY.fair[locale]}</p>
+        </div>
       ) : null}
     </div>
   )
