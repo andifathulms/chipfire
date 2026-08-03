@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NO_OWNER, type Board as EngineBoard } from '@/lib/engine/board'
 import type { MovePreview } from '@/lib/engine/preview'
 import { Orbs } from './Orbs'
@@ -34,6 +34,8 @@ type BoardProps = {
   /** Outline the playable cells. Useful where only a few cells are offered —
    *  in a real game every empty cell is legal, so marking them all is noise. */
   readonly markLegal?: boolean
+  /** Names the board for screen readers, since it is a group of buttons. */
+  readonly label?: string
 }
 
 export function Board({
@@ -48,13 +50,66 @@ export function Board({
   previewIndex = null,
   onPreview,
   markLegal = false,
+  label,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
+  const cellRefs = useRef<(HTMLButtonElement | null)[]>([])
   const flashing = new Set(exploding)
   const cells: React.ReactNode[] = []
+  const size = view.owners.length
 
-  for (let index = 0; index < view.owners.length; index += 1) {
+  /*
+   * Roving tabindex. Without it a 6×9 board puts fifty-four tab stops between
+   * the keyboard user and the controls below it; with it the board is a single
+   * stop and the arrow keys walk the lattice, which is how a grid should behave.
+   */
+  const [cursor, setCursor] = useState(0)
+
+  // A new, smaller board must not leave the cursor pointing off the end.
+  useEffect(() => {
+    setCursor((current) => (current < size ? current : 0))
+  }, [size])
+
+  const moveCursor = (next: number) => {
+    if (next < 0 || next >= size) return
+    setCursor(next)
+    cellRefs.current[next]?.focus()
+  }
+
+  const onKeyDown = (event: React.KeyboardEvent, index: number) => {
+    const row = Math.floor(index / board.cols)
+    const col = index % board.cols
+
+    // Clamped at the edges rather than wrapping: on a board where corners and
+    // edges have different critical mass, silently teleporting across the
+    // lattice would misrepresent the geometry the player is reasoning about.
+    switch (event.key) {
+      case 'ArrowRight':
+        if (col < board.cols - 1) moveCursor(index + 1)
+        break
+      case 'ArrowLeft':
+        if (col > 0) moveCursor(index - 1)
+        break
+      case 'ArrowDown':
+        if (row < board.rows - 1) moveCursor(index + board.cols)
+        break
+      case 'ArrowUp':
+        if (row > 0) moveCursor(index - board.cols)
+        break
+      case 'Home':
+        moveCursor(row * board.cols)
+        break
+      case 'End':
+        moveCursor(row * board.cols + board.cols - 1)
+        break
+      default:
+        return
+    }
+    event.preventDefault()
+  }
+
+  for (let index = 0; index < size; index += 1) {
     const owner = view.owners[index]
     const count = view.counts[index]
     const mass = board.adjacency.criticalMass[index]
@@ -71,9 +126,23 @@ export function Board({
     cells.push(
       <button
         key={index}
+        ref={(node) => {
+          cellRefs.current[index] = node
+        }}
         type="button"
-        disabled={!playable}
-        onClick={(event) => onSelect(index, event.nativeEvent.detail === 0 ? false : touchRef.current)}
+        /*
+         * `aria-disabled` rather than `disabled`: an unplayable cell is still
+         * worth reading. Disabling it drops it out of the tab order entirely,
+         * so a screen-reader user could never inspect the opponent's position —
+         * information this game hides from nobody.
+         */
+        aria-disabled={!playable}
+        tabIndex={cursor === index ? 0 : -1}
+        onKeyDown={(event) => onKeyDown(event, index)}
+        onClick={(event) => {
+          if (!playable) return
+          onSelect(index, event.nativeEvent.detail === 0 ? false : touchRef.current)
+        }}
         onPointerDown={(event) => {
           touchRef.current = event.pointerType === 'touch'
         }}
@@ -82,7 +151,10 @@ export function Board({
           onPreview?.(index)
         }}
         onPointerLeave={() => onPreview?.(null)}
-        onFocus={() => (playable ? onPreview?.(index) : undefined)}
+        onFocus={() => {
+          setCursor(index)
+          if (playable) onPreview?.(index)
+        }}
         onBlur={() => onPreview?.(null)}
         aria-label={labelFor(index)}
         className={[
@@ -93,7 +165,9 @@ export function Board({
           // itself rather than as a floating overlay.
           origin ? 'bg-trace/10' : touched ? 'bg-trace/[0.06]' : '',
           captured ? 'outline outline-1 -outline-offset-1 outline-trace/50' : '',
-          markLegal && playable ? 'outline outline-1 outline-dashed -outline-offset-2 outline-trace/45' : '',
+          markLegal && playable
+            ? 'outline outline-1 outline-dashed -outline-offset-2 outline-trace/45'
+            : '',
         ].join(' ')}
       >
         {/* Capacity ticks: how many orbs this cell holds before it goes. The
@@ -120,7 +194,8 @@ export function Board({
     <div
       className="grid w-full border-[0.5px] border-trace/40 bg-chart"
       style={{ gridTemplateColumns: `repeat(${board.cols}, minmax(0, 1fr))` }}
-      role="grid"
+      role="group"
+      aria-label={label}
       onPointerLeave={() => onPreview?.(null)}
     >
       {cells}
