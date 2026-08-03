@@ -52,15 +52,36 @@ export function useCascadePlayer(
     setIndex(0)
   }, [frames])
 
+  /*
+   * The chain gets a rhythm rather than a metronome (PRD §12).
+   *
+   * Two frames are not like the others. The first is the orb you placed — a
+   * beat of its own, before anything has gone off — and the last is the
+   * resolved position, which wants a moment to land before the HUD moves under
+   * it. Everything between them is the cascade proper and runs at tempo.
+   *
+   * This only stretches time. It never reorders or drops a frame, so what is
+   * drawn is still exactly the engine's event stream, in the engine's order.
+   */
   useEffect(() => {
     if (frames.length === 0) return undefined
 
-    if (interval === 0 || index >= frames.length - 1) {
-      const timer = window.setTimeout(() => doneRef.current(), interval === 0 ? 0 : interval)
+    const last = index >= frames.length - 1
+    const delay =
+      interval === 0
+        ? 0
+        : index === 0
+          ? Math.round(interval * 1.6)
+          : last
+            ? Math.round(interval * 1.4)
+            : interval
+
+    if (interval === 0 || last) {
+      const timer = window.setTimeout(() => doneRef.current(), delay)
       return () => window.clearTimeout(timer)
     }
 
-    const timer = window.setTimeout(() => setIndex((value) => value + 1), interval)
+    const timer = window.setTimeout(() => setIndex((value) => value + 1), delay)
     return () => window.clearTimeout(timer)
   }, [frames, index, interval])
 
