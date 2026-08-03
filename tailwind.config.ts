@@ -65,12 +65,37 @@ const config: Config = {
           '0%': { opacity: '0', transform: 'translateY(4px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        // A cell releasing its orbs. The ring expands past the cell edge, so
+        // at the faster speeds successive generations overlap and the chain
+        // reads as one wave travelling outward rather than as cells blinking.
+        burst: {
+          '0%': { transform: 'scale(0.45)', opacity: '0.5' },
+          '100%': { transform: 'scale(1.15)', opacity: '0' },
+        },
+        // A cell changing hands, washed in the colour of whoever just took it.
+        // Capture is the point of the game and nothing on the board said so.
+        claim: {
+          '0%': { opacity: '0.45' },
+          '70%': { opacity: '0.2' },
+          '100%': { opacity: '0' },
+        },
+        // Orbs arriving. Small enough to register as weight, not as bounce.
+        arrive: {
+          '0%': { transform: 'scale(0.72)', opacity: '0.5' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
       },
       animation: {
         // The only ambient motion in the app, and it encodes real danger:
         // this cell is one orb away from critical mass.
         tremble: 'tremble 260ms ease-in-out infinite',
         settle: 'settle 220ms ease-out both',
+        // Fixed durations rather than durations derived from the speed setting:
+        // at 'cepat' the frames advance faster than these run, and the overlap
+        // is what makes a long chain look like one propagating event.
+        burst: 'burst 300ms ease-out forwards',
+        claim: 'claim 420ms ease-out forwards',
+        arrive: 'arrive 180ms ease-out',
       },
     },
   },

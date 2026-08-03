@@ -153,6 +153,8 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               view={view}
               legal={session.legal}
               exploding={player.frame?.exploding ?? []}
+              converted={player.frame?.converted ?? []}
+              frameKey={player.index}
               interactive={myTurn && !animating && !finished}
               onSelect={game.play}
               labelFor={labelFor}

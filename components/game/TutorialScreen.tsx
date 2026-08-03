@@ -145,6 +145,8 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
               view={view}
               legal={allowed}
               exploding={player.frame?.exploding ?? []}
+              converted={player.frame?.converted ?? []}
+              frameKey={player.index}
               interactive={!done && !animating}
               onSelect={select}
               labelFor={labelFor}

@@ -195,6 +195,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 view={view}
                 legal={session.legal}
                 exploding={player.frame?.exploding ?? []}
+                converted={player.frame?.converted ?? []}
+                frameKey={player.index}
                 interactive={!animating && !finished && !aiTurn}
                 onSelect={select}
                 labelFor={labelFor}

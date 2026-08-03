@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { NO_OWNER, type Board as EngineBoard } from '@/lib/engine/board'
 import type { MovePreview } from '@/lib/engine/preview'
+import { styleFor } from '@/lib/players'
 import { Orbs } from './Orbs'
 
 /**
@@ -22,6 +23,15 @@ type BoardProps = {
   readonly view: BoardView
   readonly legal: ReadonlySet<number>
   readonly exploding: readonly number[]
+  /** Cells that changed hands in this frame. The engine has always reported
+   *  these; until now the renderer discarded them. */
+  readonly converted?: readonly number[]
+  /**
+   * Changes once per animation frame. React reuses the cell elements across
+   * frames, so without a key that changes, a CSS animation set on the first
+   * frame never replays on the next one and a cascade animates exactly once.
+   */
+  readonly frameKey?: number
   readonly interactive: boolean
   /** `viaTouch` lets the caller demand a confirming second tap where there is
    *  no hover to preview with. */
@@ -43,6 +53,8 @@ export function Board({
   view,
   legal,
   exploding,
+  converted = [],
+  frameKey = 0,
   interactive,
   onSelect,
   labelFor,
@@ -56,6 +68,7 @@ export function Board({
   const touchRef = useRef(false)
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([])
   const flashing = new Set(exploding)
+  const claimed = new Set(converted)
   const cells: React.ReactNode[] = []
   const size = view.owners.length
 
@@ -183,8 +196,36 @@ export function Board({
           </span>
         ) : null}
 
+        {/*
+         * Capture, in the colour of whoever just took the cell. The engine has
+         * always reported which cells changed hands; the renderer discarded it,
+         * so the one thing a cascade is *for* went unmarked while the cells
+         * that merely detonated got a flash.
+         */}
+        {claimed.has(index) && owner !== NO_OWNER ? (
+          <span
+            key={`claim-${frameKey}`}
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 animate-claim ${styleFor(owner).fill}`}
+          />
+        ) : null}
+
+        {/* The release. Scaled past the cell edge so consecutive generations
+            overlap into one wave rather than a row of blinks. */}
+        {flashing.has(index) ? (
+          <span
+            key={`burst-${frameKey}`}
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 animate-burst border border-trace"
+          />
+        ) : null}
+
         <span className={critical ? 'block h-full w-full animate-tremble' : 'block h-full w-full'}>
-          <Orbs player={owner} count={count} />
+          {/* Keyed on the contents, so orbs animate when the cell actually
+              changes and stay still when a neighbouring preview redraws it. */}
+          <span key={`${owner}:${count}`} className="block h-full w-full animate-arrive">
+            <Orbs player={owner} count={count} />
+          </span>
         </span>
       </button>,
     )
