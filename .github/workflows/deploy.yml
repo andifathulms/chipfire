@@ -18,15 +18,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      # Every action here runs on node24. The previous pins targeted node20,
+      # which the runner no longer provides — it was force-running them on 24
+      # and warning about it, so this makes explicit what was already happening.
+      - uses: actions/checkout@v7
 
       # The version comes from packageManager in package.json. Pinning it here
       # too makes the action refuse to run rather than pick one.
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          # The runtime the build itself uses, which is a separate thing from
+          # the runtime the actions use. Node 20 is out of support.
+          node-version: 24
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -51,7 +56,7 @@ jobs:
           test -f out/.nojekyll
           test -f out/id/main/index.html
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: out
 
@@ -63,4 +68,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
