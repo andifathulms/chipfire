@@ -1,0 +1,23 @@
+{
+  "name": "Chipfire — reaksi berantai",
+  "short_name": "Chipfire",
+  "description": "Permainan strategi grid dengan ledakan berantai. Hotseat, lawan AI, dan multiplayer peer-to-peer tanpa server.",
+  "lang": "id",
+  "start_url": "id/",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EDEAE3",
+  "theme_color": "#EDEAE3",
+  "categories": ["games", "strategy"],
+  "icons": [
+    { "src": "chipfire-icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "chipfire-icon-512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "chipfire-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

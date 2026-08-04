@@ -17,6 +17,10 @@ const TYPES = {
   '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  // Pages serves the manifest as this. Without the entry it falls to
+  // octet-stream here, so an install prompt could work in preview and not in
+  // production, or the reverse — which is the one thing preview exists to catch.
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.ico': 'image/x-icon',
