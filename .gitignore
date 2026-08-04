@@ -6,3 +6,8 @@ out/
 .env*.local
 coverage/
 next-env.d.ts
+
+# Brand asset masters — every size, colourway and lockup, most of which the app
+# never serves. The subset the site actually ships is copied into public/ and is
+# tracked; this stays out so the repo does not carry 700 kB of unused PNG.
+exports/
