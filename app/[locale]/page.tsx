@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { copy, isLocale, type Locale } from '@/lib/i18n'
 import { notFound } from 'next/navigation'
+import { Wordmark } from '@/components/site/Mark'
 
 export { generateStaticParams } from './layout'
 
@@ -23,7 +24,11 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   return (
     <main className="mx-auto flex w-full flex-1 max-w-4xl flex-col justify-center gap-10 px-6 py-16">
       <header className="flex flex-col gap-4">
-        <h1 className="font-numeral text-6xl leading-none tracking-tight sm:text-7xl">Chipfire</h1>
+        {/* The mark is the game's rule drawn once — a core shedding to four
+            neighbours — so it belongs above the tagline that explains it. */}
+        <h1>
+          <Wordmark size="lg" />
+        </h1>
         <p className="max-w-prose text-lg leading-snug text-trace-soft">{t.tagline}</p>
       </header>
 

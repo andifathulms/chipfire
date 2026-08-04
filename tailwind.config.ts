@@ -42,6 +42,14 @@ const config: Config = {
           soft: '#4A504B', //    6.9:1
           faint: '#5E635E', //   5.1:1
         },
+        /*
+         * The brand mark's core, and only the mark's. The brand rules fix it:
+         * the tile inverts on dark and the outer orbs follow, but the rust core
+         * never changes — so it cannot be a player colour, which the board is
+         * free to reassign. Deliberately not p1's #C4561E; they are neighbours
+         * and are not the same value.
+         */
+        mark: '#C0501E',
         p1: { DEFAULT: '#C4561E', ink: '#A34719' }, // signal orange
         p2: { DEFAULT: '#2C5F87', ink: '#2C5F87' }, // station blue — passes as-is
         p3: { DEFAULT: '#B08721', ink: '#7B5F17' }, // ochre

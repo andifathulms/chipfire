@@ -17,6 +17,7 @@ import { copy, type Locale } from '@/lib/i18n'
 import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { HowToPlay } from '@/components/hud/HowToPlay'
+import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 
@@ -143,8 +144,11 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace/20 pb-3">
         <div className="flex items-baseline gap-3">
-          <Link href={`/${locale}/`} className="font-numeral text-sm text-trace-soft underline">
-            Chipfire
+          <Link
+            href={`/${locale}/`}
+            className="font-numeral text-sm text-trace-soft transition-colors hover:text-trace"
+          >
+            <Wordmark nameClassName="underline" />
           </Link>
           <span aria-hidden="true" className="text-trace-faint">
             /

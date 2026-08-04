@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { DEFAULT_LOCALE } from '@/lib/i18n'
+import { Wordmark } from '@/components/site/Mark'
 
 const target = `/${DEFAULT_LOCALE}/`
 
@@ -20,8 +21,8 @@ export default function RootPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center">
-      <Link href={target} className="font-numeral text-2xl underline">
-        Chipfire
+      <Link href={target} className="font-numeral text-2xl">
+        <Wordmark className="gap-3" nameClassName="underline" />
       </Link>
     </main>
   )
