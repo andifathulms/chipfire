@@ -37,6 +37,14 @@ export function useCascadePlayer(
   frames: readonly Frame[],
   speed: Speed,
   onDone: () => void,
+  /**
+   * How long to hold the opening frame, as a multiple of the interval. That
+   * frame shows the orb landing before anything detonates, which is the whole
+   * message when the move was not yours — you need to see *where* they played
+   * before the chain runs away from it. On your own move you already know, so
+   * the default stays short.
+   */
+  placementHold = 1.6,
 ): CascadePlayer {
   const [index, setIndex] = useState(0)
   const doneRef = useRef(onDone)
@@ -71,7 +79,7 @@ export function useCascadePlayer(
       interval === 0
         ? 0
         : index === 0
-          ? Math.round(interval * 1.6)
+          ? Math.round(interval * placementHold)
           : last
             ? Math.round(interval * 1.4)
             : interval
@@ -83,7 +91,7 @@ export function useCascadePlayer(
 
     const timer = window.setTimeout(() => setIndex((value) => value + 1), delay)
     return () => window.clearTimeout(timer)
-  }, [frames, index, interval])
+  }, [frames, index, interval, placementHold])
 
   const resolved = interval === 0 ? frames.length - 1 : index
 

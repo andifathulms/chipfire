@@ -9,6 +9,7 @@ const COPY = {
   turn: { id: 'Giliran', en: 'Turn' },
   out: { id: 'Tersingkir', en: 'Out' },
   propagating: { id: 'Merambat', en: 'Propagating' },
+  thinking: { id: 'Berpikir', en: 'Thinking' },
 } as const
 
 /**
@@ -27,10 +28,17 @@ export function TurnIndicator({
   state,
   locale,
   busy,
+  thinkingPlayer = null,
 }: {
   state: GameState
   locale: Locale
   busy: boolean
+  /**
+   * The player currently deciding — the AI. Announced on their own card
+   * rather than in a caption under the controls: this is the answer to "why
+   * is nothing happening", so it belongs where the player is already looking.
+   */
+  thinkingPlayer?: number | null
 }) {
   const players = Array.from({ length: state.players }, (_, player) => player)
   const total = players.reduce((sum, player) => sum + state.orbs[player], 0)
@@ -90,6 +98,11 @@ export function TurnIndicator({
               </span>
 
               {out ? <span className="label-micro">{COPY.out[locale]}</span> : null}
+              {thinkingPlayer === player && !out ? (
+                <span aria-live="polite" className="label-micro animate-pulse text-trace-soft">
+                  {COPY.thinking[locale]}
+                </span>
+              ) : null}
             </div>
           )
         })}

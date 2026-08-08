@@ -58,6 +58,7 @@ const COPY = {
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
   boardSetup: { id: 'Ukuran papan', en: 'Board size' },
+  lastMove: { id: 'langkah terakhir', en: 'last move' },
 } as const
 
 export function PlayScreen({ locale }: { locale: Locale }) {
@@ -66,7 +67,15 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const [difficulty, setDifficulty] = useState<Difficulty>('sedang')
   const session = useGameSession(DEFAULT_CONFIG)
   const frames = session.pending?.frames ?? []
-  const player = useCascadePlayer(frames, speed, session.settle)
+
+  /*
+   * Whether the move now animating was the machine's. Its placement frame is
+   * held roughly twice as long as your own, because on your move you already
+   * know where you played and on theirs that frame is the only thing that says
+   * so before the chain runs.
+   */
+  const [lastMoveWasAi, setLastMoveWasAi] = useState(false)
+  const player = useCascadePlayer(frames, speed, session.settle, lastMoveWasAi ? 3 : 1.6)
 
   const view = player.frame ?? session.state.board
   const animating = session.pending !== null
@@ -83,7 +92,10 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     record: session.record,
     difficulty,
     seed: session.config.seed,
-    onMove: session.play,
+    onMove: (index) => {
+      setLastMoveWasAi(true)
+      session.play(index)
+    },
   })
 
   const labelFor = (index: number) => {
@@ -93,11 +105,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     const count = view.counts[index]
     const mass = session.state.board.adjacency.criticalMass[index]
     const where = locale === 'id' ? `Baris ${row} kolom ${col}` : `Row ${row} column ${col}`
+    // The registration marks are invisible to a screen reader, and "where did
+    // they just play" is the same question however you are reading the board.
+    const played = session.record.moves.at(-1) === index ? `, ${COPY.lastMove[locale]}` : ''
 
     if (owner === NO_OWNER) {
-      return `${where}, ${COPY.empty[locale]}, ${COPY.mass[locale]} ${mass}`
+      return `${where}, ${COPY.empty[locale]}, ${COPY.mass[locale]} ${mass}${played}`
     }
-    return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${count} orb, ${COPY.mass[locale]} ${mass}`
+    return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${count} orb, ${COPY.mass[locale]} ${mass}${played}`
   }
 
   const [stats, setStats] = useState<Stats>(EMPTY_STATS)
@@ -134,6 +149,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     }
     setAwaitingTap(null)
     setPreviewIndex(null)
+    setLastMoveWasAi(false)
     session.play(index)
   }
 
@@ -173,7 +189,12 @@ export function PlayScreen({ locale }: { locale: Locale }) {
        */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
         <div className="lg:col-start-2 lg:row-start-1">
-          <TurnIndicator state={session.state} locale={locale} busy={animating} />
+          <TurnIndicator
+            state={session.state}
+            locale={locale}
+            busy={animating}
+            thinkingPlayer={ai.thinking ? session.state.current : null}
+          />
         </div>
 
         <div className="flex flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
@@ -205,6 +226,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 onSelect={select}
                 labelFor={labelFor}
                 label={COPY.board[locale]}
+                lastMove={session.record.moves.at(-1) ?? null}
                 preview={preview}
                 previewIndex={previewIndex}
                 onPreview={(index) => {

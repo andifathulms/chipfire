@@ -46,6 +46,13 @@ type BoardProps = {
   readonly markLegal?: boolean
   /** Names the board for screen readers, since it is a group of buttons. */
   readonly label?: string
+  /**
+   * The cell the most recent move was played into, marked until the next move
+   * replaces it. Without this an opponent's move is unreadable: their orb
+   * simply joins fifty others and whatever it sets off appears to come from
+   * nowhere. You know where you clicked; you have no idea where they did.
+   */
+  readonly lastMove?: number | null
 }
 
 export function Board({
@@ -63,6 +70,7 @@ export function Board({
   onPreview,
   markLegal = false,
   label,
+  lastMove = null,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
@@ -227,6 +235,34 @@ export function Board({
             <Orbs player={owner} count={count} />
           </span>
         </span>
+
+        {/*
+         * Where the last move was played. Registration marks rather than a
+         * ring or a tint: the corners stay clear of the orbs, they read as an
+         * instrument marking a reading rather than as another game state, and
+         * they cannot be confused with the preview outlines, which are all
+         * part-strength and only exist while a pointer is down on the board.
+         *
+         * Drawn last so it sits above the orbs, and keyed on the index so it
+         * animates in each time the mark moves — that flick is what pulls the
+         * eye to the cell the opponent just took.
+         */}
+        {lastMove === index ? (
+          <svg
+            key={`played-${index}`}
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 h-full w-full animate-arrive text-trace"
+          >
+            <path
+              d="M2 7.5V2h5.5M16.5 2H22v5.5M22 16.5V22h-5.5M7.5 22H2v-5.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              vectorEffect="non-scaling-stroke"
+            />
+          </svg>
+        ) : null}
       </button>,
     )
   }

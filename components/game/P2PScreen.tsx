@@ -25,6 +25,7 @@ const COPY = {
   accept: { id: 'Terima dan putar ulang', en: 'Accept and replay' },
   disconnect: { id: 'Putuskan', en: 'Disconnect' },
   moves: { id: 'langkah', en: 'moves' },
+  lastMove: { id: 'langkah terakhir', en: 'last move' },
   board: { id: 'Papan permainan', en: 'Game board' },
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
@@ -50,8 +51,14 @@ export function P2PScreen({ locale }: { locale: Locale }) {
     const mass = session.state.board.adjacency.criticalMass[index]
     const where = locale === 'id' ? `Baris ${row} kolom ${col}` : `Row ${row} column ${col}`
 
-    if (owner === NO_OWNER) return `${where}, ${COPY.empty[locale]}, ${COPY.mass[locale]} ${mass}`
-    return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${view.counts[index]} orb`
+    // Across two devices the opponent's move is never witnessed, so where it
+    // landed has to be readable after the fact — by eye and by screen reader.
+    const played = session.record.moves.at(-1) === index ? `, ${COPY.lastMove[locale]}` : ''
+
+    if (owner === NO_OWNER) {
+      return `${where}, ${COPY.empty[locale]}, ${COPY.mass[locale]} ${mass}${played}`
+    }
+    return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${view.counts[index]} orb${played}`
   }
 
   return (
@@ -159,6 +166,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               onSelect={game.play}
               labelFor={labelFor}
               label={COPY.board[locale]}
+              lastMove={session.record.moves.at(-1) ?? null}
             />
           </div>
 
