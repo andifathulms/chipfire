@@ -36,7 +36,7 @@ const COPY = {
     en: 'That is all the rules there are. The rest is choosing which cell goes off first.',
   },
   play: { id: 'Main sekarang', en: 'Play now' },
-  restart: { id: 'Ulangi dari awal', en: 'Start over' },
+  restart: { id: 'Mulai ulang', en: 'Start over' },
   hint: {
     id: 'Sel yang bisa diklik ditandai. Sel lain sengaja tidak aktif.',
     en: 'The cells you can click are marked. The others are inert on purpose.',

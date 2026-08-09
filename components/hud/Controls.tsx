@@ -17,7 +17,7 @@ const COPY = {
   on: { id: 'Nyala', en: 'On' },
   off: { id: 'Mati', en: 'Off' },
   undo: { id: 'Batal langkah', en: 'Undo' },
-  reset: { id: 'Ulang dari awal', en: 'Restart' },
+  reset: { id: 'Mulai ulang', en: 'Restart' },
   longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
 } as const
 

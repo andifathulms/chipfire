@@ -59,7 +59,7 @@ const COPY = {
     en: 'Twelve down. The rest is a real opponent.',
   },
   play: { id: 'Main sungguhan', en: 'Play for real' },
-  restart: { id: 'Ulangi dari awal', en: 'Start over' },
+  restart: { id: 'Mulai ulang', en: 'Start over' },
   chain: { id: 'Panjang rantai', en: 'Chain length' },
   board: { id: 'Papan teka-teki', en: 'Puzzle board' },
   empty: { id: 'kosong', en: 'empty' },
