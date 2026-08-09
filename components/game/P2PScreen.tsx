@@ -8,6 +8,7 @@ import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePla
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useP2PGame } from '@/components/game/useP2PGame'
 import { DivergenceReport } from '@/components/hud/DivergenceReport'
+import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { NO_OWNER } from '@/lib/engine/board'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
@@ -31,6 +32,24 @@ const COPY = {
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
+  preview: { id: 'Pratinjau ledakan', en: 'Cascade preview' },
+  previewAsk: { id: 'Saya setuju', en: 'I agree' },
+  previewWithdraw: { id: 'Batalkan', en: 'Withdraw' },
+  previewOff: {
+    id: 'Mati. Menyala hanya kalau kedua pemain setuju.',
+    en: 'Off. It turns on only if both players agree.',
+  },
+  previewWaiting: {
+    id: 'Kamu setuju. Menunggu lawan.',
+    en: 'You agreed. Waiting for your opponent.',
+  },
+  previewOffered: {
+    id: 'Lawan setuju. Kamu belum.',
+    en: 'Your opponent agreed. You have not.',
+  },
+  previewOn: { id: 'Menyala — kedua pemain setuju.', en: 'On — both players agreed.' },
+  reach: { id: 'Ledakan', en: 'Explosions' },
+  captures: { id: 'Sel direbut', en: 'Cells taken' },
 } as const
 
 export function P2PScreen({ locale }: { locale: Locale }) {
@@ -44,6 +63,18 @@ export function P2PScreen({ locale }: { locale: Locale }) {
   const animating = session.pending !== null
   const finished = session.state.winner !== null && !animating
   const myTurn = game.connected && session.state.current === game.me && game.desync === null
+
+  /*
+   * The preview finally exists here, and only by agreement (PRD §9.2). It was
+   * absent from this screen entirely, which happened to satisfy "off by
+   * default in P2P" by never offering it — the letter of the rule with none of
+   * the point.
+   */
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const preview: MovePreview | null =
+    !game.previewAgreed || previewIndex === null || !myTurn || animating || finished
+      ? null
+      : previewMove(session.state, previewIndex)
 
   const labelFor = (index: number) => {
     const row = Math.floor(index / session.state.board.cols) + 1
@@ -179,8 +210,52 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               labelFor={labelFor}
               label={COPY.board[locale]}
               lastMove={session.record.moves.at(-1) ?? null}
+              preview={preview}
+              previewIndex={game.previewAgreed ? previewIndex : null}
+              onPreview={game.previewAgreed ? setPreviewIndex : undefined}
             />
           </div>
+
+          {/*
+           * Two flags, stated as four sentences, because "waiting for them" and
+           * "they are waiting for you" are different situations and a single
+           * on/off control would show the same thing for both.
+           */}
+          <section className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-trace/25 px-3 py-2 text-sm">
+            <span className="label-micro">{COPY.preview[locale]}</span>
+            <span aria-live="polite" className="text-trace-soft">
+              {game.previewAgreed
+                ? COPY.previewOn[locale]
+                : game.previewMine
+                  ? COPY.previewWaiting[locale]
+                  : game.previewTheirs
+                    ? COPY.previewOffered[locale]
+                    : COPY.previewOff[locale]}
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                game.setPreview(!game.previewMine)
+                setPreviewIndex(null)
+              }}
+              className="ml-auto border border-trace/30 px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
+            >
+              {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
+            </button>
+
+            {preview !== null ? (
+              <span className="flex w-full gap-4 border-t border-trace/15 pt-2">
+                <span className="flex items-baseline gap-1">
+                  <span className="label-micro">{COPY.reach[locale]}</span>
+                  <span className="font-numeral">{preview.explosions}</span>
+                </span>
+                <span className="flex items-baseline gap-1">
+                  <span className="label-micro">{COPY.captures[locale]}</span>
+                  <span className="font-numeral">{preview.capturedCount}</span>
+                </span>
+              </span>
+            ) : null}
+          </section>
 
           <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
             <span className="font-numeral text-trace">{session.record.moves.length}</span>

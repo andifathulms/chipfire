@@ -28,6 +28,7 @@ import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 import { playWin } from '@/lib/sound'
+import { readPreviewEnabled, setPreviewEnabled } from '@/lib/settings'
 
 const COPY = {
   title: { id: 'Main', en: 'Play' },
@@ -52,6 +53,10 @@ const COPY = {
   idleTouch: {
     id: 'Ketuk sel untuk melihat rambatan ledakannya.',
     en: 'Tap a cell to see how far its chain would reach.',
+  },
+  previewOff: {
+    id: 'Pratinjau ledakan dimatikan.',
+    en: 'Cascade preview is off.',
   },
   aiFailed: {
     id: 'AI gagal dijalankan. Ganti ke hotseat untuk melanjutkan.',
@@ -205,16 +210,29 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [awaitingTap, setAwaitingTap] = useState<number | null>(null)
 
+  /*
+   * Read after mount rather than during render: the page is statically
+   * exported, so the server cannot know this device's preference and rendering
+   * a guess would flash the wrong state. On until told otherwise (PRD §9.2).
+   */
+  const [previewOn, setPreviewOn] = useState(true)
+  useEffect(() => setPreviewOn(readPreviewEnabled()), [])
+
   // A preview left over from before a review was opened would be drawn on top
   // of a recording, describing a move against a position that is not on screen.
   const preview: MovePreview | null =
-    previewIndex === null || animating || finished || review.open
+    !previewOn || previewIndex === null || animating || finished || review.open
       ? null
       : previewMove(session.state, previewIndex)
 
   const select = (index: number, viaTouch: boolean) => {
-    // Touch has no hover, so the first tap shows the reach and the second commits.
-    if (viaTouch && awaitingTap !== index) {
+    /*
+     * Touch has no hover, so the first tap shows the reach and the second
+     * commits — but only when there is a reach to show. With the preview off
+     * the first tap would reveal nothing, and demanding a second one would be
+     * a confirmation step that exists for no reason.
+     */
+    if (previewOn && viaTouch && awaitingTap !== index) {
       setAwaitingTap(index)
       setPreviewIndex(index)
       return
@@ -361,8 +379,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               </>
             ) : (
               <span className="text-sm text-trace-faint">
-                <span className="hidden sm:inline">{COPY.idle[locale]}</span>
-                <span className="sm:hidden">{COPY.idleTouch[locale]}</span>
+                {previewOn ? (
+                  <>
+                    <span className="hidden sm:inline">{COPY.idle[locale]}</span>
+                    <span className="sm:hidden">{COPY.idleTouch[locale]}</span>
+                  </>
+                ) : (
+                  COPY.previewOff[locale]
+                )}
               </span>
             )}
           </div>
@@ -400,6 +424,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             onReset={() => session.reset()}
             canUndo={session.record.moves.length > 0 && !animating}
             longestCascade={session.longestCascade}
+            preview={previewOn}
+            onPreview={(on) => {
+              setPreviewOn(on)
+              setPreviewEnabled(on)
+              // Whatever was being considered is no longer being shown.
+              setPreviewIndex(null)
+              setAwaitingTap(null)
+            }}
           />
 
           {/*

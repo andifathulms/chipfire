@@ -44,6 +44,16 @@ export function useP2PGame() {
   const [desync, setDesync] = useState<Desync | null>(null)
   const [offeredMoves, setOfferedMoves] = useState<readonly number[] | null>(null)
 
+  /*
+   * The cascade preview, agreed rather than assumed (PRD §9.2). Two flags,
+   * because "both players agree" cannot be represented by one: mine is a
+   * choice, theirs is news. Both start off, and a session that never discusses
+   * it never gets a preview — which is the correct default for the one mode
+   * where the tool is also an advantage.
+   */
+  const [previewMine, setPreviewMine] = useState(false)
+  const [previewTheirs, setPreviewTheirs] = useState(false)
+
   const linkRef = useRef<PeerLink | null>(null)
   const inbox = useRef<Incoming[]>([])
   const [pendingCount, setPendingCount] = useState(0)
@@ -73,6 +83,9 @@ export function useP2PGame() {
           // Offered, not applied. Accepting is an explicit act by the player.
           setOfferedMoves(message.moves)
           break
+        case 'preview':
+          setPreviewTheirs(message.on)
+          break
         case 'bye':
           setStatus('closed')
           break
@@ -86,6 +99,8 @@ export function useP2PGame() {
 
   const me = role === 'guest' ? 1 : 0
   const connected = status === 'connected'
+  // Agreement, not preference: one yes is a request, two is a preview.
+  const previewAgreed = previewMine && previewTheirs
   const animating = session.pending !== null
 
   // Remote moves wait for the local cascade to finish playing, so the animation
@@ -198,6 +213,18 @@ export function useP2PGame() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, role])
 
+  /*
+   * Both sides state where they stand as soon as the channel opens, so neither
+   * has to ask and someone who set the toggle before connecting is not silently
+   * ignored. Sent by guest and host alike — the preference is symmetric, unlike
+   * the board parameters.
+   */
+  useEffect(() => {
+    if (!connected) return
+    linkRef.current?.send({ t: 'preview', on: previewMine })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected])
+
   const play = useCallback(
     (index: number) => {
       if (desync !== null) return
@@ -212,6 +239,11 @@ export function useP2PGame() {
     },
     [desync],
   )
+
+  const setPreview = useCallback((on: boolean) => {
+    setPreviewMine(on)
+    linkRef.current?.send({ t: 'preview', on })
+  }, [])
 
   /** Offer our move list to the peer. They choose whether to take it. */
   const offerResync = useCallback(() => {
@@ -268,6 +300,10 @@ export function useP2PGame() {
     desync,
     offeredMoves,
     divergence,
+    previewMine,
+    previewTheirs,
+    previewAgreed,
+    setPreview,
     host,
     join,
     confirm,

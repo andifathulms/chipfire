@@ -18,11 +18,54 @@ describe('the wire protocol', () => {
     expect(decodeMessage('null')).toBeNull()
   })
 
+  it('round-trips a preview stance', () => {
+    for (const on of [true, false]) {
+      const message = { t: 'preview', on } as const
+      expect(decodeMessage(encodeMessage(message))).toEqual(message)
+    }
+  })
+
   it('carries only moves and hashes — never a board', () => {
     const played = playRandomGame(configFor(2))
     const wire = encodeMessage({ t: 'hello', rows: 6, cols: 9, seed: 1, moves: played.record.moves })
 
     expect(wire).not.toMatch(/owners|counts|orbs/)
+  })
+
+  /**
+   * The preview stance is the one message that is neither a move nor a hash,
+   * so it is worth stating what keeps it inside the rule: it says nothing about
+   * the position. A peer cannot learn the board from it, cannot adopt the other
+   * side's version of the game with it, and cannot hide a desync behind it.
+   */
+  it('says nothing about the game when it states a preview stance', () => {
+    const wire = encodeMessage({ t: 'preview', on: true })
+    expect(wire).not.toMatch(/owners|counts|orbs|moves|hash|turn/)
+    expect(JSON.parse(wire)).toEqual({ t: 'preview', on: true })
+  })
+})
+
+/**
+ * Agreement, not preference. One player wanting the preview is a request; the
+ * tool only appears when both have said yes, which is what PRD §9.2 asks for
+ * and what a single shared flag could not express.
+ */
+describe('the preview agreement', () => {
+  const agreed = (mine: boolean, theirs: boolean) => mine && theirs
+
+  it('is off until both sides say yes', () => {
+    expect(agreed(false, false)).toBe(false)
+    expect(agreed(true, false)).toBe(false)
+    expect(agreed(false, true)).toBe(false)
+    expect(agreed(true, true)).toBe(true)
+  })
+
+  it('is withdrawn the moment either side changes their mind', () => {
+    // Either player can take it back unilaterally, which is the property that
+    // makes agreeing to it safe in the first place.
+    expect(agreed(true, true)).toBe(true)
+    expect(agreed(false, true)).toBe(false)
+    expect(agreed(true, false)).toBe(false)
   })
 })
 

@@ -13,6 +13,9 @@ const SPEED_LABELS: Record<Speed, Record<Locale, string>> = {
 
 const COPY = {
   speed: { id: 'Kecepatan', en: 'Speed' },
+  preview: { id: 'Pratinjau ledakan', en: 'Cascade preview' },
+  on: { id: 'Nyala', en: 'On' },
+  off: { id: 'Mati', en: 'Off' },
   undo: { id: 'Batal langkah', en: 'Undo' },
   reset: { id: 'Ulang dari awal', en: 'Restart' },
   longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
@@ -26,6 +29,8 @@ export function Controls({
   onReset,
   canUndo,
   longestCascade,
+  preview,
+  onPreview,
 }: {
   locale: Locale
   speed: Speed
@@ -34,6 +39,8 @@ export function Controls({
   onReset: () => void
   canUndo: boolean
   longestCascade: number
+  preview: boolean
+  onPreview: (on: boolean) => void
 }) {
   const speeds = Object.keys(SPEED_LABELS) as Speed[]
 
@@ -61,8 +68,31 @@ export function Controls({
         </div>
       </div>
 
-      {/* Beside speed, because both are about how a cascade is presented
-          rather than about the game. */}
+      {/*
+       * Preview and sound sit with speed because all three are about how a
+       * cascade is presented rather than about the game itself. None of them
+       * changes a single thing the engine does.
+       */}
+      <div className="flex flex-col gap-1.5">
+        <span className="label-micro">{COPY.preview[locale]}</span>
+        <div className="grid grid-cols-2 border border-trace/30">
+          {([true, false] as const).map((value) => (
+            <button
+              key={String(value)}
+              type="button"
+              onClick={() => onPreview(value)}
+              aria-pressed={preview === value}
+              className={[
+                'px-2 py-1.5 text-xs transition-colors',
+                preview === value ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
+              ].join(' ')}
+            >
+              {value ? COPY.on[locale] : COPY.off[locale]}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <SoundToggle locale={locale} />
 
       {/* Undo and restart are peers, so they get equal width. Both are large
