@@ -145,6 +145,17 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     return `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${count} orb, ${COPY.mass[locale]} ${mass}${played}`
   }
 
+  /*
+   * When the game ends the board stops being where the interaction is, and the
+   * keyboard focus is usually still sitting on a cell somewhere under the
+   * overlay. Moving it to the one control the overlay offers is the difference
+   * between the game ending and the game ending in a place you can act from.
+   */
+  const againRef = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (finished) againRef.current?.focus()
+  }, [finished])
+
   const [stats, setStats] = useState<Stats>(EMPTY_STATS)
   const recordedFor = useRef<number>(-1)
 
@@ -298,6 +309,36 @@ export function PlayScreen({ locale }: { locale: Locale }) {
 
         <div className="flex flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <div className="relative">
+          {/*
+           * Before the board in the DOM, not after it.
+           *
+           * The overlay sits on top of fifty-four cells that are still in the
+           * tab order — deliberately, since aria-disabled keeps the final
+           * position readable rather than hiding it from a screen reader. But
+           * source order was putting "Main lagi" behind all of them, so
+           * reaching the one control on screen meant tabbing through the whole
+           * board first. Reading order now matches what is on top.
+           */}
+            {finished ? (
+              <div className="absolute inset-0 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
+                <p className="font-numeral text-3xl">
+                  <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>{' '}
+                  {COPY.wins[locale]}
+                </p>
+                <p className="font-numeral text-sm text-trace-soft">
+                  {session.state.orbs[winner]} {COPY.finalOrbs[locale]} ·{' '}
+                  {session.record.moves.length} {COPY.inMoves[locale]}
+                </p>
+                <button
+                  ref={againRef}
+                  type="button"
+                  onClick={() => session.reset()}
+                  className="border border-trace bg-trace px-5 py-2 text-chart transition-opacity hover:opacity-85"
+                >
+                  {COPY.again[locale]}
+                </button>
+              </div>
+            ) : null}
             {/*
              * The board is sized to fit the viewport rather than the column, so
              * a tall board never demands a scroll to see the move you are about
@@ -359,25 +400,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               />
             </div>
 
-            {finished ? (
-              <div className="absolute inset-0 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
-                <p className="font-numeral text-3xl">
-                  <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>{' '}
-                  {COPY.wins[locale]}
-                </p>
-                <p className="font-numeral text-sm text-trace-soft">
-                  {session.state.orbs[winner]} {COPY.finalOrbs[locale]} ·{' '}
-                  {session.record.moves.length} {COPY.inMoves[locale]}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => session.reset()}
-                  className="border border-trace bg-trace px-5 py-2 text-chart transition-opacity hover:opacity-85"
-                >
-                  {COPY.again[locale]}
-                </button>
-              </div>
-            ) : null}
           </div>
 
           {/*
