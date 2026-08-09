@@ -20,6 +20,7 @@ import { GameSummary } from '@/components/hud/GameSummary'
 import { LoadGauge } from '@/components/hud/LoadGauge'
 import { MoveList } from '@/components/hud/MoveList'
 import { CascadeReplay } from '@/components/hud/CascadeReplay'
+import { EvaluationPanel } from '@/components/hud/EvaluationPanel'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -62,6 +63,7 @@ const COPY = {
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
   boardSetup: { id: 'Ukuran papan', en: 'Board size' },
+  evaluation: { id: 'Penilaian AI', en: "The AI's evaluation" },
   lastMove: { id: 'langkah terakhir', en: 'last move' },
 } as const
 
@@ -362,6 +364,23 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             canUndo={session.record.moves.length > 0 && !animating}
             longestCascade={session.longestCascade}
           />
+
+          {/*
+           * Only in AI mode, and folded away. It answers "is this thing
+           * actually searching, or is it just weighted toward corners" — a
+           * question worth being able to answer and not one asked every turn.
+           * Left open it would quietly coach, which is not what it is for.
+           */}
+          {mode === 'ai' ? (
+            <details className="border-t border-trace/20 pt-3">
+              <summary className="label-micro cursor-pointer select-none py-1">
+                {COPY.evaluation[locale]}
+              </summary>
+              <div className="pt-3">
+                <EvaluationPanel state={session.state} locale={locale} />
+              </div>
+            </details>
+          ) : null}
 
           {/*
            * Board size is a between-games decision, not a mid-game one, so it

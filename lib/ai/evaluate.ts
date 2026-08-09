@@ -56,6 +56,82 @@ export function scores(state: GameState): Int32Array {
 }
 
 /**
+ * The same arithmetic as `scores`, broken into its named terms.
+ *
+ * PRD §8 calls the evaluation "hand-written and inspectable", and that has been
+ * true only of the source: a player could read evaluate.ts or take the AI's
+ * word for it. This is what makes the claim checkable from inside the app —
+ * every term is one of the integer weights above, applied the way the search
+ * applies it.
+ *
+ * Deliberately *not* implemented by having `scores` call this. `scores` runs in
+ * the alpha-beta inner loop, thousands of times per move, and allocating an
+ * object per player per node would be paid on every search whether or not
+ * anyone is looking. The duplication is the price; the test that asserts the
+ * two agree across random positions is what keeps it honest.
+ */
+export type ScoreTerms = {
+  /** Orbs held, times the orb weight. */
+  readonly orbs: number
+  /** Cells held, times the cell weight. */
+  readonly cells: number
+  /** Sum of positional value — corners are worth more because they detonate
+   *  for less. */
+  readonly position: number
+  /** Negative. Cells at criticalMass - 1 beside an enemy cell also at
+   *  criticalMass - 1, which the opponent reaches first. */
+  readonly vulnerability: number
+  /** The four above, summed. Equals `scores(state)[player]`. */
+  readonly total: number
+}
+
+export function explainScores(state: GameState): ScoreTerms[] {
+  const out: ScoreTerms[] = []
+  const { owners, counts, adjacency } = state.board
+  const { criticalMass, start, list } = adjacency
+
+  const orbs = new Int32Array(state.players)
+  const cells = new Int32Array(state.players)
+  const position = new Int32Array(state.players)
+  const vulnerability = new Int32Array(state.players)
+
+  for (let index = 0; index < owners.length; index += 1) {
+    const owner = owners[index]
+    if (owner === NO_OWNER) continue
+
+    const mass = criticalMass[index]
+    const count = counts[index]
+
+    orbs[owner] += WEIGHTS.orb * count
+    cells[owner] += WEIGHTS.cell
+    position[owner] += positionValue(mass)
+
+    if (count !== mass - 1) continue
+
+    for (let slot = start[index]; slot < start[index + 1]; slot += 1) {
+      const neighbour = list[slot]
+      const other = owners[neighbour]
+      if (other === NO_OWNER || other === owner) continue
+      if (counts[neighbour] === criticalMass[neighbour] - 1) {
+        vulnerability[owner] -= WEIGHTS.vulnerability
+      }
+    }
+  }
+
+  for (let player = 0; player < state.players; player += 1) {
+    out.push({
+      orbs: orbs[player],
+      cells: cells[player],
+      position: position[player],
+      vulnerability: vulnerability[player],
+      total: orbs[player] + cells[player] + position[player] + vulnerability[player],
+    })
+  }
+
+  return out
+}
+
+/**
  * Position value from `me`'s point of view: my score less the strongest
  * opponent's. Paranoid rather than max-n, which keeps the game zero-sum and
  * therefore keeps alpha-beta pruning sound with more than two players.
