@@ -53,7 +53,7 @@ const COPY = {
   },
   retry: { id: 'Coba lagi', en: 'Try again' },
   next: { id: 'Berikutnya', en: 'Next' },
-  done: { id: 'Habis', en: 'That is all of them' },
+  done: { id: 'Selesai', en: 'That is all of them' },
   doneBody: {
     id: 'Dua belas selesai. Sisanya lawan yang sungguhan.',
     en: 'Twelve down. The rest is a real opponent.',
