@@ -23,8 +23,8 @@ import { playerName } from '@/lib/players'
 const COPY = {
   title: { id: 'Belajar', en: 'Learn' },
   subtitle: {
-    id: 'Lima langkah, papan kecil. Sekitar dua menit.',
-    en: 'Five steps on small boards. About two minutes.',
+    id: 'Enam langkah, papan kecil. Sekitar tiga menit.',
+    en: 'Six steps on small boards. About three minutes.',
   },
   step: { id: 'Langkah', en: 'Step' },
   of: { id: 'dari', en: 'of' },

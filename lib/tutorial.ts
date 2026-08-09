@@ -121,6 +121,38 @@ export const TUTORIAL: readonly TutorialStep[] = [
     expect: { explosions: 5, captures: 0, wins: false },
   },
   {
+    /*
+     * The same position as the chain step, played again with one question
+     * attached. Re-observation is the point: the learner has just watched five
+     * explosions go past, and this asks them to watch one cell inside it.
+     *
+     * It has to be this board, or one very like it. A cell can only fire while
+     * holding more than its limit if a neighbour fed it first, so the smallest
+     * position that shows the subtraction at all is a two-generation chain —
+     * there is no quiet one-cell version of this lesson.
+     */
+    id: 'remainder',
+    position: {
+      board: `
+        A1 A2 .
+        A2 A3 .
+        .  .  B1
+      `,
+      current: 0,
+    },
+    allowed: [0],
+    title: { id: 'Meledak bukan berarti kosong', en: 'Exploding is not emptying' },
+    task: {
+      id: 'Papan yang sama. Klik lagi sudut kiri atas, lalu perhatikan sel tengah.',
+      en: 'The same board. Click the top-left corner again, and watch the middle cell.',
+    },
+    result: {
+      id: 'Sel tengah memegang 5 orb saat meledak, dan batasnya 4 — jadi 5 − 4 = 1, dan satu orb tetap tinggal di sana. Sel yang meledak mengurangi batasnya, bukan mengosongkan diri. Di sudut tadi aturan ini tidak terlihat, karena 2 − 2 kebetulan 0.',
+      en: 'The middle cell was holding 5 orbs when it fired, and its limit is 4 — so 5 − 4 = 1, and one orb stays behind. An exploding cell subtracts its limit; it does not empty itself. You could not see that in the corner earlier, because 2 − 2 happens to be 0.',
+    },
+    expect: { explosions: 5, captures: 0, wins: false },
+  },
+  {
     id: 'win',
     position: {
       board: `
