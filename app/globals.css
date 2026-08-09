@@ -108,6 +108,7 @@
   --alpha-hairline: 0.2; /* dividers, table rules, panel seams */
   --alpha-rule: 0.32; /* the border of something you can press */
   --alpha-data: 0.7; /* bars, gauges, the filled part of a reading */
+  --alpha-scrim: 0.32; /* behind a modal — its own name, not a borrowed one */
 
   /* ── Lattice ──
    * The printed grid: chart paper exists before the game starts.
@@ -155,6 +156,32 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: rgb(var(--color-trace-faint));
+}
+
+/*
+ * The help panel is a native <dialog>, so the browser owns the focus trap, the
+ * inert page behind it, Escape, and returning focus to whatever opened it.
+ * Reproducing those in React is how they end up subtly wrong; the only cost is
+ * undoing the user-agent chrome here.
+ *
+ * The scrim gets its own alpha rather than borrowing the one meant for borders.
+ * A refactor put `bg-trace-rule` behind this dialog because the number matched;
+ * matching numbers is not the same as meaning the same thing, and the next
+ * person to tune rule weight should not silently restyle a modal backdrop.
+ */
+dialog {
+  margin: auto;
+  max-width: min(36rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+}
+
+dialog::backdrop {
+  background-color: rgb(var(--color-trace) / var(--alpha-scrim));
 }
 
 /*

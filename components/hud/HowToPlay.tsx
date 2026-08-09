@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Orbs } from '@/components/board/Orbs'
 import { playerName } from '@/lib/players'
@@ -12,6 +12,15 @@ import type { Locale } from '@/lib/i18n'
  * It is a dialog rather than an inline block. Inline, it pushed the board off
  * the first screen on every visit — the rules explaining a board the reader
  * could no longer see. Over the board, the two are read together.
+ *
+ * A native <dialog> opened with showModal(), not a div wearing role="dialog".
+ * The hand-rolled version claimed aria-modal="true" while the page behind it
+ * stayed focusable, so tabbing past the last link walked into fifty-four
+ * invisible board cells; it never returned focus to the button that opened it;
+ * and dismissing by clicking outside was an onClick on a presentational div,
+ * reachable by pointer only. showModal() gives the focus trap, the inert
+ * background, Escape and focus restoration as browser behaviour, and deletes
+ * both ARIA roles on the way.
  *
  * Indonesian first, plain and short.
  */
@@ -56,8 +65,13 @@ const COPY = {
   tryIt: { id: 'Coba langsung, 2 menit', en: 'Try it hands-on, 2 minutes' },
   reopen: { id: 'Cara main', en: 'How to play' },
 } as const
+/** Names the dialog from the heading it already shows, rather than repeating
+ *  the title in an aria-label nobody can see. */
+const TITLE_ID = 'how-to-play-title'
+
 export function HowToPlay({ locale, players }: { locale: Locale; players: number }) {
   const [open, setOpen] = useState(false)
+  const dialogRef = useRef<HTMLDialogElement | null>(null)
   // First visit gets the panel; later visits get the button.
   useEffect(() => {
     try {
@@ -76,15 +90,17 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
       // As above.
     }
   }
-  // Escape closes it, because a dialog that only closes by hitting one small
-  // button is a dialog people feel trapped in.
+  /*
+   * Drive the element from state rather than rendering it conditionally: the
+   * node has to exist for showModal() to be called on it, and letting the
+   * browser open and close it is what buys the focus behaviour. Escape needs
+   * no listener now — it is what the element does.
+   */
   useEffect(() => {
-    if (!open) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') dismiss()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const node = dialogRef.current
+    if (node === null) return
+    if (open && !node.open) node.showModal()
+    if (!open && node.open) node.close()
   }, [open])
   const trigger = (
     <button
@@ -95,23 +111,27 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
       {COPY.reopen[locale]}
     </button>
   )
-  if (!open) return trigger
   return (
     <>
       {trigger}
-      <div
-        role="presentation"
-        onClick={dismiss}
-        className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-trace-rule p-4 sm:items-center"
+      <dialog
+        ref={dialogRef}
+        aria-labelledby={TITLE_ID}
+        onClose={dismiss}
+        /*
+         * Clicking the backdrop. With a native dialog the backdrop is part of
+         * the element, so a click that lands on the dialog itself rather than
+         * on its contents is a click outside — no presentational div, and
+         * nothing that only a pointer can reach, since Escape does the same.
+         */
+        onClick={(event) => {
+          if (event.target === dialogRef.current) dismiss()
+        }}
       >
-        <section
-          role="dialog"
-          aria-modal="true"
-          aria-label={COPY.title[locale]}
-          onClick={(event) => event.stopPropagation()}
-          className="flex w-full max-w-xl animate-settle flex-col gap-4 border border-trace bg-chart p-5 shadow-lg sm:p-6"
-        >
-          <h2 className="font-numeral text-xl">{COPY.title[locale]}</h2>
+        <section className="flex w-full animate-settle flex-col gap-4 border border-trace bg-chart p-5 shadow-lg sm:p-6">
+          <h2 id={TITLE_ID} className="font-numeral text-xl">
+            {COPY.title[locale]}
+          </h2>
           <p className="text-sm">{COPY.goal[locale]}</p>
           <ol className="flex flex-col gap-2 text-sm text-trace-soft">
             {COPY.rules[locale].map((rule, position) => (
@@ -155,7 +175,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
             </Link>
           </div>
         </section>
-      </div>
+      </dialog>
     </>
   )
 }
