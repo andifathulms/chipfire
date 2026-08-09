@@ -13,6 +13,9 @@ export function isLocale(value: string): value is Locale {
 }
 
 type Copy = {
+  /** The half-sentence after the name in a page title and in a search result.
+   *  Short, because that is where it is read. */
+  siteTagline: string
   /**
    * What kind of thing this is, before any mechanic is named. The tagline
    * below describes how the game works, which only helps a reader who already
@@ -44,6 +47,7 @@ type Copy = {
 
 const DICTIONARY: Record<Locale, Copy> = {
   id: {
+    siteTagline: 'reaksi berantai',
     lede: 'Permainan papan strategi bergiliran untuk 2–4 orang. Langsung main di browser, tanpa pasang apa pun.',
     tagline:
       'Taruh orb sampai sebuah sel penuh, lalu sel itu meledak ke tetangganya — dan setiap sel yang kena berpindah jadi milikmu. Satu langkah bisa membalik wilayah yang tidak kamu sentuh.',
@@ -73,6 +77,7 @@ const DICTIONARY: Record<Locale, Copy> = {
     puzzlesHint: 'Dua belas papan, satu langkah menang di tiap papan.',
   },
   en: {
+    siteTagline: 'chain reaction',
     lede: 'A turn-based board game of strategy for 2–4 people. Plays in the browser, nothing to install.',
     tagline:
       'Add orbs until a cell is full, and it detonates into its neighbours — every cell the blast touches changes hands. One move can flip territory you never touched.',

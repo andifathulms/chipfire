@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
-import { basePath, siteUrl } from '@/lib/site'
+import { basePath, siteUrl, alternatesFor, metaFor, OG_LOCALE, type Route } from '@/lib/site'
+import type { Locale } from '@/lib/i18n'
 
 /**
  * Everything the two root layouts share.
@@ -53,20 +54,35 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-/** The title and description the whole site shared before this pass. Split per
- *  route in the commit that follows. */
-const TITLE = 'Chipfire — reaksi berantai'
-const DESCRIPTION =
-  'Permainan strategi grid dengan ledakan berantai. Hotseat, lawan AI, dan multiplayer peer-to-peer tanpa server.'
-
-/** The head every page shares. */
+/**
+ * The parts of the head that are the same on every page, and nothing else.
+ *
+ * Deliberately carries no title, description or canonical. A layout applies to
+ * every route beneath it, so a canonical here would quietly claim that
+ * /en/main/ is /en/ — which is what it did before pages owned their own. A page
+ * that forgets its metadata now shows up with no title, which is visible, in
+ * preference to a wrong canonical, which is not.
+ */
 export const baseMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: TITLE,
-  description: DESCRIPTION,
   applicationName: 'Chipfire',
+  /*
+   * A static file rather than app/manifest.ts, which would seem the obvious
+   * choice: that convention emits its own <link> and the href it emits has no
+   * basePath, so under the Pages subpath the manifest 404s and nothing installs.
+   *
+   * Every URL inside the file is therefore relative, which resolves against the
+   * manifest's own location — served at /chipfire/manifest.webmanifest, "id/"
+   * is /chipfire/id/. That makes the file correct under any basePath and under
+   * none, with nothing to template at build time.
+   */
   manifest: `${basePath}/manifest.webmanifest`,
   icons: {
+    /*
+     * SVG first for anything that understands it — the mark is five circles,
+     * so it is smaller than the 32px PNG and sharp at every size. The PNGs are
+     * the fallback for browsers that ignore an SVG favicon.
+     */
     icon: [
       { url: `${basePath}/favicon.svg`, type: 'image/svg+xml' },
       { url: `${basePath}/chipfire-icon-32.png`, sizes: '32x32', type: 'image/png' },
@@ -74,14 +90,34 @@ export const baseMetadata: Metadata = {
     ],
     apple: { url: `${basePath}/chipfire-icon-180.png`, sizes: '180x180' },
   },
+  // Added to the home screen, it should open as a game, not as a browser tab.
   appleWebApp: { capable: true, title: 'Chipfire', statusBarStyle: 'default' },
-  openGraph: {
-    type: 'website',
-    siteName: 'Chipfire',
-    title: TITLE,
-    description: DESCRIPTION,
-    locale: 'id_ID',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Chipfire' }],
-  },
-  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
+}
+
+/**
+ * A page's metadata, built from the strings that page renders.
+ *
+ * Title, description, canonical, hreflang and the social cards all come out of
+ * one call, so a route cannot end up with a canonical and no alternates, or a
+ * social description that says something the page does not.
+ */
+export function pageMetadata(locale: Locale, route: Route): Metadata {
+  const { title, description } = metaFor(locale, route)
+
+  return {
+    ...baseMetadata,
+    title,
+    description,
+    alternates: alternatesFor(locale, route),
+    openGraph: {
+      type: 'website',
+      siteName: 'Chipfire',
+      url: alternatesFor(locale, route).canonical,
+      title,
+      description,
+      locale: OG_LOCALE[locale],
+      images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Chipfire' }],
+    },
+    twitter: { card: 'summary_large_image', title, description },
+  }
 }
