@@ -1,5 +1,5 @@
 import { applyMove } from '@/lib/engine/apply'
-import type { PlayerId } from '@/lib/engine/board'
+import { NO_OWNER, type PlayerId } from '@/lib/engine/board'
 import { replayFrames, type GameRecord } from '@/lib/engine/replay'
 import { WEIGHTS } from './evaluate'
 import { scoreMoves } from './search'
@@ -185,14 +185,60 @@ export function isDecisive(score: number): boolean {
 }
 
 /**
- * What the board looked like after the move that was not played.
+ * The move that was not played, played.
  *
- * The one place a counterfactual becomes concrete, and it is still the real
- * engine: apply the alternative to the real position and show the result.
+ * The panel could name a better move and had no way to show it, which leaves
+ * the reader holding a verdict they cannot check. Three positions — the board
+ * as it stood, what you did to it, what the other move would have done — are
+ * a comparison rather than an assertion.
+ *
+ * Still the real engine on both branches: the same applyMove, run twice from
+ * the same reconstructed position. Only the counterfactual is hypothetical;
+ * the position it starts from is exactly what was on the board.
  */
-export function playAlternative(record: GameRecord, turn: number, index: number) {
+export type Alternative = {
+  /** The position as it was, before either move. */
+  readonly before: readonly (readonly [number, number])[]
+  /** What the move actually played produced. */
+  readonly played: readonly (readonly [number, number])[]
+  /** What the move the search preferred would have produced. */
+  readonly instead: readonly (readonly [number, number])[]
+  readonly cols: number
+  readonly playedExplosions: number
+  readonly insteadExplosions: number
+}
+
+function cells(board: {
+  owners: Int8Array
+  counts: Uint8Array
+}): readonly (readonly [number, number])[] {
+  return Array.from(board.owners, (owner, index) =>
+    owner === NO_OWNER ? ([-1, 0] as const) : ([owner, board.counts[index]] as const),
+  )
+}
+
+export function playAlternative(
+  record: GameRecord,
+  turn: number,
+  played: number,
+  instead: number,
+): Alternative | null {
   const frames = replayFrames(record)
   const before = frames[turn - 1]
   if (before === undefined) return null
-  return applyMove(before.state, { type: 'place', player: before.state.current, index })
+
+  const move = (index: number) =>
+    applyMove(before.state, { type: 'place', player: before.state.current, index })
+
+  const a = move(played)
+  const b = move(instead)
+
+  return {
+    before: cells(before.state.board),
+    played: cells(a.state.board),
+    instead: cells(b.state.board),
+    cols: before.state.board.cols,
+    playedExplosions: a.events.filter((event) => event.type === 'explode').length,
+    insteadExplosions: b.events.filter((event) => event.type === 'explode').length,
+  }
 }

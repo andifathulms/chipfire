@@ -1,7 +1,9 @@
 'use client'
 
-import { isDecisive, type PostMortem } from '@/lib/ai/postmortem'
+import { isDecisive, playAlternative, type PostMortem, type Regret } from '@/lib/ai/postmortem'
+import { MiniBoard } from '@/components/board/MiniBoard'
 import { cellName } from '@/lib/engine/notation'
+import type { GameRecord } from '@/lib/engine/replay'
 import type { Locale } from '@/lib/i18n'
 
 /**
@@ -71,13 +73,83 @@ const COPY = {
     id: 'Tidak ada satu langkah pun yang jelas lebih buruk dari alternatifnya.',
     en: 'No single move was clearly worse than the alternatives available to it.',
   },
+
+  /* The comparison, and the numbers behind the verdict. */
+  compare: { id: 'Bandingkan', en: 'Compare' },
+  wasBefore: { id: 'Posisi saat itu', en: 'The position then' },
+  youPlayed: { id: (cell: string) => `Kamu main ${cell}`, en: (cell: string) => `You played ${cell}` },
+  couldPlay: { id: (cell: string) => `Kalau ${cell}`, en: (cell: string) => `Had it been ${cell}` },
+  scoreLine: {
+    id: (played: number, best: number, cost: number, explosions: number, other: number) =>
+      `Nilai posisi: ${played} setelah langkahmu, ${best} setelah alternatifnya — selisih ${cost}. Ledakan: ${explosions} lawan ${other}.`,
+    en: (played: number, best: number, cost: number, explosions: number, other: number) =>
+      `Position score: ${played} after your move, ${best} after the alternative — a gap of ${cost}. Explosions: ${explosions} against ${other}.`,
+  },
+  scoreScale: {
+    id: 'Nilai ini memakai bobot bilangan bulat yang sama dengan AI: satu sel bernilai 6, satu orb 2. Selisih puluhan berarti beberapa sel; selisih ratusan ribu berarti pencarian melihat kemenangan paksa.',
+    en: 'These use the same integer weights the AI plays on: a cell is worth 6, an orb 2. A gap in the tens is a few cells; a gap in the hundreds of thousands means the search saw a forced result.',
+  },
 } as const
+
+/**
+ * One turn, shown three ways: the board as it stood, what the move played did
+ * to it, and what the search's preferred move would have done.
+ *
+ * The panel could name a better move and had no way to show it, which leaves a
+ * reader holding a verdict they cannot check. Both branches are the real
+ * engine run from the real position — only which move was taken is
+ * hypothetical, and the caption says which numbers came from where.
+ */
+function Comparison({
+  record,
+  regret,
+  locale,
+}: {
+  record: GameRecord
+  regret: Regret
+  locale: Locale
+}) {
+  const outcome = playAlternative(record, regret.turn, regret.played, regret.best)
+  if (outcome === null || regret.best === regret.played) return null
+
+  return (
+    <div className="flex flex-col gap-xs pt-xs">
+      <p className="label-micro">{COPY.compare[locale]}</p>
+
+      <div className="flex items-start gap-xs">
+        {[
+          { label: COPY.wasBefore[locale], cells: outcome.before, mark: regret.played },
+          { label: COPY.youPlayed[locale](cellName(outcome.cols, regret.played)), cells: outcome.played },
+          { label: COPY.couldPlay[locale](cellName(outcome.cols, regret.best)), cells: outcome.instead },
+        ].map((panel) => (
+          <div key={panel.label} className="flex min-w-0 flex-1 flex-col gap-2xs">
+            <span className="label-micro">{panel.label}</span>
+            <MiniBoard cells={panel.cells} cols={outcome.cols} played={panel.mark} />
+          </div>
+        ))}
+      </div>
+
+      {/* The intermediate values, not just the verdict. */}
+      <p className="max-w-measure text-sm text-trace-soft">
+        {COPY.scoreLine[locale](
+          regret.playedScore,
+          regret.bestScore,
+          regret.cost,
+          outcome.playedExplosions,
+          outcome.insteadExplosions,
+        )}
+      </p>
+      <p className="max-w-measure text-xs text-trace-faint">{COPY.scoreScale[locale]}</p>
+    </div>
+  )
+}
 
 export function PostMortemPanel({
   review,
   running,
   error,
   cols,
+  record,
   locale,
   onRun,
 }: {
@@ -85,6 +157,8 @@ export function PostMortemPanel({
   running: boolean
   error: string | null
   cols: number
+  /** Needed to replay the counterfactual from the position it actually had. */
+  record: GameRecord
   locale: Locale
   onRun: () => void
 }) {
@@ -130,6 +204,7 @@ export function PostMortemPanel({
                 : COPY.turningPointTook[locale](cellName(cols, point.played))}
               {isDecisive(point.bestScore) ? ` ${COPY.forcedWin[locale]}` : ''}
             </p>
+            <Comparison record={record} regret={point} locale={locale} />
           </>
         )}
       </div>

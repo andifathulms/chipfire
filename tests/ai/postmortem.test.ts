@@ -4,6 +4,7 @@ import { scoreMoves } from '@/lib/ai/search'
 import { WEIGHTS } from '@/lib/ai/evaluate'
 import { replayFrames } from '@/lib/engine/replay'
 import { legalMoves } from '@/lib/engine/state'
+import { NO_OWNER } from '@/lib/engine/board'
 import { playRandomGame } from '../random'
 
 const CONFIG = { rows: 5, cols: 6, players: 2, seed: 9 }
@@ -123,19 +124,37 @@ describe('the counterfactual is the real engine', () => {
     const point = review.turningPoint
     if (point === null) return
 
-    const outcome = playAlternative(game.record, point.turn, point.best)
+    const outcome = playAlternative(game.record, point.turn, point.played, point.best)
     expect(outcome).not.toBeNull()
+    if (outcome === null) return
 
     const frames = replayFrames(game.record)
     const before = frames[point.turn - 1].state
-    // Same position, different move — and the move is one that was legal there.
+
+    // Both branches are legal moves from the position that was actually on the
+    // board; only which one was taken is hypothetical.
     expect(legalMoves(before)).toContain(point.best)
-    expect(outcome?.state.turn).toBe(before.turn + 1)
+    expect(legalMoves(before)).toContain(point.played)
+
+    // The "before" panel has to be the real position, not a reconstruction of
+    // it — the whole comparison rests on the reader trusting that one.
+    const asCells = Array.from(before.board.owners, (owner, index) =>
+      owner === NO_OWNER ? [-1, 0] : [owner, before.board.counts[index]],
+    )
+    expect(outcome.before.map((cell) => [...cell])).toEqual(asCells)
+    expect(outcome.cols).toBe(before.board.cols)
+
+    // And the branch that was actually played must match the real game.
+    const realNext = frames[point.turn].state
+    const realCells = Array.from(realNext.board.owners, (owner, index) =>
+      owner === NO_OWNER ? [-1, 0] : [owner, realNext.board.counts[index]],
+    )
+    expect(outcome.played.map((cell) => [...cell])).toEqual(realCells)
   })
 
   it('has no opinion about a turn outside the game', () => {
     const game = playRandomGame(CONFIG)
-    expect(playAlternative(game.record, 0, 0)).toBeNull()
-    expect(playAlternative(game.record, game.record.moves.length + 5, 0)).toBeNull()
+    expect(playAlternative(game.record, 0, 0, 0)).toBeNull()
+    expect(playAlternative(game.record, game.record.moves.length + 5, 0, 0)).toBeNull()
   })
 })

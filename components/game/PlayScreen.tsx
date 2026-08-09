@@ -580,6 +580,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 running={postMortem.running}
                 error={postMortem.error}
                 cols={board.cols}
+                record={session.record}
                 locale={locale}
                 onRun={() => postMortem.run(session.record, reviewSubject)}
               />
