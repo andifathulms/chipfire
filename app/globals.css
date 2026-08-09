@@ -158,6 +158,27 @@ body {
 }
 
 /*
+ * A panel's title, one step above the labels inside it.
+ *
+ * Every heading in the HUD was .label-micro — section titles, sub-headings and
+ * field labels alike, all 11px uppercase. With one size doing three jobs
+ * nothing said that "Where this game got away" is a panel and "Turning point"
+ * is a field within it, so a rail of stacked panels read as a single list of
+ * shouted fragments.
+ *
+ * Sentence case and the display face rather than more tracking: the labels are
+ * already lettering on a machine panel, and the way to sit above them is to
+ * stop shouting, not to shout wider.
+ */
+.heading-panel {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  font-weight: 500;
+  color: rgb(var(--color-trace));
+}
+
+/*
  * One focus treatment for the whole app. It must read against chart stock and
  * against a cell already tinted by a preview, so it is an offset ring in trace
  * ink rather than a tint. Mouse users never see it; keyboard users always do.

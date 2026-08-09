@@ -113,7 +113,7 @@ export function PostMortemPanel({
 
   return (
     <section className="flex flex-col gap-sm text-sm">
-      <h3 className="label-micro">{COPY.title[locale]}</h3>
+      <h3 className="heading-panel">{COPY.title[locale]}</h3>
 
       <div className="flex flex-col gap-xs border-l-2 border-trace-rule py-1 pl-sm">
         <p className="label-micro">{COPY.turningPoint[locale]}</p>

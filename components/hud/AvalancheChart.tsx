@@ -47,7 +47,7 @@ export function AvalancheChart({ stats, locale }: { stats: Stats; locale: Locale
 
   return (
     <section className="flex flex-col gap-xs">
-      <h3 className="label-micro">{COPY.title[locale]}</h3>
+      <h3 className="heading-panel">{COPY.title[locale]}</h3>
 
       {total === 0 ? (
         <p className="text-sm text-trace-faint">{COPY.empty[locale]}</p>

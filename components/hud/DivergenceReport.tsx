@@ -120,7 +120,7 @@ export function DivergenceReport({
         alarming ? 'border-p1 text-p1-ink' : 'border-trace-rule',
       ].join(' ')}
     >
-      <p className="label-micro">{COPY.title[locale]}</p>
+      <p className="heading-panel">{COPY.title[locale]}</p>
       {body()}
     </div>
   )

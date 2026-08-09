@@ -61,7 +61,7 @@ export function MoveList({
 
   return (
     <section className="flex flex-col gap-xs">
-      <h2 className="label-micro">{COPY.title[locale]}</h2>
+      <h2 className="heading-panel">{COPY.title[locale]}</h2>
 
       {moves.length === 0 ? (
         <p className="text-sm text-trace-faint">{COPY.empty[locale]}</p>
