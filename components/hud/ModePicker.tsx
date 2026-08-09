@@ -43,8 +43,8 @@ export function ModePicker({
 
   return (
     <div className="flex flex-col gap-3 text-sm">
-      <div className="flex flex-col gap-1.5">
-        <span className="label-micro">{COPY.opponent[locale]}</span>
+      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+        <legend className="label-micro mb-1.5 p-0">{COPY.opponent[locale]}</legend>
         <div className="grid grid-cols-2 border border-trace-rule">
           {modes.map((option) => (
             <button
@@ -61,11 +61,11 @@ export function ModePicker({
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {mode === 'ai' ? (
-        <div className="flex flex-col gap-1.5">
-          <span className="label-micro">{COPY.difficulty[locale]}</span>
+        <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+          <legend className="label-micro mb-1.5 p-0">{COPY.difficulty[locale]}</legend>
           {/* Three levels, so they are shown rather than hidden behind a select:
               a menu you must open to see your options is a menu you compare
               badly. */}
@@ -86,7 +86,7 @@ export function ModePicker({
             ))}
           </div>
           <p className="text-xs leading-snug text-trace-faint">{COPY.fair[locale]}</p>
-        </div>
+        </fieldset>
       ) : null}
     </div>
   )

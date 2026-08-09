@@ -46,8 +46,8 @@ export function Controls({
 
   return (
     <div className="flex flex-col gap-3 border-t border-trace-hairline pt-4 text-sm">
-      <div className="flex flex-col gap-1.5">
-        <span className="label-micro">{COPY.speed[locale]}</span>
+      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+        <legend className="label-micro mb-1.5 p-0">{COPY.speed[locale]}</legend>
         {/* A segmented control that fills the rail: equal columns, so the
             options read as one instrument rather than four loose buttons. */}
         <div className="grid grid-cols-4 border border-trace-rule">
@@ -66,15 +66,15 @@ export function Controls({
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/*
        * Preview and sound sit with speed because all three are about how a
        * cascade is presented rather than about the game itself. None of them
        * changes a single thing the engine does.
        */}
-      <div className="flex flex-col gap-1.5">
-        <span className="label-micro">{COPY.preview[locale]}</span>
+      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+        <legend className="label-micro mb-1.5 p-0">{COPY.preview[locale]}</legend>
         <div className="grid grid-cols-2 border border-trace-rule">
           {([true, false] as const).map((value) => (
             <button
@@ -91,7 +91,7 @@ export function Controls({
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       <SoundToggle locale={locale} />
 

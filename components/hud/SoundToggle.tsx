@@ -48,8 +48,8 @@ export function SoundToggle({ locale }: { locale: Locale }) {
   const usable = status === 'ready'
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="label-micro">{COPY.label[locale]}</span>
+    <fieldset className="flex flex-col gap-1.5 border-0 p-0">
+      <legend className="label-micro mb-1.5 p-0">{COPY.label[locale]}</legend>
       <div className="grid grid-cols-2 border border-trace-rule">
         {([false, true] as const).map((value) => (
           <button
@@ -77,6 +77,6 @@ export function SoundToggle({ locale }: { locale: Locale }) {
         <p className="text-xs text-trace-faint">{COPY.unsupported[locale]}</p>
       ) : null}
       {usable && on ? <p className="text-xs text-trace-faint">{COPY.hint[locale]}</p> : null}
-    </div>
+    </fieldset>
   )
 }
