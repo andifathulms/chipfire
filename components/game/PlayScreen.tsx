@@ -17,6 +17,7 @@ import { copy, type Locale } from '@/lib/i18n'
 import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { LoadGauge } from '@/components/hud/LoadGauge'
+import { MoveList } from '@/components/hud/MoveList'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -344,6 +345,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               <Setup locale={locale} config={session.config} onApply={applyConfig} />
             </div>
           </details>
+
+          <MoveList locale={locale} moves={session.history} cols={board.cols} />
 
           <p aria-live="polite" className="flex flex-wrap items-baseline gap-x-2 text-xs">
             <span className="label-micro">{COPY.turn[locale]}</span>

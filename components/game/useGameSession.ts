@@ -5,7 +5,13 @@ import { applyMove } from '@/lib/engine/apply'
 import { hashState } from '@/lib/engine/hash'
 import { countExplosions, type GameEvent } from '@/lib/engine/events'
 import { createGame, legalMoves, type GameConfig, type GameState } from '@/lib/engine/state'
-import { replay, toMove, type GameRecord } from '@/lib/engine/replay'
+import {
+  replay,
+  summariseMoves,
+  toMove,
+  type GameRecord,
+  type MoveSummary,
+} from '@/lib/engine/replay'
 import { buildFrames, type Frame } from '@/components/cascade/frames'
 
 /**
@@ -28,6 +34,9 @@ export type Session = {
   readonly pending: Pending | null
   readonly legal: ReadonlySet<number>
   readonly hash: string
+  /** One line per move, derived from the record — never accumulated, so undo
+   *  and an adopted peer history stay correct without bookkeeping. */
+  readonly history: readonly MoveSummary[]
   readonly longestCascade: number
   /** Returns the resulting state, or null if the move was refused. The caller
    *  needs it to hash the position for the peer. */
@@ -97,6 +106,7 @@ export function useGameSession(initial: GameConfig): Session {
   const legal = useMemo(() => new Set(legalMoves(state)), [state])
   const hash = useMemo(() => hashState(state), [state])
   const record = useMemo<GameRecord>(() => ({ config, moves }), [config, moves])
+  const history = useMemo(() => summariseMoves(record), [record])
 
   return {
     config,
@@ -105,6 +115,7 @@ export function useGameSession(initial: GameConfig): Session {
     pending,
     legal,
     hash,
+    history,
     longestCascade,
     play,
     load,

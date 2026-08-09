@@ -1,6 +1,7 @@
 import { applyMove } from './apply'
 import type { GameEvent } from './events'
 import { hashState } from './hash'
+import type { PlayerId } from './board'
 import { createGame, type GameConfig, type GameState, type Move } from './state'
 
 /**
@@ -56,6 +57,53 @@ export function replayFrames(record: GameRecord): ReplayFrame[] {
 /** Hash after every turn — the cross-instance agreement corpus. */
 export function replayHashes(record: GameRecord): string[] {
   return replayFrames(record).map((frame) => frame.hash)
+}
+
+/**
+ * One line per move: who played, where, and what it set off.
+ *
+ * Derived by replay rather than accumulated as the game goes, which is the
+ * whole point of the move list being the source of truth — undo, a resync that
+ * adopts a peer's history, and loading a shared code all produce a correct
+ * summary without anyone maintaining a parallel array that could drift out of
+ * step with the moves it describes.
+ *
+ * `player` comes from the state *before* each move rather than from turn order,
+ * because elimination means the sequence is not simply `turn % players`.
+ */
+export type MoveSummary = {
+  /** Cell played into. */
+  readonly index: number
+  readonly player: PlayerId
+  /** Cells that detonated, including the chain. Zero for a quiet move. */
+  readonly explosions: number
+  /** Cells that changed hands — the reason anyone plays a move like this. */
+  readonly captures: number
+}
+
+export function summariseMoves(record: GameRecord): MoveSummary[] {
+  const frames = replayFrames(record)
+  const out: MoveSummary[] = []
+
+  for (let move = 0; move < record.moves.length; move += 1) {
+    // frames[0] is the opening position, so the state before move n is at n.
+    const before = frames[move]
+    const after = frames[move + 1]
+    if (before === undefined || after === undefined) break
+
+    let explosions = 0
+    let captures = 0
+    for (const event of after.events) {
+      if (event.type === 'explode') explosions += 1
+      // A convert that does not change hands is an orb landing on a cell its
+      // owner already held. It is not a capture and must not be counted as one.
+      else if (event.type === 'convert' && event.from !== event.to) captures += 1
+    }
+
+    out.push({ index: record.moves[move], player: before.state.current, explosions, captures })
+  }
+
+  return out
 }
 
 export function recordWith(record: GameRecord, index: number): GameRecord {
