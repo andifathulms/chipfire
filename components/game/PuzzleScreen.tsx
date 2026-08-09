@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { buildFrames } from '@/components/cascade/frames'
@@ -78,6 +78,17 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
   const [frames, setFrames] = useState<ReturnType<typeof buildFrames>>([])
   const [played, setPlayed] = useState<GameState | null>(null)
 
+  /*
+   * Solving or missing swaps the hint line for buttons, and the button you
+   * press then removes itself. Focus lands on nothing both times: once because
+   * the new controls appear somewhere focus is not, and once because the
+   * element holding focus stops existing. Both leave a keyboard user at the
+   * top of the document with no idea the puzzle advanced.
+   */
+  const outcomeRef = useRef<HTMLButtonElement | null>(null)
+  const taskRef = useRef<HTMLParagraphElement | null>(null)
+  const started = useRef(false)
+
   const puzzle = useMemo(() => puzzleAt(position), [position])
   const start = useMemo(
     () => (puzzle === null ? null : replay({ config: puzzle.config, moves: puzzle.moves })),
@@ -95,6 +106,25 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
     () => new Set(state === null || outcome !== null || animating ? [] : legalMoves(state)),
     [state, outcome, animating],
   )
+
+  useEffect(() => {
+    if (outcome !== null) outcomeRef.current?.focus()
+  }, [outcome])
+
+  /*
+   * Advancing removes the button that was holding focus, so it has to be given
+   * somewhere to go. The task line is the right target: it is the top of the
+   * new puzzle and reading it is what a sighted player does next anyway.
+   * Skipped on first mount, where nothing has moved and stealing focus would
+   * be rude.
+   */
+  useEffect(() => {
+    if (!started.current) {
+      started.current = true
+      return
+    }
+    if (outcome === null) taskRef.current?.focus()
+  }, [position, outcome])
 
   const reset = (next: number) => {
     setPosition(next)
@@ -204,7 +234,13 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
             <p className="label-micro">
               {COPY.puzzle[locale]} {position + 1} {COPY.of[locale]} {PUZZLE_COUNT}
             </p>
-            <p className="max-w-measure text-base text-trace-soft">{COPY.task[locale]}</p>
+            <p
+              ref={taskRef}
+              tabIndex={-1}
+              className="max-w-measure text-base text-trace-soft"
+            >
+              {COPY.task[locale]}
+            </p>
           </div>
 
           <div className="mx-auto w-full max-w-sm">
@@ -239,6 +275,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
                   {COPY.solvedBody[locale](puzzle.explosions, puzzle.captures)}
                 </p>
                 <button
+                  ref={outcomeRef}
                   type="button"
                   onClick={() => reset(position + 1)}
                   className="self-start border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
@@ -251,6 +288,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
                 <p className="font-numeral text-lg">{COPY.missed[locale]}</p>
                 <p className="max-w-measure text-sm text-trace-soft">{COPY.missedBody[locale]}</p>
                 <button
+                  ref={outcomeRef}
                   type="button"
                   onClick={() => reset(position)}
                   className="self-start border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"

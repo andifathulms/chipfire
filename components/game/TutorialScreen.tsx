@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { buildFrames } from '@/components/cascade/frames'
@@ -53,6 +53,13 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
   const [done, setDone] = useState(false)
   const [frames, setFrames] = useState<ReturnType<typeof buildFrames>>([])
   const [hovered, setHovered] = useState<number | null>(null)
+
+  /* Completing a step replaces the hint with buttons that are not where focus
+     is. Same failure as the puzzle screen, same fix. */
+  const doneRef = useRef<HTMLButtonElement | null>(null)
+  useEffect(() => {
+    if (done) doneRef.current?.focus()
+  }, [done])
 
   const step = TUTORIAL[position]
   const finished = position >= TUTORIAL.length
@@ -166,6 +173,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
             ) : (
               <div className="flex flex-wrap gap-2">
                 <button
+                  ref={doneRef}
                   type="button"
                   onClick={() => goTo(position + 1)}
                   className="animate-settle border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
