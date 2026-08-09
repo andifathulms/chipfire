@@ -403,36 +403,43 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           </div>
 
           {/*
-           * The readout is always mounted. Rendering it only while a preview
-           * exists made every cell hover shift the whole page beneath the board
-           * — in an interface driven entirely by hovering cells.
+           * The readout is always mounted, for two separate reasons that happen
+           * to want the same thing. Visually, rendering it only while a preview
+           * existed made every cell hover shift the page beneath the board. And
+           * the live region inside it has to exist before its contents change,
+           * or it is never announced at all.
+           *
+           * Only the preview is live. The idle instruction is a sibling, not a
+           * status: re-reading "point at a cell" every time focus left one was
+           * the region talking for the sake of talking.
            */}
-          <div
-            aria-live="polite"
-            className="flex min-h-[3.25rem] items-center gap-5 border border-trace-hairline bg-chart-deep/50 px-3 py-2"
-          >
-            {preview !== null ? (
-              <>
-                <span className="flex flex-col gap-0.5">
-                  <span className="label-micro">{COPY.reach[locale]}</span>
-                  <span className="font-numeral text-lg leading-none">{preview.explosions}</span>
-                </span>
-                <span className="flex flex-col gap-0.5">
-                  <span className="label-micro">{COPY.captures[locale]}</span>
-                  <span className="font-numeral text-lg leading-none">
-                    {preview.capturedCount}
+          <div className="flex min-h-[3.25rem] items-center gap-5 border border-trace-hairline bg-chart-deep/50 px-3 py-2">
+            <span aria-live="polite" className="flex flex-1 items-center gap-5">
+              {preview !== null ? (
+                <>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="label-micro">{COPY.reach[locale]}</span>
+                    <span className="font-numeral text-lg leading-none">{preview.explosions}</span>
                   </span>
-                </span>
-                <span className="ml-auto text-right text-sm text-trace-soft">
-                  {preview.wins ? (
-                    <span className="font-medium text-trace">{COPY.winning[locale]}</span>
-                  ) : null}
-                  {awaitingTap !== null ? (
-                    <span className="block">{COPY.confirmTap[locale]}</span>
-                  ) : null}
-                </span>
-              </>
-            ) : (
+                  <span className="flex flex-col gap-0.5">
+                    <span className="label-micro">{COPY.captures[locale]}</span>
+                    <span className="font-numeral text-lg leading-none">
+                      {preview.capturedCount}
+                    </span>
+                  </span>
+                  <span className="ml-auto text-right text-sm text-trace-soft">
+                    {preview.wins ? (
+                      <span className="font-medium text-trace">{COPY.winning[locale]}</span>
+                    ) : null}
+                    {awaitingTap !== null ? (
+                      <span className="block">{COPY.confirmTap[locale]}</span>
+                    ) : null}
+                  </span>
+                </>
+              ) : null}
+            </span>
+
+            {preview === null ? (
               <span className="text-sm text-trace-faint">
                 {previewOn ? (
                   <>
@@ -443,7 +450,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                   COPY.previewOff[locale]
                 )}
               </span>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -541,7 +548,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             </details>
           ) : null}
 
-          <p aria-live="polite" className="flex flex-wrap items-baseline gap-x-2 text-xs">
+          {/*
+           * No longer a live region. It wrapped the turn number and the eight
+           * character state hash together, so every move read the hash aloud —
+           * a string that exists to be compared by machines, announced to a
+           * person who cannot act on it. The move announcer covers the turn;
+           * the hash stays visible for anyone who wants it.
+           */}
+          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
             <span className="label-micro">{COPY.turn[locale]}</span>
             <span className="font-numeral text-trace">{session.state.turn}</span>
             <span className="font-mono text-trace-faint">{session.hash}</span>
