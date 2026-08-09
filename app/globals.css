@@ -7,9 +7,95 @@
  * app/layout.tsx, which self-hosts the vendored woff2 files. Nothing here
  * names a family the user might not have.
  */
+
+/*
+ * ─── Design tokens ────────────────────────────────────────────────────────
+ *
+ * One place where the scales are decided, so nothing downstream picks a value
+ * by eye. tailwind.config.ts reads every one of these rather than restating
+ * them: a component writes `text-lg` or `bg-chart`, the number lives here.
+ *
+ * Colours are RGB channel triplets, not hex, because Tailwind's slash-opacity
+ * syntax — `border-trace/30`, `bg-trace/10`, which the board leans on heavily
+ * for the printed lattice — compiles to `rgb(var(--x) / 0.3)` and cannot take
+ * a var that already carries its own colour function.
+ */
 :root {
-  /* The printed lattice: chart paper exists before the game starts. */
-  --grid-line: #d6d1c4;
+  /* ── Colour ──
+   * The identity is unchanged from PRD §12; this only moves it into variables.
+   * Measured, not eyeballed, against both chart grounds:
+   *
+   *   trace 13.1:1 · soft 6.9:1 · faint 5.1:1   on #EDEAE3
+   *   trace 11.8:1 · soft 6.2:1 · faint 4.6:1   on #E3DFD5
+   *
+   * Every -ink player value clears 4.5:1 on both (lowest, p3 on deep, 4.52:1),
+   * which is what makes it safe for words. The identity hues deliberately do
+   * not — p3 is 2.76:1 — and are for orbs and large marks only.
+   */
+  --color-chart: 237 234 227; /* chart stock  #EDEAE3 */
+  --color-chart-deep: 227 223 213; /* #E3DFD5 */
+  --color-chart-line: 214 209 196; /* #D6D1C4 */
+
+  --color-trace: 31 36 33; /* trace ink    #1F2421 */
+  --color-trace-soft: 74 80 75; /* #4A504B */
+  --color-trace-faint: 94 99 94; /* #5E635E */
+
+  --color-mark: 192 80 30; /* #C0501E — the mark's core, never a player */
+
+  --color-p1: 196 86 30; /* signal orange #C4561E */
+  --color-p1-ink: 163 71 25; /* #A34719 */
+  --color-p2: 44 95 135; /* station blue  #2C5F87 */
+  --color-p2-ink: 44 95 135; /* passes as-is */
+  --color-p3: 176 135 33; /* ochre         #B08721 */
+  --color-p3-ink: 123 95 23; /* #7B5F17 */
+  --color-p4: 62 107 90; /* slate green   #3E6B5A */
+  --color-p4-ink: 62 107 90; /* passes as-is */
+
+  /* ── Type ──
+   * One ramp, roughly 1.25 between display steps, and it is the only ramp:
+   * Tailwind's default font sizes are replaced rather than extended, so there
+   * is no way to reach a size that is not on the scale.
+   *
+   * --text-base is 16px and is the floor for prose. --text-2xs exists solely
+   * for .label-micro — uppercase, tracked instrument lettering, which is a
+   * label on a machine panel and not body copy.
+   */
+  --text-2xs: 0.6875rem; /* 11px — .label-micro only */
+  --text-xs: 0.8125rem; /* 13px — meta, captions */
+  --text-sm: 0.9375rem; /* 15px — dense game chrome */
+  --text-base: 1rem; /* 16px — prose floor */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.375rem; /* 22px */
+  --text-2xl: 1.75rem; /* 28px */
+  --text-3xl: 2.25rem; /* 36px */
+  --text-4xl: 2.875rem; /* 46px */
+
+  --leading-flat: 1; /* counters, single glyphs */
+  --leading-tight: 1.15; /* display */
+  --leading-snug: 1.35; /* headings, short hints */
+  --leading-normal: 1.6; /* prose */
+
+  /* Prose measure. Narrower than Tailwind's `prose` default: this copy is
+     short by policy (PRD §12) and a short line wants a short measure. */
+  --measure: 58ch;
+
+  /* ── Space ──
+   * 4px base. Named by role rather than by number so a layout reads as
+   * intent — gutter, block, section — instead of as arithmetic.
+   */
+  --space-2xs: 0.25rem; /*  4px */
+  --space-xs: 0.5rem; /*  8px */
+  --space-sm: 0.75rem; /* 12px */
+  --space-md: 1rem; /* 16px */
+  --space-lg: 1.5rem; /* 24px */
+  --space-xl: 2.5rem; /* 40px */
+  --space-2xl: 4rem; /* 64px */
+
+  /* ── Lattice ──
+   * The printed grid: chart paper exists before the game starts.
+   */
+  --grid-line: rgb(var(--color-chart-line));
+  --grid-size: 24px;
 }
 
 html,
@@ -18,13 +104,15 @@ body {
 }
 
 body {
-  background-color: theme('colors.chart.DEFAULT');
+  background-color: rgb(var(--color-chart));
   background-image:
     linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: 24px 24px;
-  color: theme('colors.trace.DEFAULT');
+  background-size: var(--grid-size) var(--grid-size);
+  color: rgb(var(--color-trace));
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -43,12 +131,12 @@ body {
  */
 .label-micro {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.6875rem;
-  line-height: 1;
+  font-size: var(--text-2xs);
+  line-height: var(--leading-flat);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: theme('colors.trace.faint');
+  color: rgb(var(--color-trace-faint));
 }
 
 /*
@@ -57,7 +145,7 @@ body {
  * ink rather than a tint. Mouse users never see it; keyboard users always do.
  */
 :where(a, button, input, select, summary, [tabindex]):focus-visible {
-  outline: 2px solid theme('colors.trace.DEFAULT');
+  outline: 2px solid rgb(var(--color-trace));
   outline-offset: 2px;
   border-radius: 1px;
 }

@@ -2,6 +2,12 @@ import type { Config } from 'tailwindcss'
 
 /**
  * Semantic tokens only — PRD §12. Components never use raw hex.
+ *
+ * Nothing here holds a literal value any more. Every colour, size and space
+ * below dereferences a custom property declared in app/globals.css, which is
+ * the single place the scales are decided. A value that appears in both files
+ * will eventually disagree in both files.
+ *
  * The player colours are the only saturated elements on screen and are chosen
  * to stay distinguishable under common colour-vision deficiencies. Colour is
  * still never the sole ownership signal; orb arrangement carries it too.
@@ -13,9 +19,12 @@ import type { Config } from 'tailwindcss'
  *   ink     — the same hue darkened until it clears 4.5:1 on both chart grounds.
  *             Used wherever the colour carries *words*. Ochre at #B08721 is
  *             2.76:1 on chart stock: legible as a diamond, not as a name.
- *
- * Every value below was measured against #EDEAE3 and #E3DFD5, not eyeballed.
  */
+
+/** Tailwind's slash-opacity syntax needs the channel form, not a finished
+ *  colour — `border-trace/30` becomes `rgb(31 36 33 / 0.3)` only if the var
+ *  holds bare channels. See the colour block in globals.css. */
+const token = (name: string) => `rgb(var(--color-${name}) / <alpha-value>)`
 const config: Config = {
   /*
    * lib/ has to be scanned. The player colour classes exist only as string
@@ -27,20 +36,38 @@ const config: Config = {
    */
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}', './lib/**/*.{ts,tsx}'],
   theme: {
+    /*
+     * Replaced, not extended. Extending would leave Tailwind's own ramp
+     * reachable alongside this one, and `text-5xl` silently resolving to an
+     * off-scale size is exactly the drift a scale exists to prevent. Each
+     * entry pairs a size with the leading it is meant to be set at, so a
+     * caller gets the right rhythm without having to remember to ask.
+     */
+    fontSize: {
+      '2xs': ['var(--text-2xs)', { lineHeight: 'var(--leading-flat)' }],
+      xs: ['var(--text-xs)', { lineHeight: 'var(--leading-snug)' }],
+      sm: ['var(--text-sm)', { lineHeight: 'var(--leading-snug)' }],
+      base: ['var(--text-base)', { lineHeight: 'var(--leading-normal)' }],
+      lg: ['var(--text-lg)', { lineHeight: 'var(--leading-normal)' }],
+      xl: ['var(--text-xl)', { lineHeight: 'var(--leading-snug)' }],
+      '2xl': ['var(--text-2xl)', { lineHeight: 'var(--leading-tight)' }],
+      '3xl': ['var(--text-3xl)', { lineHeight: 'var(--leading-tight)' }],
+      '4xl': ['var(--text-4xl)', { lineHeight: 'var(--leading-tight)' }],
+    },
     extend: {
       colors: {
         chart: {
-          DEFAULT: '#EDEAE3',
-          deep: '#E3DFD5',
-          line: '#D6D1C4',
+          DEFAULT: token('chart'),
+          deep: token('chart-deep'),
+          line: token('chart-line'),
         },
         // The ink ramp. Three steps, and the floor is WCAG AA on chart stock —
         // hierarchy is carried by size, weight and tracking, never by fading
         // text below the threshold where it can be read at all.
         trace: {
-          DEFAULT: '#1F2421', // 13.1:1
-          soft: '#4A504B', //    6.9:1
-          faint: '#5E635E', //   5.1:1
+          DEFAULT: token('trace'), // 13.1:1
+          soft: token('trace-soft'), //  6.9:1
+          faint: token('trace-faint'), // 5.1:1
         },
         /*
          * The brand mark's core, and only the mark's. The brand rules fix it:
@@ -49,11 +76,31 @@ const config: Config = {
          * free to reassign. Deliberately not p1's #C4561E; they are neighbours
          * and are not the same value.
          */
-        mark: '#C0501E',
-        p1: { DEFAULT: '#C4561E', ink: '#A34719' }, // signal orange
-        p2: { DEFAULT: '#2C5F87', ink: '#2C5F87' }, // station blue — passes as-is
-        p3: { DEFAULT: '#B08721', ink: '#7B5F17' }, // ochre
-        p4: { DEFAULT: '#3E6B5A', ink: '#3E6B5A' }, // slate green — passes as-is
+        mark: token('mark'),
+        p1: { DEFAULT: token('p1'), ink: token('p1-ink') }, // signal orange
+        p2: { DEFAULT: token('p2'), ink: token('p2-ink') }, // station blue
+        p3: { DEFAULT: token('p3'), ink: token('p3-ink') }, // ochre
+        p4: { DEFAULT: token('p4'), ink: token('p4-ink') }, // slate green
+      },
+      // Named alongside Tailwind's numeric scale rather than replacing it:
+      // `gap-lg` states a rhythm, `gap-3` states a measurement.
+      spacing: {
+        '2xs': 'var(--space-2xs)',
+        xs: 'var(--space-xs)',
+        sm: 'var(--space-sm)',
+        md: 'var(--space-md)',
+        lg: 'var(--space-lg)',
+        xl: 'var(--space-xl)',
+        '2xl': 'var(--space-2xl)',
+      },
+      maxWidth: {
+        measure: 'var(--measure)',
+      },
+      lineHeight: {
+        flat: 'var(--leading-flat)',
+        tight: 'var(--leading-tight)',
+        snug: 'var(--leading-snug)',
+        normal: 'var(--leading-normal)',
       },
       fontFamily: {
         display: ['var(--font-display)', 'ui-sans-serif', 'system-ui', 'sans-serif'],

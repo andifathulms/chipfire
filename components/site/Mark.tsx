@@ -61,7 +61,7 @@ export function Wordmark({
           without either caller having to say so. */}
       <Mark className={large ? 'h-9 w-9 sm:h-11 sm:w-11' : 'h-[0.85em] w-[0.85em]'} />
       <span
-        className={`${large ? 'font-numeral text-6xl leading-none tracking-tight sm:text-7xl' : ''} ${nameClassName ?? ''}`}
+        className={`${large ? 'font-numeral text-3xl leading-tight tracking-tight sm:text-4xl' : ''} ${nameClassName ?? ''}`}
       >
         Chipfire
       </span>
