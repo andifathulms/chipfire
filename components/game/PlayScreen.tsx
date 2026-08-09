@@ -27,6 +27,7 @@ import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
+import { playWin } from '@/lib/sound'
 
 const COPY = {
   title: { id: 'Main', en: 'Play' },
@@ -180,6 +181,19 @@ export function PlayScreen({ locale }: { locale: Locale }) {
    * new board size, switching opponent — has to drop it, or the next game ends
    * showing a turning point from the last one.
    */
+  /*
+   * The win figure. Not a frame, so it cannot come off the cascade player like
+   * the rest of the sound does — it fires once when the game is decided, keyed
+   * on the move count so a re-render cannot sound it twice.
+   */
+  const soundedWinAt = useRef(-1)
+  useEffect(() => {
+    if (!finished) return
+    if (soundedWinAt.current === session.record.moves.length) return
+    soundedWinAt.current = session.record.moves.length
+    playWin()
+  }, [finished, session.record.moves.length])
+
   const clearReview = postMortem.clear
   useEffect(() => {
     if (!finished) clearReview()

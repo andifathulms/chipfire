@@ -2,6 +2,7 @@
 
 import type { Locale } from '@/lib/i18n'
 import type { Speed } from '@/components/cascade/useCascadePlayer'
+import { SoundToggle } from './SoundToggle'
 
 const SPEED_LABELS: Record<Speed, Record<Locale, string>> = {
   pelan: { id: 'Pelan', en: 'Slow' },
@@ -59,6 +60,10 @@ export function Controls({
           ))}
         </div>
       </div>
+
+      {/* Beside speed, because both are about how a cascade is presented
+          rather than about the game. */}
+      <SoundToggle locale={locale} />
 
       {/* Undo and restart are peers, so they get equal width. Both are large
           enough to be a comfortable touch target on a phone. */}

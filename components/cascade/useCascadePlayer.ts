@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { playGeneration, playPlace } from '@/lib/sound'
 import type { Frame } from './frames'
 
 /**
@@ -92,6 +93,34 @@ export function useCascadePlayer(
     const timer = window.setTimeout(() => setIndex((value) => value + 1), delay)
     return () => window.clearTimeout(timer)
   }, [frames, index, interval, placementHold])
+
+  /*
+   * Sound is a second renderer of the same frames, which is why it hangs off
+   * the player rather than off the screens: every surface that animates a
+   * cascade — game, tutorial, replay viewer — sounds the same because they all
+   * come through here.
+   *
+   * Frame 0 is the orb landing; every frame after it is one cascade generation,
+   * and the pitch climbs with the index, so depth is audible. Keyed on the
+   * frame actually shown, so nothing sounds twice and instant speed (where the
+   * player jumps straight to the end) makes one placement noise rather than
+   * forty tones at once.
+   */
+  const soundedFor = useRef<readonly Frame[] | null>(null)
+  const soundedIndex = useRef(-1)
+
+  useEffect(() => {
+    if (frames.length === 0) return
+    if (soundedFor.current !== frames) {
+      soundedFor.current = frames
+      soundedIndex.current = -1
+    }
+    if (index <= soundedIndex.current) return
+    soundedIndex.current = index
+
+    if (index === 0) playPlace()
+    else playGeneration(index - 1)
+  }, [frames, index])
 
   const resolved = interval === 0 ? frames.length - 1 : index
 
