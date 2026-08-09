@@ -1,7 +1,7 @@
-import { WEIGHTS, explainScores } from "@/lib/ai/evaluate";
-import type { GameState } from "@/lib/engine/state";
-import type { Locale } from "@/lib/i18n";
-import { playerName, styleFor } from "@/lib/players";
+import { WEIGHTS, explainScores } from '@/lib/ai/evaluate'
+import type { GameState } from '@/lib/engine/state'
+import type { Locale } from '@/lib/i18n'
+import { playerName, styleFor } from '@/lib/players'
 
 /**
  * What the evaluation function says about the position on screen.
@@ -23,33 +23,51 @@ import { playerName, styleFor } from "@/lib/players";
  * something you go and look at rather than something that coaches you.
  */
 const COPY = {
-  title: { id: "Penilaian AI", en: "The AI's evaluation" },
+  title: { id: 'Penilaian AI', en: "The AI's evaluation" },
   lede: {
-    id: "Penilaian statis atas posisi di layar, bukan alasan langkah yang barusan dimainkan — pencarian melihat beberapa langkah ke depan. Bobotnya bilangan bulat dan tetap.",
-    en: "A static reading of the position on screen, not the reason for the move just played — the search looks several plies ahead. The weights are fixed integers.",
+    id: 'Penilaian statis atas posisi di layar, bukan alasan langkah yang barusan dimainkan — pencarian melihat beberapa langkah ke depan. Bobotnya bilangan bulat dan tetap.',
+    en: 'A static reading of the position on screen, not the reason for the move just played — the search looks several plies ahead. The weights are fixed integers.',
   },
-  orbs: { id: "Orb", en: "Orbs" },
-  cells: { id: "Sel", en: "Cells" },
-  position: { id: "Posisi", en: "Position" },
-  vulnerability: { id: "Rawan", en: "Exposed" },
-  total: { id: "Total", en: "Total" },
-  weights: { id: "Bobot", en: "Weights" },
+  orbs: { id: 'Orb', en: 'Orbs' },
+  cells: { id: 'Sel', en: 'Cells' },
+  position: { id: 'Posisi', en: 'Position' },
+  vulnerability: { id: 'Rawan', en: 'Exposed' },
+  /**
+   * Why each term is the shape it is, beside the term. The panel printed four
+   * coefficients and explained none, which makes it inspectable only by a
+   * reader who already knows what they are looking at — the opposite of what
+   * PRD §8 promises.
+   */
+  why: {
+    orbs: {
+      id: 'Tiap orb bernilai 2. Orb mudah didapat, jadi bobotnya kecil.',
+      en: 'Each orb scores 2. Orbs are cheap to come by, so the weight is small.',
+    },
+    cells: {
+      id: 'Tiap sel yang dikuasai bernilai 6 — tiga kali satu orb, karena sel adalah wilayah, bukan sekadar isinya.',
+      en: 'Each cell held scores 6 — three times an orb, because a cell is territory rather than just contents.',
+    },
+    position: {
+      id: '5 × (5 − batas): sudut 15, tepi 10, tengah 5. Sudut paling tinggi karena meledak cukup dengan 2 orb, jadi paling murah dipicu.',
+      en: '5 × (5 − limit): 15 in a corner, 10 on an edge, 5 in the middle. Corners score highest because they fire at 2 orbs, so they are the cheapest to set off.',
+    },
+    vulnerability: {
+      id: 'Dikurangi 15 untuk tiap selmu yang tinggal satu orb lagi meledak dan bersebelahan dengan sel lawan yang juga tinggal satu — karena lawan jalan duluan.',
+      en: 'Minus 15 for each of your cells one orb from firing that sits beside an enemy cell also one orb from firing — because they move first.',
+    },
+  },
+  total: { id: 'Total', en: 'Total' },
+  weights: { id: 'Bobot', en: 'Weights' },
   fair: {
-    id: "AI melihat papan yang sama denganmu. Tidak ada yang disembunyikan.",
-    en: "The AI sees the same board you do. Nothing here is hidden from you.",
+    id: 'AI melihat papan yang sama denganmu. Tidak ada yang disembunyikan.',
+    en: 'The AI sees the same board you do. Nothing here is hidden from you.',
   },
-} as const;
+} as const
 
-const CELL = "px-2 py-1 text-right font-numeral tabular-nums";
+const CELL = 'px-2 py-1 text-right font-numeral tabular-nums'
 
-export function EvaluationPanel({
-  state,
-  locale,
-}: {
-  state: GameState;
-  locale: Locale;
-}) {
-  const terms = explainScores(state);
+export function EvaluationPanel({ state, locale }: { state: GameState; locale: Locale }) {
+  const terms = explainScores(state)
 
   return (
     <div className="flex flex-col gap-xs text-sm">
@@ -81,7 +99,7 @@ export function EvaluationPanel({
             </tr>
           </thead>
           <tbody className="text-trace-soft">
-            {(["orbs", "cells", "position", "vulnerability"] as const).map(
+            {(["orbs", 'cells', 'position', 'vulnerability'] as const).map(
               (term) => (
                 <tr key={term} className="border-b border-trace-hairline">
                   <th scope="row" className="px-2 py-1 text-left font-normal">
