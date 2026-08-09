@@ -6,6 +6,7 @@ import type { GameRecord } from '@/lib/engine/replay'
 import { encodeRecord } from '@/lib/share'
 import type { Locale } from '@/lib/i18n'
 import type { Stats } from '@/lib/stats'
+import { AvalancheChart } from './AvalancheChart'
 
 const COPY = {
   code: { id: 'Kode permainan', en: 'Game code' },
@@ -53,6 +54,13 @@ export function GameSummary({
         <span className="font-numeral text-xs text-trace-faint">
           {COPY.played[locale]}: {total} · {COPY.longest[locale]}: {stats.longestCascade}
         </span>
+      </div>
+
+      {/* The distribution, not just its maximum. A single longest-chain number
+          is the least informative summary of a distribution it is possible to
+          keep, and it was the only one being kept. */}
+      <div className="border-t border-trace/20 pt-3">
+        <AvalancheChart stats={stats} locale={locale} />
       </div>
     </section>
   )

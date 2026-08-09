@@ -147,7 +147,17 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     if (recordedFor.current === moveCount) return
     recordedFor.current = moveCount
     const humanWon = mode === 'ai' ? session.state.winner === 0 : true
-    setStats(recordResult(mode === 'ai' ? 'ai' : 'hotseat', humanWon, session.longestCascade))
+    setStats(
+      recordResult(
+        mode === 'ai' ? 'ai' : 'hotseat',
+        humanWon,
+        session.longestCascade,
+        // Every cascade of the game just finished, so the distribution is built
+        // from moves rather than from one number per game.
+        session.history.map((move) => move.explosions),
+      ),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, mode, session.longestCascade, session.record.moves.length, session.state.winner])
 
   const applyConfig = (config: GameConfig) => session.reset(config)
