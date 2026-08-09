@@ -146,6 +146,13 @@ M0–M4 done, plus most of M6. Deploys to Pages via `.github/workflows/deploy.ym
 - **M3 AI** — minimax with alpha-beta and iterative deepening in `workers/ai.worker.ts`. Difficulty is depth plus seeded noise.
 - **M4 P2P manual** — offer/answer paste with compressed codes, per-turn hash exchange, halt-and-report on desync with an explicit resync. **QR encoding is not implemented** — codes are copy/paste only.
 - **M5 brokered signalling (PeerJS)** — not started. Layer 1 works standalone, which is the point.
-- **M6 polish** — replay viewer, share codes, and local stats are in. Cascade preview (§9.2) is not.
+- **M6 polish** — replay viewer, share codes, local stats, and cascade preview are in. The preview is **always on in `main` and absent from `tanding`**; §9.2 asks for an explicit toggle, off by default in P2P unless both agree, and that toggle does not exist.
 
-Next, in order: QR for the connection codes, cascade preview, then PeerJS as optional sugar over the paste flow.
+Beyond the milestones, four things that follow from the concept rather than from the category:
+
+- **Cascade re-watch** — the last avalanche can be replayed generation by generation (`useCascadeReview`). Hotseat and AI only; in P2P an incoming move would interrupt it.
+- **Move list during play** — `summariseMoves` derives one line per move from the record. Derived, never accumulated, which is what keeps undo and an adopted peer history correct without bookkeeping.
+- **Load reading** — `lib/engine/load.ts`. Orbs against the lattice's resting capacity, plus a count of primed cells. A reading about the system, never advice about a move.
+- **Divergence report** — `lib/engine/diverge.ts` localises a desync to the first turn two move lists disagree, and separates "a message went missing" from "one of these engines is wrong". The second is reported as a bug with an instruction not to resync.
+
+Next, in order: QR for the connection codes, the preview toggle §9.2 actually specifies, then PeerJS as optional sugar over the paste flow.
