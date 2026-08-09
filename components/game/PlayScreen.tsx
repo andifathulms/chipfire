@@ -9,6 +9,7 @@ import { Controls } from '@/components/hud/Controls'
 import { Setup } from '@/components/hud/Setup'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useGameSession } from '@/components/game/useGameSession'
+import { useGameReview } from '@/components/game/useGameReview'
 import { useAiOpponent } from '@/components/game/useAiOpponent'
 import { ModePicker, type Mode } from '@/components/hud/ModePicker'
 import type { Difficulty } from '@/lib/ai/search'
@@ -21,6 +22,7 @@ import { LoadGauge } from '@/components/hud/LoadGauge'
 import { MoveList } from '@/components/hud/MoveList'
 import { CascadeReplay } from '@/components/hud/CascadeReplay'
 import { EvaluationPanel } from '@/components/hud/EvaluationPanel'
+import { PostMortemPanel } from '@/components/hud/PostMortemPanel'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -161,6 +163,27 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finished, mode, session.longestCascade, session.record.moves.length, session.state.winner])
+
+  /*
+   * Reviewed from the losing side, because "when did I lose" is the question.
+   * Two players only: with three or four there are several losers and no single
+   * perspective the panel could be speaking from without saying whose.
+   */
+  const postMortem = useGameReview()
+  const reviewSubject =
+    session.state.players === 2 && session.state.winner !== null
+      ? ((session.state.winner === 0 ? 1 : 0) as 0 | 1)
+      : null
+
+  /*
+   * A review belongs to the game it reviewed. Starting another one — restart,
+   * new board size, switching opponent — has to drop it, or the next game ends
+   * showing a turning point from the last one.
+   */
+  const clearReview = postMortem.clear
+  useEffect(() => {
+    if (!finished) clearReview()
+  }, [finished, clearReview])
 
   const applyConfig = (config: GameConfig) => session.reset(config)
 
@@ -421,7 +444,25 @@ export function PlayScreen({ locale }: { locale: Locale }) {
         </div>
       </div>
 
-      {finished ? <GameSummary locale={locale} record={session.record} stats={stats} /> : null}
+      {finished ? (
+        <GameSummary
+          locale={locale}
+          record={session.record}
+          stats={stats}
+          review={
+            reviewSubject === null ? null : (
+              <PostMortemPanel
+                review={postMortem.result}
+                running={postMortem.running}
+                error={postMortem.error}
+                cols={board.cols}
+                locale={locale}
+                onRun={() => postMortem.run(session.record, reviewSubject)}
+              />
+            )
+          }
+        />
+      ) : null}
     </main>
   )
 }

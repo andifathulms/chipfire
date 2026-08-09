@@ -22,10 +22,14 @@ export function GameSummary({
   locale,
   record,
   stats,
+  review = null,
 }: {
   locale: Locale
   record: GameRecord
   stats: Stats
+  /** The post-mortem, passed in rather than owned here — it needs a worker,
+   *  and the summary is otherwise a pure render of a finished record. */
+  review?: React.ReactNode
 }) {
   const [copied, setCopied] = useState(false)
   const code = encodeRecord(record)
@@ -55,6 +59,8 @@ export function GameSummary({
           {COPY.played[locale]}: {total} · {COPY.longest[locale]}: {stats.longestCascade}
         </span>
       </div>
+
+      {review !== null ? <div className="border-t border-trace/20 pt-3">{review}</div> : null}
 
       {/* The distribution, not just its maximum. A single longest-chain number
           is the least informative summary of a distribution it is possible to

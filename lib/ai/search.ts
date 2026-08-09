@@ -122,6 +122,69 @@ function alphaBeta(
   return best
 }
 
+export type ScoredMove = {
+  readonly index: number
+  readonly score: number
+}
+
+export type ScoredMoves = {
+  readonly moves: readonly ScoredMove[]
+  /** The depth actually reached. Lower than asked for means the budget ran out,
+   *  and any claim made from these numbers has to quote this, not the request. */
+  readonly depth: number
+  readonly nodes: number
+  readonly exhausted: boolean
+}
+
+/**
+ * Every legal move, scored at a fixed depth, from the point of view of whoever
+ * is to play. No iterative deepening and no noise: this answers "what does the
+ * evaluation think of each option here", which is a different question from
+ * "what should the AI play", and an answer with seeded randomness in it could
+ * not be quoted back to a player as a reason.
+ *
+ * Ascending cell order, so equal scores break the same way on every device.
+ */
+export function scoreMoves(
+  state: GameState,
+  options: { readonly depth: number; readonly budgetMs: number; readonly now?: () => number },
+): ScoredMoves {
+  const now = options.now ?? (() => Date.now())
+  const ctx: Context = {
+    me: state.current,
+    deadline: now() + Math.max(1, options.budgetMs),
+    now,
+    nodes: 0,
+  }
+
+  const moves = legalMoves(state)
+  const scored: ScoredMove[] = []
+  let exhausted = false
+
+  try {
+    for (const index of moves) {
+      const next = applyMove(state, { type: 'place', player: state.current, index }).state
+      // Full window. Pruning against a running alpha would be faster and would
+      // return bounds rather than scores for the moves it cut off, and a bound
+      // reported as a score is exactly the kind of number this cannot ship.
+      scored.push({
+        index,
+        score: alphaBeta(next, options.depth - 1, 1, -WEIGHTS.win * 2, WEIGHTS.win * 2, ctx),
+      })
+    }
+  } catch (error) {
+    if (!(error instanceof SearchAborted)) throw error
+    exhausted = true
+  }
+
+  return {
+    moves: scored,
+    depth: options.depth,
+    nodes: ctx.nodes,
+    exhausted,
+  }
+}
+
 /**
  * Pick a move for the player to act. Always returns a legal cell.
  * Iterative deepening keeps the best move from the last *completed* depth, so
