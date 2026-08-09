@@ -8,6 +8,7 @@ import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePla
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useP2PGame } from '@/components/game/useP2PGame'
 import { DivergenceReport } from '@/components/hud/DivergenceReport'
+import { MoveAnnouncer } from '@/components/hud/MoveAnnouncer'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { recordResult } from '@/lib/stats'
 import { NO_OWNER } from '@/lib/engine/board'
@@ -142,6 +143,14 @@ export function P2PScreen({ locale }: { locale: Locale }) {
 
       {game.connected ? (
         <>
+          <MoveAnnouncer
+            state={session.state}
+            history={session.history}
+            cols={session.state.board.cols}
+            locale={locale}
+            settled={!animating}
+          />
+
           <TurnIndicator state={session.state} locale={locale} busy={animating} />
 
           {/*

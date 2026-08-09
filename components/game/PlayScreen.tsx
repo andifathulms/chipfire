@@ -20,6 +20,7 @@ import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { LoadGauge } from '@/components/hud/LoadGauge'
 import { MoveList } from '@/components/hud/MoveList'
+import { MoveAnnouncer } from '@/components/hud/MoveAnnouncer'
 import { CascadeReplay } from '@/components/hud/CascadeReplay'
 import { EvaluationPanel } from '@/components/hud/EvaluationPanel'
 import { PostMortemPanel } from '@/components/hud/PostMortemPanel'
@@ -278,6 +279,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
        * not below the fold — without rendering the scoreboard twice.
        */}
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+        <MoveAnnouncer
+          state={session.state}
+          history={session.history}
+          cols={board.cols}
+          locale={locale}
+          settled={!animating}
+        />
+
         <div className="lg:col-start-2 lg:row-start-1">
           <TurnIndicator
             state={session.state}

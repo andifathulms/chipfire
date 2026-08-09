@@ -48,7 +48,7 @@ export function TurnIndicator({
       <div className="flex items-baseline justify-between gap-2">
         <span className="label-micro">{COPY.turn[locale]}</span>
         {busy ? (
-          <span className="label-micro animate-pulse text-trace-soft">
+          <span aria-hidden="true" className="label-micro animate-pulse text-trace-soft">
             {COPY.propagating[locale]}
           </span>
         ) : null}
@@ -99,7 +99,7 @@ export function TurnIndicator({
 
               {out ? <span className="label-micro">{COPY.out[locale]}</span> : null}
               {thinkingPlayer === player && !out ? (
-                <span aria-live="polite" className="label-micro animate-pulse text-trace-soft">
+                <span aria-hidden="true" className="label-micro animate-pulse text-trace-soft">
                   {COPY.thinking[locale]}
                 </span>
               ) : null}
