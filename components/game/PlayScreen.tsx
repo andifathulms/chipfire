@@ -392,6 +392,15 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           </div>
         </div>
 
+        {/*
+         * Ordered by how often it is used, not by when it was added.
+         *
+         * Reading, then the two things you do on your own turn, then the
+         * record, then the settings you change between games, then the panel
+         * you open once out of curiosity, then the meta line. The column had
+         * drifted into arrival order, which put board configuration above
+         * "replay that cascade" — a control that acts on the move just played.
+         */}
         <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
           {/*
            * Driven by the animation frame rather than the settled state, so the
@@ -405,16 +414,15 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             board={{ ...board, owners: view.owners, counts: view.counts }}
           />
 
-          <ModePicker
-            locale={locale}
-            mode={mode}
-            difficulty={difficulty}
-            onMode={(next) => {
-              setMode(next)
-              session.reset()
-            }}
-            onDifficulty={setDifficulty}
-          />
+          {/* Only while there is something to look back at, and never over the
+              top of a cascade that is still running. */}
+          {!animating && !finished ? (
+            <CascadeReplay
+              review={review}
+              explosions={session.history.at(-1)?.explosions ?? 0}
+              locale={locale}
+            />
+          ) : null}
 
           <Controls
             locale={locale}
@@ -434,6 +442,33 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             }}
           />
 
+          <MoveList locale={locale} moves={session.history} cols={board.cols} />
+
+          <ModePicker
+            locale={locale}
+            mode={mode}
+            difficulty={difficulty}
+            onMode={(next) => {
+              setMode(next)
+              session.reset()
+            }}
+            onDifficulty={setDifficulty}
+          />
+
+          {/*
+           * Board size is a between-games decision, not a mid-game one, so it
+           * folds away instead of competing with the controls that are used
+           * every turn.
+           */}
+          <details className="border-t border-trace/20 pt-3">
+            <summary className="label-micro cursor-pointer select-none py-1">
+              {COPY.boardSetup[locale]}
+            </summary>
+            <div className="pt-3">
+              <Setup locale={locale} config={session.config} onApply={applyConfig} />
+            </div>
+          </details>
+
           {/*
            * Only in AI mode, and folded away. It answers "is this thing
            * actually searching, or is it just weighted toward corners" — a
@@ -450,32 +485,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               </div>
             </details>
           ) : null}
-
-          {/*
-           * Board size is a between-games decision, not a mid-game one, so it
-           * folds away instead of competing with the controls that are used
-           * every turn.
-           */}
-          <details className="border-t border-trace/20 pt-3">
-            <summary className="label-micro cursor-pointer select-none py-1">
-              {COPY.boardSetup[locale]}
-            </summary>
-            <div className="pt-3">
-              <Setup locale={locale} config={session.config} onApply={applyConfig} />
-            </div>
-          </details>
-
-          {/* Only while there is something to look back at, and never over the
-              top of a cascade that is still running. */}
-          {!animating && !finished ? (
-            <CascadeReplay
-              review={review}
-              explosions={session.history.at(-1)?.explosions ?? 0}
-              locale={locale}
-            />
-          ) : null}
-
-          <MoveList locale={locale} moves={session.history} cols={board.cols} />
 
           <p aria-live="polite" className="flex flex-wrap items-baseline gap-x-2 text-xs">
             <span className="label-micro">{COPY.turn[locale]}</span>
