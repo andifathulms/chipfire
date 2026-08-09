@@ -266,15 +266,22 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
             </button>
 
-            {preview !== null ? (
-              <span className="flex w-full gap-4 border-t border-trace/15 pt-2">
+            {/*
+             * Always mounted once the preview is agreed, so hovering a cell
+             * cannot resize the panel under the board. The same mistake was
+             * made and fixed on the local screen: in an interface driven
+             * entirely by pointing at cells, a readout that appears on hover
+             * moves the page every time you look at anything.
+             */}
+            {game.previewAgreed ? (
+              <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace/15 pt-2">
                 <span className="flex items-baseline gap-1">
                   <span className="label-micro">{COPY.reach[locale]}</span>
-                  <span className="font-numeral">{preview.explosions}</span>
+                  <span className="font-numeral">{preview?.explosions ?? '—'}</span>
                 </span>
                 <span className="flex items-baseline gap-1">
                   <span className="label-micro">{COPY.captures[locale]}</span>
-                  <span className="font-numeral">{preview.capturedCount}</span>
+                  <span className="font-numeral">{preview?.capturedCount ?? '—'}</span>
                 </span>
               </span>
             ) : null}
