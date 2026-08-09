@@ -38,11 +38,22 @@ const sans = localFont({
   fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
 })
 
+/*
+ * Not preloaded, unlike the other two.
+ *
+ * Monospace appears in connection codes, state hashes, cell names in the move
+ * list and the footer's year — none of it in a first paint, none of it in a
+ * first interaction. Preloading it put 10 kB on the critical path of all six
+ * routes to render text nobody has asked for yet. `display: swap` still
+ * applies, so when a hash does appear the face arrives, and the metric-adjusted
+ * fallback keeps it from shifting anything when it does.
+ */
 const mono = localFont({
   src: './fonts/IBMPlexMono.woff2',
   weight: '400',
   variable: '--font-mono',
   display: 'swap',
+  preload: false,
   fallback: ['ui-monospace', 'SFMono-Regular', 'monospace'],
 })
 
