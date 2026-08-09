@@ -36,8 +36,14 @@ export function GameSummary({
   const total = stats.played.hotseat + stats.played.ai + stats.played.p2p
 
   return (
-    <section className="flex flex-col gap-2 border border-trace-hairline p-4 text-sm">
-      <p className="text-trace-soft">{COPY.code[locale]}</p>
+    /*
+     * Three peer groups in one box: the code, the review, the distribution.
+     * They were framed three different ways — the first labelled in body text,
+     * the other two with panel headings — so a box that contains one thing
+     * looked like a box that contains one thing and then some appendices.
+     */
+    <section className="flex flex-col gap-sm border border-trace-hairline p-4 text-sm">
+      <h3 className="heading-panel">{COPY.code[locale]}</h3>
       <code className="block break-all border border-trace-hairline bg-chart-deep p-2 font-mono text-xs">
         {code}
       </code>
@@ -60,12 +66,14 @@ export function GameSummary({
         </span>
       </div>
 
-      {review !== null ? <div className="border-t border-trace-hairline pt-3">{review}</div> : null}
+      {review !== null ? (
+        <div className="border-t border-trace-hairline pt-sm">{review}</div>
+      ) : null}
 
       {/* The distribution, not just its maximum. A single longest-chain number
           is the least informative summary of a distribution it is possible to
           keep, and it was the only one being kept. */}
-      <div className="border-t border-trace-hairline pt-3">
+      <div className="border-t border-trace-hairline pt-sm">
         <AvalancheChart stats={stats} locale={locale} />
       </div>
     </section>
