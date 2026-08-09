@@ -39,6 +39,10 @@ const COPY = {
   },
 } as const
 
+/** Names the scroll region from the heading above it rather than repeating the
+ *  title in an aria-label. */
+const LIST_ID = 'move-list-title'
+
 export function MoveList({
   moves,
   cols,
@@ -61,12 +65,27 @@ export function MoveList({
 
   return (
     <section className="flex flex-col gap-xs">
-      <h2 className="heading-panel">{COPY.title[locale]}</h2>
+      <h2 id={LIST_ID} className="heading-panel">
+        {COPY.title[locale]}
+      </h2>
 
       {moves.length === 0 ? (
         <p className="text-sm text-trace-faint">{COPY.empty[locale]}</p>
       ) : (
-        <ol className="max-h-48 overflow-y-auto border-t border-trace-hairline text-sm">
+        /*
+         * Focusable, because it scrolls. A pointer can reach the moves below
+         * the fold by scrolling the box; a keyboard had no way in at all, so
+         * the earlier moves of a long game were simply unavailable. tabindex
+         * makes it a stop, and the stop needs a name — role="region" plus the
+         * heading is the smallest thing that gives one, and is the reason this
+         * is the second and last role added in this pass.
+         */
+        <ol
+          tabIndex={0}
+          role="region"
+          aria-labelledby={LIST_ID}
+          className="max-h-48 overflow-y-auto border-t border-trace-hairline text-sm"
+        >
           {moves.map((move, position) => {
             const turn = position + 1
             const where = cellName(cols, move.index)
