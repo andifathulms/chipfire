@@ -154,5 +154,8 @@ Beyond the milestones, four things that follow from the concept rather than from
 - **Move list during play** — `summariseMoves` derives one line per move from the record. Derived, never accumulated, which is what keeps undo and an adopted peer history correct without bookkeeping.
 - **Load reading** — `lib/engine/load.ts`. Orbs against the lattice's resting capacity, plus a count of primed cells. A reading about the system, never advice about a move.
 - **Divergence report** — `lib/engine/diverge.ts` localises a desync to the first turn two move lists disagree, and separates "a message went missing" from "one of these engines is wrong". The second is reported as a bug with an instruction not to resync.
+- **Avalanche distribution** — `lib/stats.ts` buckets every cascade by doubling ranges. Stats schema is v2; v1 and the pre-rebrand key are read forward.
+- **Evaluation inspector** — `explainScores` in `lib/ai/evaluate.ts` breaks the score into named terms. Deliberately not shared with `scores`, which runs in the alpha-beta inner loop; a test asserts they agree.
+- **Puzzles** (`/teka`) — `lib/puzzle.ts` finds positions with exactly one winning move by seeded search. Uniqueness is decided by `previewMove`, not estimated by search, so there is no depth caveat. Seeds are fixed and asserted in tests.
 
 Next, in order: QR for the connection codes, the preview toggle §9.2 actually specifies, then PeerJS as optional sugar over the paste flow.
