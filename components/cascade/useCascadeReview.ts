@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { SPEEDS, prefersReducedMotion, type Speed } from './useCascadePlayer'
+import { SPEEDS, useReducedMotion, type Speed } from './useCascadePlayer'
 import type { Frame } from './frames'
 
 /**
@@ -39,6 +39,7 @@ export function useCascadeReview(frames: readonly Frame[], speed: Speed): Cascad
   // null is closed. Any other value is the frame being looked at.
   const [index, setIndex] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
+  const reduced = useReducedMotion()
 
   const total = frames.length
   const open = index !== null && total > 0
@@ -64,8 +65,8 @@ export function useCascadeReview(frames: readonly Frame[], speed: Speed): Cascad
      * this app can offer — one generation at a time, at their own pace — which
      * is strictly better than the animation they opted out of.
      */
-    setPlaying(!prefersReducedMotion())
-  }, [frames.length])
+    setPlaying(!reduced)
+  }, [frames.length, reduced])
 
   const step = useCallback(
     (delta: number) => {

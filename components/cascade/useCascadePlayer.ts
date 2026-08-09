@@ -26,6 +26,30 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
+/**
+ * The same question, asked continuously.
+ *
+ * The one-shot read above is fine at a call site that runs once, but the
+ * animation clock consulted it inside a memo keyed on the speed setting — so
+ * turning the system preference on mid-session changed nothing until something
+ * unrelated happened to re-render. Someone who reaches for that setting is
+ * usually reaching for it *now*, often because of what is on screen.
+ */
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(prefersReducedMotion)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduced(query.matches)
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+
+  return reduced
+}
+
 export type CascadePlayer = {
   readonly frame: Frame | null
   readonly playing: boolean
@@ -51,11 +75,14 @@ export function useCascadePlayer(
   const doneRef = useRef(onDone)
   doneRef.current = onDone
 
+  const reduced = useReducedMotion()
+
   const interval = useMemo(() => {
-    // Reduced motion resolves instantly and the outcome is reported in the HUD.
-    if (prefersReducedMotion()) return 0
+    // Reduced motion resolves instantly, and the move announcer reports the
+    // outcome that the animation would otherwise have shown.
+    if (reduced) return 0
     return SPEEDS[speed]
-  }, [speed])
+  }, [speed, reduced])
 
   useEffect(() => {
     setIndex(0)
