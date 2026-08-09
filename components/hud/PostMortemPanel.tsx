@@ -149,9 +149,16 @@ export function PostMortemPanel({
         )}
       </div>
 
-      {/* The qualifier, always, and never smaller than the finding it qualifies
-          is worth trusting. */}
-      <p className="max-w-measure text-xs text-trace-faint">
+      {/*
+       * Set at the same size as the findings, not below them.
+       *
+       * The whole licence to say "move 79 was your turning point" is the
+       * clause that follows it — a depth-3 search using stated weights, which
+       * a deeper one could contradict. Rendering that clause as the smallest
+       * and faintest text in the panel was the typography disagreeing with the
+       * copy, and between the two the typography is what people act on.
+       */}
+      <p className="max-w-measure border-t border-trace/20 pt-sm text-sm text-trace-soft">
         {COPY.basis[locale](review.depth)}
         {review.partial ? ` ${COPY.partial[locale]}` : ''}
       </p>
