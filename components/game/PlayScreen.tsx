@@ -59,6 +59,23 @@ const COPY = {
     id: 'Pratinjau ledakan dimatikan.',
     en: 'Cascade preview is off.',
   },
+  /**
+   * Shown until the first move, and then never again.
+   *
+   * The dots on every empty cell are the best teaching device in the app —
+   * they show that the threshold changes with position, which is the rule —
+   * and they were explained only inside a dialog that opens once and is
+   * dismissed. After that they were unlabelled decoration next to the board
+   * they explain. This says it where they are, at the moment of first contact,
+   * and gets out of the way once a game is under way.
+   *
+   * It is also the only visible place the term the board uses in its
+   * screen-reader labels is defined.
+   */
+  dots: {
+    id: 'Titik samar di sel kosong = massa kritis: jumlah tetangga sel itu, dan berapa orb yang membuatnya meledak. 2 di sudut, 3 di tepi, 4 di tengah.',
+    en: 'The faint dots in an empty cell are its critical mass: how many neighbours it has, and so how many orbs make it fire. 2 in corners, 3 on edges, 4 in the middle.',
+  },
   aiFailed: {
     id: 'AI gagal dijalankan. Ganti ke hotseat untuk melanjutkan.',
     en: 'The AI failed to start. Switch to hotseat to keep playing.',
@@ -439,7 +456,9 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               ) : null}
             </span>
 
-            {preview === null ? (
+            {preview === null && session.record.moves.length === 0 ? (
+              <span className="text-sm text-trace-soft">{COPY.dots[locale]}</span>
+            ) : preview === null ? (
               <span className="text-sm text-trace-faint">
                 {previewOn ? (
                   <>
