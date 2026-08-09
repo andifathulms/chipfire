@@ -16,6 +16,7 @@ import { DEFAULT_CONFIG, type GameConfig } from '@/lib/engine/state'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
+import { LoadGauge } from '@/components/hud/LoadGauge'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -297,6 +298,18 @@ export function PlayScreen({ locale }: { locale: Locale }) {
         </div>
 
         <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
+          {/*
+           * Driven by the animation frame rather than the settled state, so the
+           * needle moves with the cascade instead of jumping to the answer
+           * before the board has finished showing the working. Watching load
+           * spike and then drop as an avalanche runs is the clearest statement
+           * of the mechanic the app can make without words.
+           */}
+          <LoadGauge
+            locale={locale}
+            board={{ ...board, owners: view.owners, counts: view.counts }}
+          />
+
           <ModePicker
             locale={locale}
             mode={mode}
