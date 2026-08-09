@@ -12,13 +12,19 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   const t = copy(locale)
 
   /*
-   * Both of these presuppose something a first-time visitor does not have:
-   * Tanding needs a second device with a person waiting at it, and Ulang needs
-   * a game code from a game nobody has played yet. They used to occupy a full
-   * row of cards the same size as the rules, which spent the most expensive
-   * space on the page on two dead ends. One line, below everything.
+   * Tanding and Ulang each presuppose something a first-time visitor does not
+   * have — a second device with a person waiting at it, and a code from a game
+   * nobody has played yet. They used to occupy a full row of cards the size of
+   * the rules, which spent the most expensive space on the page on two dead
+   * ends. One line, below everything.
+   *
+   * Teka is not in that category: a visitor can start it cold, and it is first
+   * here for that reason. It sits below the fold anyway because Belajar is the
+   * better cold start and two teaching links side by side above it would be a
+   * choice rather than a path.
    */
   const secondary = [
+    { href: `/${locale}/teka/`, title: t.puzzles, hint: t.puzzlesHint },
     { href: `/${locale}/tanding/`, title: t.versus, hint: t.versusHint },
     { href: `/${locale}/ulang/`, title: t.replay, hint: t.replayHint },
   ]
@@ -89,7 +95,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
 
       <section className="flex flex-col gap-xs">
         <h2 className="label-micro">{t.moreWays}</h2>
-        <ul className="flex flex-col gap-xs text-sm sm:flex-row sm:gap-lg">
+        <ul className="flex flex-col gap-xs text-sm sm:flex-row sm:flex-wrap sm:gap-x-lg sm:gap-y-xs">
           {secondary.map((link) => (
             <li key={link.href} className="flex items-baseline gap-xs">
               <Link

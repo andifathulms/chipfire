@@ -37,6 +37,8 @@ type Copy = {
   rules: readonly string[]
   learn: string
   learnHint: string
+  puzzles: string
+  puzzlesHint: string
 }
 
 const DICTIONARY: Record<Locale, Copy> = {
@@ -65,6 +67,8 @@ const DICTIONARY: Record<Locale, Copy> = {
     ],
     learn: 'Belajar',
     learnHint: 'Lima langkah singkat sampai paham. Sekitar dua menit.',
+    puzzles: 'Teka-teki',
+    puzzlesHint: 'Dua belas papan, satu langkah menang di tiap papan.',
   },
   en: {
     lede: 'A turn-based board game of strategy for 2–4 people. Plays in the browser, nothing to install.',
@@ -91,6 +95,8 @@ const DICTIONARY: Record<Locale, Copy> = {
     ],
     learn: 'Learn',
     learnHint: 'Five short steps until it clicks. About two minutes.',
+    puzzles: 'Puzzles',
+    puzzlesHint: 'Twelve boards, one winning move on each.',
   },
 }
 
