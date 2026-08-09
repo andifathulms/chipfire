@@ -22,7 +22,8 @@ const COPY = {
   of: { id: 'dari', en: 'of' },
 } as const
 
-const BUTTON = 'border border-trace-rule px-2 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40 disabled:hover:bg-transparent'
+const BUTTON =
+  'control-target-square border border-trace-rule px-2 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40 disabled:hover:bg-transparent'
 
 export function CascadeReplay({
   review,

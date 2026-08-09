@@ -58,7 +58,7 @@ export function Controls({
               onClick={() => onSpeed(option)}
               aria-pressed={speed === option}
               className={[
-                'px-1 py-1.5 text-xs transition-colors',
+                'control-target px-1 py-1.5 text-xs transition-colors',
                 speed === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
               ].join(' ')}
             >
@@ -83,7 +83,7 @@ export function Controls({
               onClick={() => onPreview(value)}
               aria-pressed={preview === value}
               className={[
-                'px-2 py-1.5 text-xs transition-colors',
+                'control-target px-2 py-1.5 text-xs transition-colors',
                 preview === value ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
               ].join(' ')}
             >
@@ -102,14 +102,14 @@ export function Controls({
           type="button"
           onClick={onUndo}
           disabled={!canUndo}
-          className="border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
+          className="control-target border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
         >
           {COPY.undo[locale]}
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep"
+          className="control-target border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep"
         >
           {COPY.reset[locale]}
         </button>

@@ -53,7 +53,7 @@ export function ModePicker({
               onClick={() => onMode(option)}
               aria-pressed={mode === option}
               className={[
-                'px-3 py-1.5 transition-colors',
+                'control-target px-3 py-1.5 transition-colors',
                 mode === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
               ].join(' ')}
             >
@@ -77,7 +77,7 @@ export function ModePicker({
                 onClick={() => onDifficulty(level)}
                 aria-pressed={difficulty === level}
                 className={[
-                  'px-2 py-1.5 transition-colors',
+                  'control-target px-2 py-1.5 transition-colors',
                   difficulty === level ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
                 ].join(' ')}
               >

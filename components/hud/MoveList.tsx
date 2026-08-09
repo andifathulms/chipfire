@@ -84,7 +84,7 @@ export function MoveList({
           tabIndex={0}
           role="region"
           aria-labelledby={LIST_ID}
-          className="max-h-48 overflow-y-auto border-t border-trace-hairline text-sm"
+          className="max-h-[min(12rem,40dvh)] overflow-y-auto border-t border-trace-hairline text-sm"
         >
           {moves.map((move, position) => {
             const turn = position + 1

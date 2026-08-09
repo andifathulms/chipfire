@@ -110,6 +110,16 @@
   --alpha-data: 0.7; /* bars, gauges, the filled part of a reading */
   --alpha-scrim: 0.32; /* behind a modal — its own name, not a borrowed one */
 
+  /* ── Targets ──
+   * The floor for anything you press. WCAG 2.5.8 asks for 24×24 CSS pixels;
+   * the dense controls in the rail came out around 28 by measurement, which
+   * passes but leaves nothing for a shaky hand or a thumb. 2.25rem is the
+   * smallest size that is comfortably clear of the rule rather than sitting
+   * on it, and it is applied through one class so a future control inherits it
+   * instead of being remembered about.
+   */
+  --control-min: 2.25rem;
+
   /* ── Lattice ──
    * The printed grid: chart paper exists before the game starts.
    */
@@ -156,6 +166,20 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: rgb(var(--color-trace-faint));
+}
+
+/*
+ * Anything you press is at least this tall, and square controls at least this
+ * wide. Set as a minimum rather than a fixed size so a button with more to say
+ * still grows to fit its text.
+ */
+.control-target {
+  min-height: var(--control-min);
+}
+
+.control-target-square {
+  min-height: var(--control-min);
+  min-width: var(--control-min);
 }
 
 /*

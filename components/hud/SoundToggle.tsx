@@ -64,7 +64,7 @@ export function SoundToggle({ locale }: { locale: Locale }) {
             }}
             aria-pressed={usable ? on === value : undefined}
             className={[
-              'px-2 py-1.5 text-xs transition-colors disabled:cursor-default',
+              'control-target px-2 py-1.5 text-xs transition-colors disabled:cursor-default',
               usable && on === value ? 'bg-trace text-chart' : 'hover:enabled:bg-chart-deep',
               usable ? '' : 'opacity-40',
             ].join(' ')}
