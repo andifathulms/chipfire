@@ -17,13 +17,6 @@ import type { Locale } from '@/lib/i18n'
 const COPY = {
   load: { id: 'Muatan', en: 'Load' },
   primed: { id: 'Siap meledak', en: 'Primed' },
-  /** Read aloud, because a bar and a bare integer are not a sentence. */
-  described: {
-    id: (percent: number, primed: number) =>
-      `Papan terisi ${percent} persen. ${primed} sel siap meledak.`,
-    en: (percent: number, primed: number) =>
-      `Board is ${percent} percent full. ${primed} cells one orb from exploding.`,
-  },
 } as const
 
 export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
@@ -44,11 +37,14 @@ export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
        * a goal, so it never reads as completion.
        */}
       <div className="flex items-center gap-sm">
-        <div
-          className="h-1.5 flex-1 border border-trace-hairline bg-chart"
-          role="img"
-          aria-label={COPY.described[locale](load.percent, load.primed)}
-        >
+        {/*
+         * Hidden rather than labelled. It carried role="img" and a sentence
+         * restating the percentage and the primed count — both printed beside
+         * it as text — so a screen reader read the same two facts twice. A
+         * drawing of numbers that are already there is decorative, and the fix
+         * for over-labelling is to delete the label, not to reword it.
+         */}
+        <div aria-hidden="true" className="h-1.5 flex-1 border border-trace-hairline bg-chart">
           <div className="h-full bg-trace-data" style={{ width: `${load.percent}%` }} />
         </div>
         <span className="font-numeral text-base leading-flat tabular-nums">{load.percent}%</span>
