@@ -37,14 +37,14 @@ const COPY = {
   rules: {
     id: [
       'Giliranmu, taruh satu orb di sel kosong atau sel yang sudah kamu miliki. Sel lawan tidak bisa diklik.',
-      'Tiap sel punya batas: 2 orb di sudut, 3 di tepi, 4 di tengah. Titik-titik samar di sel kosong menunjukkan batasnya.',
-      'Begitu batas tercapai, sel meledak. Satu orb terlempar ke tiap tetangga, dan tetangga yang kena berpindah jadi milikmu — berapa pun orb yang tadinya ada di sana.',
+      'Batas sebuah sel sama dengan jumlah tetangganya, karena satu orb dilempar ke tiap tetangga: 2 di sudut, 3 di tepi, 4 di tengah. Titik-titik samar di sel kosong menghitungnya untukmu.',
+      'Begitu batas tercapai, sel meledak: isinya berkurang sebanyak batas itu — bukan dikosongkan — dan satu orb terlempar ke tiap tetangga. Tetangga yang kena berpindah jadi milikmu, berapa pun orb yang tadinya ada di sana.',
       'Ledakan bisa membuat tetangganya ikut penuh, lalu ikut meledak. Di situlah satu langkah bisa membalik separuh papan.',
     ],
     en: [
       'On your turn, place one orb in an empty cell or one you already own. Opponent cells cannot be clicked.',
-      'Every cell has a limit: 2 in corners, 3 on edges, 4 in the middle. The faint dots in an empty cell show its limit.',
-      'On reaching the limit the cell explodes. One orb goes to each neighbour, and every neighbour it reaches becomes yours — however many orbs were sitting there.',
+      'A cell’s limit is its number of neighbours, because it throws one orb to each of them: 2 in corners, 3 on edges, 4 in the middle. The faint dots in an empty cell count them for you.',
+      'On reaching the limit the cell explodes: it loses exactly that many orbs — it is not emptied — and one goes to each neighbour. Every neighbour it reaches becomes yours, however many orbs were sitting there.',
       'An explosion can push neighbours over their own limit, and so on. That is how one move flips half the board.',
     ],
   },
