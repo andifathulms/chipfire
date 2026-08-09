@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { ConnectPanel } from '@/components/connect/ConnectPanel'
@@ -9,6 +9,7 @@ import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useP2PGame } from '@/components/game/useP2PGame'
 import { DivergenceReport } from '@/components/hud/DivergenceReport'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
+import { recordResult } from '@/lib/stats'
 import { NO_OWNER } from '@/lib/engine/board'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
@@ -75,6 +76,28 @@ export function P2PScreen({ locale }: { locale: Locale }) {
     !game.previewAgreed || previewIndex === null || !myTurn || animating || finished
       ? null
       : previewMove(session.state, previewIndex)
+
+  /*
+   * P2P results were never recorded, so "win rate by mode" (PRD §9.5) had a
+   * mode that could not be won and the avalanche distribution quietly meant
+   * "games on this device except these". Same once-per-game guard as the local
+   * screen: the move count identifies the game, so a re-render cannot
+   * double-count it.
+   */
+  const recordedFor = useRef(-1)
+  useEffect(() => {
+    if (!finished) return
+    const moveCount = session.record.moves.length
+    if (recordedFor.current === moveCount) return
+    recordedFor.current = moveCount
+    recordResult(
+      'p2p',
+      session.state.winner === game.me,
+      session.longestCascade,
+      session.history.map((move) => move.explosions),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finished, session.record.moves.length, session.state.winner, game.me])
 
   const labelFor = (index: number) => {
     const row = Math.floor(index / session.state.board.cols) + 1
