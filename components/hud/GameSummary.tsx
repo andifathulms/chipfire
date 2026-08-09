@@ -43,7 +43,7 @@ export function GameSummary({
      * looked like a box that contains one thing and then some appendices.
      */
     <section className="flex flex-col gap-sm border border-trace-hairline p-4 text-sm">
-      <h3 className="heading-panel">{COPY.code[locale]}</h3>
+      <h2 className="heading-panel">{COPY.code[locale]}</h2>
       <code className="block break-all border border-trace-hairline bg-chart-deep p-2 font-mono text-xs">
         {code}
       </code>
