@@ -20,8 +20,19 @@ import type { Locale } from '@/lib/i18n'
 const COPY = {
   title: { id: 'Sebaran ledakan beruntun', en: 'Avalanche sizes' },
   lede: {
-    id: 'Dari semua permainan di perangkat ini. Sumbu mendatar berlipat dua tiap baris.',
+    id: 'Dari semua permainan di perangkat ini. Tiap baris mencakup rentang dua kali lipat baris di atasnya.',
     en: 'Across every game on this device. Each row spans twice the range of the one above.',
+  },
+  /**
+   * What the shape means, next to the shape. Without this the chart is a
+   * scoreboard of your own play; with it, it is the thing the game is a model
+   * of. The citation belongs here and not in a footnote, because this is the
+   * one screen where a player is looking at the phenomenon those papers are
+   * about.
+   */
+  meaning: {
+    id: 'Ledakan kecil jauh lebih sering daripada yang besar, dan tidak ada ukuran yang “biasa” — batangnya terus menurun walau tiap baris mencakup rentang dua kali lebih lebar. Bentuk itu bukan kebetulan permainanmu: itulah tanda khas model tumpukan pasir (Bak–Tang–Wiesenfeld 1987; Dhar 1990), yang aturan permainan ini persis mengikutinya.',
+    en: 'Small avalanches vastly outnumber large ones, and there is no typical size — the bars keep falling even though each row covers twice the range of the one above. That shape is not a quirk of how you play: it is the signature of the abelian sandpile (Bak–Tang–Wiesenfeld 1987; Dhar 1990), whose rules this game follows exactly.',
   },
   size: { id: 'Ukuran', en: 'Size' },
   count: { id: 'Jumlah', en: 'Count' },
@@ -108,6 +119,10 @@ export function AvalancheChart({ stats, locale }: { stats: Stats; locale: Locale
 
           <p className="font-numeral text-xs text-trace-faint">
             {total} {COPY.total[locale]} · {stats.longestCascade} {COPY.cells[locale]}
+          </p>
+
+          <p className="max-w-measure border-t border-trace-hairline pt-xs text-sm text-trace-soft">
+            {COPY.meaning[locale]}
           </p>
         </>
       )}
