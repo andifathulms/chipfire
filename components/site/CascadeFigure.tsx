@@ -1,24 +1,22 @@
-import { Orbs } from '@/components/board/Orbs'
+import { EMPTY_CELL, MiniBoard, type MiniCell } from '@/components/board/MiniBoard'
 import { copy, type Locale } from '@/lib/i18n'
 
 /**
- * The game, shown rather than described.
+ * The game, worked through rather than performed.
  *
- * The landing page was entirely prose: a visitor had to read three sentences
- * about orbs and critical mass before anything on screen suggested a board,
- * and the one thing this game has going for it — a single move sweeping half
- * the grid — was invisible. This is that move, before and after.
+ * This was two panels — before, after — captioned "five explosions later, blue
+ * is down to a single cell". Inputs and an answer with the working removed,
+ * which is a magic trick, and it sat at the exact moment a newcomer is deciding
+ * whether any of this is followable. The chain is the thing the app exists to
+ * make visible; showing only its endpoints hid it on the front page.
  *
- * It is deliberately *not* the live Board component. Board is a client
- * component whose props carry Int8Array/Uint8Array views straight off the
- * engine, and those do not survive the server-component boundary the landing
- * page renders on. Nor should a static picture drag the engine, the cascade
- * player and a roving tabindex into the first paint. This renders literals.
+ * A middle panel now carries the part that was missing: the cascade caught
+ * between generations, with the cells that are about to fire outlined. Three
+ * panels is the smallest number that can show a process rather than a result.
  *
- * Literals lie, though, and this project's whole pitch is that the simulation
- * is exact — so tests/site/cascade-figure.test.ts replays POSITION through the
- * real applyMove and asserts it produces AFTER. Change one and the test names
- * the other.
+ * It is deliberately *not* the live Board — see MiniBoard — and every position
+ * here is asserted against the real engine in tests/site, so the picture cannot
+ * drift into showing a game these rules do not produce.
  */
 
 /** Board notation for the position below, in the same dialect the rules
@@ -40,57 +38,45 @@ export const FIGURE_MOVE = 5
 
 export const FIGURE_COLS = 4
 
-/** `[owner, count]`, owner -1 for empty. Rows in reading order. */
-type Cell = readonly [number, number]
+/** The frame the middle panel draws: two generations in, mid-chain. */
+export const FIGURE_MIDWAY_FRAME = 2
 
-const EMPTY: Cell = [-1, 0]
-
-export const FIGURE_BEFORE: readonly Cell[] = [
-  [0, 1], [1, 2], EMPTY,  EMPTY,
-  [1, 1], [0, 3], [1, 3], EMPTY,
-  EMPTY,  [1, 2], [0, 1], EMPTY,
-  [0, 1], EMPTY,  EMPTY,  [1, 1],
-]
-
-export const FIGURE_AFTER: readonly Cell[] = [
-  [0, 1], [0, 1], [0, 2], EMPTY,
-  EMPTY,  [0, 3], EMPTY,  [0, 1],
-  [0, 1], [0, 3], [0, 2], EMPTY,
-  [0, 1], EMPTY,  EMPTY,  [1, 1],
+export const FIGURE_BEFORE: readonly MiniCell[] = [
+  [0, 1], [1, 2], EMPTY_CELL, EMPTY_CELL,
+  [1, 1], [0, 3], [1, 3], EMPTY_CELL,
+  EMPTY_CELL, [1, 2], [0, 1], EMPTY_CELL,
+  [0, 1], EMPTY_CELL, EMPTY_CELL, [1, 1],
 ]
 
 /**
- * Registration marks on the cell the move went into. The same figure the board
- * itself uses to mark the last move, so the vocabulary is learned here and
- * recognised there.
+ * Two generations in. Orange has taken most of the board already, and the
+ * outlined corner is holding 2 against a limit of 2 — so it is the next to go.
+ * The cell below it holds 3, which looks similar and is not over: an interior
+ * cell has four neighbours and so a limit of 4. That contrast is the reason
+ * this frame is the one worth showing.
  */
-function Played() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="absolute inset-0 h-full w-full text-trace">
-      <path
-        d="M2 7.5V2h5.5M16.5 2H22v5.5M22 16.5V22h-5.5M7.5 22H2v-5.5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2}
-        vectorEffect="non-scaling-stroke"
-      />
-    </svg>
-  )
-}
+export const FIGURE_MIDWAY: readonly MiniCell[] = [
+  [0, 2], EMPTY_CELL, [0, 2], EMPTY_CELL,
+  [0, 2], [0, 2], EMPTY_CELL, [0, 1],
+  EMPTY_CELL, [0, 3], [0, 2], EMPTY_CELL,
+  [0, 1], EMPTY_CELL, EMPTY_CELL, [1, 1],
+]
 
-function Panel({ cells, played }: { cells: readonly Cell[]; played?: number }) {
+/** Cells above their limit in the midway frame, so about to fire. */
+export const FIGURE_MIDWAY_FIRING: readonly number[] = [0]
+
+export const FIGURE_AFTER: readonly MiniCell[] = [
+  [0, 1], [0, 1], [0, 2], EMPTY_CELL,
+  EMPTY_CELL, [0, 3], EMPTY_CELL, [0, 1],
+  [0, 1], [0, 3], [0, 2], EMPTY_CELL,
+  [0, 1], EMPTY_CELL, EMPTY_CELL, [1, 1],
+]
+
+function Arrow() {
   return (
-    <div
-      className="grid w-full border-[0.5px] border-trace-rule bg-chart"
-      style={{ gridTemplateColumns: `repeat(${FIGURE_COLS}, minmax(0, 1fr))` }}
-    >
-      {cells.map((cell, index) => (
-        <div key={index} className="relative aspect-square border-[0.5px] border-trace-hairline p-[12%]">
-          <Orbs player={cell[0]} count={cell[1]} />
-          {played === index ? <Played /> : null}
-        </div>
-      ))}
-    </div>
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="mt-lg h-4 w-4 shrink-0 text-trace-faint">
+      <path d="M3 12h18m0 0-6.5-6.5M21 12l-6.5 6.5" fill="none" stroke="currentColor" strokeWidth={1.5} />
+    </svg>
   )
 }
 
@@ -99,36 +85,33 @@ export function CascadeFigure({ locale }: { locale: Locale }) {
 
   return (
     /*
-     * A figure, not decoration — it carries the caption that names what the
-     * two panels are, and the caption is the alternative for anyone who cannot
-     * see them. The panels themselves are aria-hidden through Orbs, so a
-     * screen reader gets the sentence rather than thirty-two empty cells.
+     * A figure with a caption that carries the arithmetic, because the caption
+     * is also the alternative for anyone who cannot see the panels — the boards
+     * themselves are aria-hidden through Orbs.
      */
     <figure className="flex flex-col gap-sm">
-      <div className="flex items-center gap-sm sm:gap-md">
+      <div className="flex items-start gap-2xs sm:gap-xs">
         <div className="flex min-w-0 flex-1 flex-col gap-2xs">
           <span className="label-micro">{t.figureBefore}</span>
-          <Panel cells={FIGURE_BEFORE} played={FIGURE_MOVE} />
+          <MiniBoard cells={FIGURE_BEFORE} cols={FIGURE_COLS} played={FIGURE_MOVE} />
         </div>
 
-        {/* The arrow is the verb. Rotated upright on a phone, where the panels
-            stay side by side but the gap between them is narrow. */}
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className="mt-lg h-5 w-5 shrink-0 text-trace-faint"
-        >
-          <path
-            d="M3 12h18m0 0-6.5-6.5M21 12l-6.5 6.5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={1.5}
+        <Arrow />
+
+        <div className="flex min-w-0 flex-1 flex-col gap-2xs">
+          <span className="label-micro">{t.figureDuring}</span>
+          <MiniBoard
+            cells={FIGURE_MIDWAY}
+            cols={FIGURE_COLS}
+            firing={FIGURE_MIDWAY_FIRING}
           />
-        </svg>
+        </div>
+
+        <Arrow />
 
         <div className="flex min-w-0 flex-1 flex-col gap-2xs">
           <span className="label-micro">{t.figureAfter}</span>
-          <Panel cells={FIGURE_AFTER} />
+          <MiniBoard cells={FIGURE_AFTER} cols={FIGURE_COLS} />
         </div>
       </div>
 

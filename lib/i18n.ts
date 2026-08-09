@@ -23,6 +23,7 @@ type Copy = {
   tagline: string
   rulesTitle: string
   figureBefore: string
+  figureDuring: string
   figureAfter: string
   figureCaption: string
   moreWays: string
@@ -48,9 +49,10 @@ const DICTIONARY: Record<Locale, Copy> = {
       'Taruh orb sampai sebuah sel penuh, lalu sel itu meledak ke tetangganya — dan setiap sel yang kena berpindah jadi milikmu. Satu langkah bisa membalik wilayah yang tidak kamu sentuh.',
     rulesTitle: 'Aturannya cuma tiga',
     figureBefore: 'Sebelum',
-    figureAfter: 'Sesudah satu langkah',
+    figureDuring: 'Dua tahap kemudian',
+    figureAfter: 'Sesudah',
     figureCaption:
-      'Satu orb ditaruh di sel tengah milik Jingga. Lima ledakan beruntun, dan Biru tinggal satu sel.',
+      'Jingga menaruh satu orb di sel tengah yang sudah berisi 3. Sel tengah punya 4 tetangga, jadi batasnya 4 — kini penuh, dan meledak. Tetangganya ikut penuh, lalu tetangganya lagi: empat tahap, lima ledakan. Biru tinggal satu sel.',
     moreWays: 'Cara lain',
     play: 'Main',
     playHint: 'Hotseat 2–4 pemain, atau lawan AI di satu perangkat.',
@@ -76,9 +78,10 @@ const DICTIONARY: Record<Locale, Copy> = {
       'Add orbs until a cell is full, and it detonates into its neighbours — every cell the blast touches changes hands. One move can flip territory you never touched.',
     rulesTitle: 'There are only three rules',
     figureBefore: 'Before',
-    figureAfter: 'After one move',
+    figureDuring: 'Two generations in',
+    figureAfter: 'After',
     figureCaption:
-      'One orb goes into an orange cell in the middle. Five explosions later, blue is down to a single cell.',
+      'Orange adds one orb to a middle cell already holding 3. A middle cell has 4 neighbours, so its limit is 4 — it is now full, and it fires. Its neighbours fill in turn, and theirs after that: four generations, five explosions. Blue is left with one cell.',
     moreWays: 'Other ways to play',
     play: 'Play',
     playHint: 'Hotseat for 2–4 players, or take on the AI on one device.',
