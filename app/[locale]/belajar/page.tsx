@@ -6,6 +6,7 @@ export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }
 
+
 export default function BelajarPage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
   return <TutorialScreen locale={params.locale} />

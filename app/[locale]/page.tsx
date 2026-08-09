@@ -6,6 +6,7 @@ import { CascadeFigure } from '@/components/site/CascadeFigure'
 
 export { generateStaticParams } from './layout'
 
+
 export default function HomePage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
   const locale: Locale = params.locale

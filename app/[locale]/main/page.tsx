@@ -6,6 +6,7 @@ export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }
 
+
 export default function MainPage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
   return <PlayScreen locale={params.locale} />
