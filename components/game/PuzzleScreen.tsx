@@ -125,8 +125,24 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
       : `${where}, ${COPY.owned[locale]} ${playerName(owner, locale)}, ${view.counts[index]} orb`
   }
 
+  /*
+   * The whole screen exists for one piece of feedback — did that move win — and
+   * it was delivered only as text appearing on screen. Mounted for the life of
+   * the page and empty until there is a verdict, because a region added at the
+   * moment its content changes is not announced.
+   */
+  const verdict =
+    outcome === null || puzzle === null
+      ? ''
+      : outcome === 'solved'
+        ? `${COPY.solved[locale]} ${COPY.solvedBody[locale](puzzle.explosions, puzzle.captures)}`
+        : `${COPY.missed[locale]} ${COPY.missedBody[locale]}`
+
   return (
     <main className="mx-auto flex w-full flex-1 max-w-2xl flex-col gap-lg px-4 py-8">
+      <p role="status" className="sr-only">
+        {verdict}
+      </p>
       <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
         <div>
           <h1 className="font-numeral text-2xl">{COPY.title[locale]}</h1>
