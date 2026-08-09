@@ -90,7 +90,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="border border-trace/30 px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+      className="border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
     >
       {COPY.reopen[locale]}
     </button>
@@ -102,7 +102,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
       <div
         role="presentation"
         onClick={dismiss}
-        className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-trace/30 p-4 sm:items-center"
+        className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-trace-rule p-4 sm:items-center"
       >
         <section
           role="dialog"
@@ -121,7 +121,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
               </li>
             ))}
           </ol>
-          <div className="flex flex-col gap-2 border-t border-trace/20 pt-3">
+          <div className="flex flex-col gap-2 border-t border-trace-hairline pt-3">
             <p className="text-sm">{COPY.legendTitle[locale]}</p>
             <div className="flex flex-wrap gap-4">
               {Array.from({ length: players }, (_, player) => (
@@ -141,7 +141,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
               ))}
             </ul>
           </div>
-          <div className="flex flex-wrap items-center gap-4 border-t border-trace/20 pt-4">
+          <div className="flex flex-wrap items-center gap-4 border-t border-trace-hairline pt-4">
             <button
               type="button"
               onClick={dismiss}

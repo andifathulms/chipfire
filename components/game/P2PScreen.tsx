@@ -118,7 +118,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
+      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
         <h1 className="font-numeral text-3xl">Tanding</h1>
         <Link href={`/${locale}/`} className="text-sm underline">
           {copy(locale).back}
@@ -203,7 +203,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
             aria-live="polite"
             className={[
               'border px-3 py-2 font-numeral text-base',
-              finished || myTurn ? 'border-trace bg-chart-deep' : 'border-trace/25 text-trace-soft',
+              finished || myTurn ? 'border-trace bg-chart-deep' : 'border-trace-hairline text-trace-soft',
             ].join(' ')}
           >
             {finished
@@ -244,7 +244,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
            * "they are waiting for you" are different situations and a single
            * on/off control would show the same thing for both.
            */}
-          <section className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-trace/25 px-3 py-2 text-sm">
+          <section className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-trace-hairline px-3 py-2 text-sm">
             <span className="label-micro">{COPY.preview[locale]}</span>
             <span aria-live="polite" className="text-trace-soft">
               {game.previewAgreed
@@ -261,7 +261,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                 game.setPreview(!game.previewMine)
                 setPreviewIndex(null)
               }}
-              className="ml-auto border border-trace/30 px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
+              className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
             >
               {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
             </button>
@@ -274,7 +274,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
              * moves the page every time you look at anything.
              */}
             {game.previewAgreed ? (
-              <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace/15 pt-2">
+              <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace-hairline pt-2">
                 <span className="flex items-baseline gap-1">
                   <span className="label-micro">{COPY.reach[locale]}</span>
                   <span className="font-numeral">{preview?.explosions ?? '—'}</span>
@@ -296,7 +296,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           <button
             type="button"
             onClick={game.disconnect}
-            className="self-start border border-trace/30 px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+            className="self-start border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
           >
             {COPY.disconnect[locale]}
           </button>

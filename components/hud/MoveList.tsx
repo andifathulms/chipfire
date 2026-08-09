@@ -66,7 +66,7 @@ export function MoveList({
       {moves.length === 0 ? (
         <p className="text-sm text-trace-faint">{COPY.empty[locale]}</p>
       ) : (
-        <ol className="max-h-48 overflow-y-auto border-t border-trace/20 text-sm">
+        <ol className="max-h-48 overflow-y-auto border-t border-trace-hairline text-sm">
           {moves.map((move, position) => {
             const turn = position + 1
             const where = cellName(cols, move.index)
@@ -76,7 +76,7 @@ export function MoveList({
               <li
                 key={`${turn}:${move.index}`}
                 ref={position === moves.length - 1 ? endRef : null}
-                className="flex items-center gap-sm border-b border-trace/10 py-1"
+                className="flex items-center gap-sm border-b border-trace-hairline py-1"
               >
                 <span
                   className="font-numeral w-6 shrink-0 text-right text-xs text-trace-faint"

@@ -68,6 +68,17 @@ const config: Config = {
           DEFAULT: token('trace'), // 13.1:1
           soft: token('trace-soft'), //  6.9:1
           faint: token('trace-faint'), // 5.1:1
+          /*
+           * Named alphas for chrome. These bake their opacity in rather than
+           * accepting a slash modifier, which is the point: `border-trace-rule`
+           * is a decision about what kind of line this is, and `border-trace/27`
+           * is a decision about nothing. The board keeps the slash syntax,
+           * where the alphas carry game state instead of trim.
+           */
+          wash: 'rgb(var(--color-trace) / var(--alpha-wash))',
+          hairline: 'rgb(var(--color-trace) / var(--alpha-hairline))',
+          rule: 'rgb(var(--color-trace) / var(--alpha-rule))',
+          data: 'rgb(var(--color-trace) / var(--alpha-data))',
         },
         /*
          * The brand mark's core, and only the mark's. The brand rules fix it:

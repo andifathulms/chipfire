@@ -248,7 +248,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace/20 pb-3">
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace-hairline pb-3">
         <div className="flex items-baseline gap-3">
           <Link
             href={`/${locale}/`}
@@ -354,7 +354,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
            */}
           <div
             aria-live="polite"
-            className="flex min-h-[3.25rem] items-center gap-5 border border-trace/20 bg-chart-deep/50 px-3 py-2"
+            className="flex min-h-[3.25rem] items-center gap-5 border border-trace-hairline bg-chart-deep/50 px-3 py-2"
           >
             {preview !== null ? (
               <>
@@ -460,7 +460,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
            * folds away instead of competing with the controls that are used
            * every turn.
            */}
-          <details className="border-t border-trace/20 pt-3">
+          <details className="border-t border-trace-hairline pt-3">
             <summary className="label-micro cursor-pointer select-none py-1">
               {COPY.boardSetup[locale]}
             </summary>
@@ -476,7 +476,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
            * Left open it would quietly coach, which is not what it is for.
            */}
           {mode === 'ai' ? (
-            <details className="border-t border-trace/20 pt-3">
+            <details className="border-t border-trace-hairline pt-3">
               <summary className="label-micro cursor-pointer select-none py-1">
                 {COPY.evaluation[locale]}
               </summary>

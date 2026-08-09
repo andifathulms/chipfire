@@ -81,11 +81,11 @@ function Played() {
 function Panel({ cells, played }: { cells: readonly Cell[]; played?: number }) {
   return (
     <div
-      className="grid w-full border-[0.5px] border-trace/40 bg-chart"
+      className="grid w-full border-[0.5px] border-trace-rule bg-chart"
       style={{ gridTemplateColumns: `repeat(${FIGURE_COLS}, minmax(0, 1fr))` }}
     >
       {cells.map((cell, index) => (
-        <div key={index} className="relative aspect-square border-[0.5px] border-trace/25 p-[12%]">
+        <div key={index} className="relative aspect-square border-[0.5px] border-trace-hairline p-[12%]">
           <Orbs player={cell[0]} count={cell[1]} />
           {played === index ? <Played /> : null}
         </div>

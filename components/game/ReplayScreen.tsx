@@ -64,7 +64,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
+      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
         <div>
           <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>
           <p className="max-w-prose text-sm text-trace-soft">{COPY.intro[locale]}</p>
@@ -90,7 +90,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
           spellCheck={false}
           aria-label={COPY.codeLabel[locale]}
           placeholder={COPY.codeLabel[locale]}
-          className="min-w-[16rem] flex-1 resize-none border border-trace/30 bg-chart p-2 font-mono text-xs"
+          className="min-w-[16rem] flex-1 resize-none border border-trace-rule bg-chart p-2 font-mono text-xs"
         />
         <button
           type="submit"
@@ -153,7 +153,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setStep((value) => Math.max(0, value - 1))}
                 disabled={step === 0}
-                className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+                className="border border-trace-rule px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
               >
                 {COPY.prev[locale]}
               </button>
@@ -161,7 +161,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setStep((value) => Math.min(frames.length - 1, value + 1))}
                 disabled={step >= frames.length - 1}
-                className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+                className="border border-trace-rule px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
               >
                 {COPY.next[locale]}
               </button>

@@ -20,7 +20,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
   return (
     /* Was text-xs — 12px, under the readable floor for anything anyone is
        expected to actually read, and the language switch lives here. */
-    <footer className="mx-auto flex w-full max-w-6xl flex-col gap-4 border-t border-trace/20 px-4 py-4 text-sm sm:flex-row sm:items-start sm:justify-between lg:px-8">
+    <footer className="mx-auto flex w-full max-w-6xl flex-col gap-4 border-t border-trace-hairline px-4 py-4 text-sm sm:flex-row sm:items-start sm:justify-between lg:px-8">
       <div className="flex flex-col items-start gap-1.5 text-trace-faint">
         <span>{t.footer}</span>
         <Link

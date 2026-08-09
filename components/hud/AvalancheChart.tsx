@@ -91,7 +91,7 @@ export function AvalancheChart({ stats, locale }: { stats: Stats; locale: Locale
                          */}
                         <div className="h-2 flex-1 bg-chart-deep">
                           <div
-                            className="h-full rounded-r-[4px] bg-trace/80"
+                            className="h-full rounded-r-[4px] bg-trace-data"
                             style={{ width: `${Math.round((count / peak) * 100)}%` }}
                           />
                         </div>

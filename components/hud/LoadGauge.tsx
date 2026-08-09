@@ -45,11 +45,11 @@ export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
        */}
       <div className="flex items-center gap-sm">
         <div
-          className="h-1.5 flex-1 border border-trace/25 bg-chart"
+          className="h-1.5 flex-1 border border-trace-hairline bg-chart"
           role="img"
           aria-label={COPY.described[locale](load.percent, load.primed)}
         >
-          <div className="h-full bg-trace/70" style={{ width: `${load.percent}%` }} />
+          <div className="h-full bg-trace-data" style={{ width: `${load.percent}%` }} />
         </div>
         <span className="font-numeral text-base leading-flat tabular-nums">{load.percent}%</span>
       </div>

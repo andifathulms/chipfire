@@ -45,12 +45,12 @@ export function Controls({
   const speeds = Object.keys(SPEED_LABELS) as Speed[]
 
   return (
-    <div className="flex flex-col gap-3 border-t border-trace/20 pt-4 text-sm">
+    <div className="flex flex-col gap-3 border-t border-trace-hairline pt-4 text-sm">
       <div className="flex flex-col gap-1.5">
         <span className="label-micro">{COPY.speed[locale]}</span>
         {/* A segmented control that fills the rail: equal columns, so the
             options read as one instrument rather than four loose buttons. */}
-        <div className="grid grid-cols-4 border border-trace/30">
+        <div className="grid grid-cols-4 border border-trace-rule">
           {speeds.map((option) => (
             <button
               key={option}
@@ -75,7 +75,7 @@ export function Controls({
        */}
       <div className="flex flex-col gap-1.5">
         <span className="label-micro">{COPY.preview[locale]}</span>
-        <div className="grid grid-cols-2 border border-trace/30">
+        <div className="grid grid-cols-2 border border-trace-rule">
           {([true, false] as const).map((value) => (
             <button
               key={String(value)}
@@ -102,14 +102,14 @@ export function Controls({
           type="button"
           onClick={onUndo}
           disabled={!canUndo}
-          className="border border-trace/30 px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
+          className="border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
         >
           {COPY.undo[locale]}
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="border border-trace/30 px-3 py-1.5 transition-colors hover:bg-chart-deep"
+          className="border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep"
         >
           {COPY.reset[locale]}
         </button>

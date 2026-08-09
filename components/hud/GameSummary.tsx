@@ -36,9 +36,9 @@ export function GameSummary({
   const total = stats.played.hotseat + stats.played.ai + stats.played.p2p
 
   return (
-    <section className="flex flex-col gap-2 border border-trace/25 p-4 text-sm">
+    <section className="flex flex-col gap-2 border border-trace-hairline p-4 text-sm">
       <p className="text-trace-soft">{COPY.code[locale]}</p>
-      <code className="block break-all border border-trace/20 bg-chart-deep p-2 font-mono text-xs">
+      <code className="block break-all border border-trace-hairline bg-chart-deep p-2 font-mono text-xs">
         {code}
       </code>
       <div className="flex flex-wrap items-center gap-3">
@@ -48,7 +48,7 @@ export function GameSummary({
             void navigator.clipboard?.writeText(code)
             setCopied(true)
           }}
-          className="border border-trace/30 px-3 py-1 transition-colors hover:bg-chart-deep"
+          className="border border-trace-rule px-3 py-1 transition-colors hover:bg-chart-deep"
         >
           {copied ? COPY.copied[locale] : COPY.copy[locale]}
         </button>
@@ -60,12 +60,12 @@ export function GameSummary({
         </span>
       </div>
 
-      {review !== null ? <div className="border-t border-trace/20 pt-3">{review}</div> : null}
+      {review !== null ? <div className="border-t border-trace-hairline pt-3">{review}</div> : null}
 
       {/* The distribution, not just its maximum. A single longest-chain number
           is the least informative summary of a distribution it is possible to
           keep, and it was the only one being kept. */}
-      <div className="border-t border-trace/20 pt-3">
+      <div className="border-t border-trace-hairline pt-3">
         <AvalancheChart stats={stats} locale={locale} />
       </div>
     </section>

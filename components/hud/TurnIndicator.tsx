@@ -74,7 +74,7 @@ export function TurnIndicator({
                 // survives a colour-blind read.
                 active
                   ? 'border-trace bg-chart-deep shadow-[inset_2px_0_0_0] shadow-trace'
-                  : 'border-trace/25',
+                  : 'border-trace-hairline',
                 out ? 'opacity-50' : '',
               ].join(' ')}
             >
@@ -90,7 +90,7 @@ export function TurnIndicator({
 
               {/* Share of every orb in play. Hidden from assistive tech: the
                   count beside it is the same fact, stated precisely. */}
-              <span aria-hidden="true" className="block h-[3px] w-full bg-trace/10">
+              <span aria-hidden="true" className="block h-[3px] w-full bg-trace-wash">
                 <span
                   className={`block h-full ${style.fill} transition-[width] duration-300`}
                   style={{ width: `${share}%` }}

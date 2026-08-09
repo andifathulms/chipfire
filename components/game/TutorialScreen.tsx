@@ -103,7 +103,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-2xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace/20 pb-4">
+      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
         <div>
           <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>
           <p className="text-sm text-trace-soft">{COPY.subtitle[locale]}</p>
@@ -121,7 +121,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
             aria-current={slot === position ? 'step' : undefined}
             className={[
               'h-1 flex-1 transition-colors',
-              slot < position || finished ? 'bg-trace' : slot === position ? 'bg-trace/60' : 'bg-trace/15',
+              slot < position || finished ? 'bg-trace' : slot === position ? 'bg-trace-data' : 'bg-trace-hairline',
             ].join(' ')}
           />
         ))}
@@ -175,7 +175,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
                 <button
                   type="button"
                   onClick={() => goTo(position)}
-                  className="border border-trace/30 px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+                  className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
                 >
                   {COPY.again[locale]}
                 </button>
@@ -197,7 +197,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
             <button
               type="button"
               onClick={() => goTo(0)}
-              className="border border-trace/30 px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+              className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
             >
               {COPY.restart[locale]}
             </button>

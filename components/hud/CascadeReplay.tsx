@@ -22,7 +22,7 @@ const COPY = {
   of: { id: 'dari', en: 'of' },
 } as const
 
-const BUTTON = 'border border-trace/30 px-2 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40 disabled:hover:bg-transparent'
+const BUTTON = 'border border-trace-rule px-2 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40 disabled:hover:bg-transparent'
 
 export function CascadeReplay({
   review,
@@ -53,7 +53,7 @@ export function CascadeReplay({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-xs border border-trace/30 px-2 py-1.5 text-sm">
+    <div className="flex flex-wrap items-center gap-xs border border-trace-rule px-2 py-1.5 text-sm">
       <button
         type="button"
         onClick={() => review.step(-1)}

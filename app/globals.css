@@ -16,9 +16,9 @@
  * them: a component writes `text-lg` or `bg-chart`, the number lives here.
  *
  * Colours are RGB channel triplets, not hex, because Tailwind's slash-opacity
- * syntax — `border-trace/30`, `bg-trace/10`, which the board leans on heavily
- * for the printed lattice — compiles to `rgb(var(--x) / 0.3)` and cannot take
- * a var that already carries its own colour function.
+ * syntax — which the board still leans on for the printed lattice — compiles
+ * to `rgb(var(--x) / 0.3)` and cannot take a var that already carries its own
+ * colour function. Chrome uses the named alphas below instead.
  */
 :root {
   /* ── Colour ──
@@ -90,6 +90,24 @@
   --space-lg: 1.5rem; /* 24px */
   --space-xl: 2.5rem; /* 40px */
   --space-2xl: 4rem; /* 64px */
+
+  /* ── Ink alphas ──
+   * Five steps, because the chrome had grown nineteen: /10 /15 /20 /25 /30
+   * /40 /45 /50 /60 /70 /80 and an inline /[0.06], with three of them doing
+   * one job. Borders at 20%, 25% and 30% are not a hierarchy — they are the
+   * same line drawn by three different hands, which is precisely why panels
+   * stacked in a rail read as one undifferentiated block.
+   *
+   * The board is exempt and keeps its own values. There the alphas separate
+   * preview reach from preview origin from detonation from capture, which are
+   * four distinct game states rather than four weights of trim, and
+   * re-quantising them without a board in front of me is the kind of quiet
+   * change that turns a rule into an approximation.
+   */
+  --alpha-wash: 0.1; /* fills and hover tints */
+  --alpha-hairline: 0.2; /* dividers, table rules, panel seams */
+  --alpha-rule: 0.32; /* the border of something you can press */
+  --alpha-data: 0.7; /* bars, gauges, the filled part of a reading */
 
   /* ── Lattice ──
    * The printed grid: chart paper exists before the game starts.

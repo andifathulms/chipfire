@@ -51,7 +51,7 @@ export function EvaluationPanel({ state, locale }: { state: GameState; locale: L
 
       <table className="w-full border-collapse text-xs">
         <thead>
-          <tr className="border-b border-trace/20">
+          <tr className="border-b border-trace-hairline">
             <th scope="col" className="label-micro px-2 py-1 text-left">
               {/* The row header column needs no title; the rows name themselves. */}
             </th>
@@ -65,7 +65,7 @@ export function EvaluationPanel({ state, locale }: { state: GameState; locale: L
         </thead>
         <tbody className="text-trace-soft">
           {(['orbs', 'cells', 'position', 'vulnerability'] as const).map((term) => (
-            <tr key={term} className="border-b border-trace/10">
+            <tr key={term} className="border-b border-trace-hairline">
               <th scope="row" className="px-2 py-1 text-left font-normal">
                 {COPY[term][locale]}
               </th>
@@ -76,7 +76,7 @@ export function EvaluationPanel({ state, locale }: { state: GameState; locale: L
               ))}
             </tr>
           ))}
-          <tr className="border-b border-trace/20 text-trace">
+          <tr className="border-b border-trace-hairline text-trace">
             <th scope="row" className="px-2 py-1 text-left font-medium">
               {COPY.total[locale]}
             </th>

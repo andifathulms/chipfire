@@ -117,7 +117,7 @@ export function DivergenceReport({
     <div
       className={[
         'flex flex-col gap-xs border-l-2 py-1 pl-sm text-sm',
-        alarming ? 'border-p1 text-p1-ink' : 'border-trace/30',
+        alarming ? 'border-p1 text-p1-ink' : 'border-trace-rule',
       ].join(' ')}
     >
       <p className="label-micro">{COPY.title[locale]}</p>

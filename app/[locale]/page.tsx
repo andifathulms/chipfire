@@ -64,7 +64,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
 
             <Link
               href={`/${locale}/belajar/`}
-              className="flex flex-col border border-trace/30 px-lg py-sm transition-colors hover:border-trace hover:bg-chart-deep"
+              className="flex flex-col border border-trace-rule px-lg py-sm transition-colors hover:border-trace hover:bg-chart-deep"
             >
               <span className="font-numeral text-xl leading-snug">{t.learn}</span>
               <span className="text-sm text-trace-soft">{t.learnHint}</span>
@@ -85,7 +85,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
         <h2 className="label-micro">{t.rulesTitle}</h2>
         <ol className="grid max-w-measure gap-sm text-base text-trace-soft sm:max-w-none sm:grid-cols-3">
           {t.rules.map((rule, position) => (
-            <li key={rule} className="flex gap-sm border-t border-trace/25 pt-sm">
+            <li key={rule} className="flex gap-sm border-t border-trace-hairline pt-sm">
               <span className="font-numeral text-base text-trace">{position + 1}</span>
               <span>{rule}</span>
             </li>
@@ -100,7 +100,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
             <li key={link.href} className="flex items-baseline gap-xs">
               <Link
                 href={link.href}
-                className="underline decoration-trace/40 underline-offset-4 transition-colors hover:decoration-trace"
+                className="underline decoration-trace-rule underline-offset-4 transition-colors hover:decoration-trace"
               >
                 {link.title}
               </Link>

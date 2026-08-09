@@ -45,7 +45,7 @@ export function ModePicker({
     <div className="flex flex-col gap-3 text-sm">
       <div className="flex flex-col gap-1.5">
         <span className="label-micro">{COPY.opponent[locale]}</span>
-        <div className="grid grid-cols-2 border border-trace/30">
+        <div className="grid grid-cols-2 border border-trace-rule">
           {modes.map((option) => (
             <button
               key={option}
@@ -69,7 +69,7 @@ export function ModePicker({
           {/* Three levels, so they are shown rather than hidden behind a select:
               a menu you must open to see your options is a menu you compare
               badly. */}
-          <div className="grid grid-cols-3 border border-trace/30">
+          <div className="grid grid-cols-3 border border-trace-rule">
             {levels.map((level) => (
               <button
                 key={level}

@@ -50,7 +50,7 @@ export function SoundToggle({ locale }: { locale: Locale }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="label-micro">{COPY.label[locale]}</span>
-      <div className="grid grid-cols-2 border border-trace/30">
+      <div className="grid grid-cols-2 border border-trace-rule">
         {([false, true] as const).map((value) => (
           <button
             key={String(value)}

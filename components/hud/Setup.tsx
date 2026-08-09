@@ -65,7 +65,7 @@ export function Setup({
               defaultValue={value}
               min={min}
               max={max}
-              className="w-full border border-trace/30 bg-chart px-2 py-1 font-numeral"
+              className="w-full border border-trace-rule bg-chart px-2 py-1 font-numeral"
             />
           </label>
         ))}

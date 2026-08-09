@@ -65,12 +65,12 @@ function CodeBox({ code, locale }: { code: string; locale: Locale }) {
         readOnly
         value={formatForReading(code)}
         rows={4}
-        className="w-full resize-none border border-trace/30 bg-chart-deep p-2 font-mono text-xs"
+        className="w-full resize-none border border-trace-rule bg-chart-deep p-2 font-mono text-xs"
         onFocus={(event) => event.currentTarget.select()}
       />
       <button
         type="button"
-        className="self-start border border-trace/30 px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+        className="self-start border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
         onClick={() => {
           void navigator.clipboard?.writeText(code)
           setCopied(true)
@@ -104,7 +104,7 @@ function PasteBox({
         onChange={(event) => setValue(event.target.value)}
         rows={4}
         spellCheck={false}
-        className="w-full resize-none border border-trace/30 bg-chart p-2 font-mono text-xs"
+        className="w-full resize-none border border-trace-rule bg-chart p-2 font-mono text-xs"
       />
       <button
         type="submit"
@@ -141,7 +141,7 @@ export function ConnectPanel({
   onConfirm: (code: string) => void
 }) {
   return (
-    <section className="flex flex-col gap-5 border border-trace/25 bg-chart-deep/60 p-5">
+    <section className="flex flex-col gap-5 border border-trace-hairline bg-chart-deep/60 p-5">
       <div>
         <h2 className="font-numeral text-xl">{COPY.title[locale]}</h2>
         <p className="mt-1 max-w-prose text-sm text-trace-soft">{COPY.intro[locale]}</p>
@@ -163,7 +163,7 @@ export function ConnectPanel({
           <button
             type="button"
             onClick={() => onRole('guest')}
-            className="border border-trace/30 px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+            className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
           >
             {COPY.guestRole[locale]}
           </button>

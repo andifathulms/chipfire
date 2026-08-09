@@ -95,7 +95,7 @@ export function PostMortemPanel({
           type="button"
           onClick={onRun}
           disabled={running}
-          className="self-start border border-trace/30 px-3 py-1.5 text-sm transition-colors hover:bg-chart-deep disabled:opacity-50"
+          className="self-start border border-trace-rule px-3 py-1.5 text-sm transition-colors hover:bg-chart-deep disabled:opacity-50"
         >
           {running ? COPY.running[locale] : COPY.ask[locale]}
         </button>
@@ -115,7 +115,7 @@ export function PostMortemPanel({
     <section className="flex flex-col gap-sm text-sm">
       <h3 className="label-micro">{COPY.title[locale]}</h3>
 
-      <div className="flex flex-col gap-xs border-l-2 border-trace/30 py-1 pl-sm">
+      <div className="flex flex-col gap-xs border-l-2 border-trace-rule py-1 pl-sm">
         <p className="label-micro">{COPY.turningPoint[locale]}</p>
         {point === null ? (
           <p className="max-w-measure text-trace-soft">{COPY.neverAhead[locale]}</p>
@@ -134,7 +134,7 @@ export function PostMortemPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-xs border-l-2 border-trace/30 py-1 pl-sm">
+      <div className="flex flex-col gap-xs border-l-2 border-trace-rule py-1 pl-sm">
         <p className="label-micro">{COPY.costliest[locale]}</p>
         {costliest === null ? (
           <p className="max-w-measure text-trace-soft">{COPY.clean[locale]}</p>
@@ -158,7 +158,7 @@ export function PostMortemPanel({
        * and faintest text in the panel was the typography disagreeing with the
        * copy, and between the two the typography is what people act on.
        */}
-      <p className="max-w-measure border-t border-trace/20 pt-sm text-sm text-trace-soft">
+      <p className="max-w-measure border-t border-trace-hairline pt-sm text-sm text-trace-soft">
         {COPY.basis[locale](review.depth)}
         {review.partial ? ` ${COPY.partial[locale]}` : ''}
       </p>
