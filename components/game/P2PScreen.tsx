@@ -7,6 +7,7 @@ import { ConnectPanel } from '@/components/connect/ConnectPanel'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useP2PGame } from '@/components/game/useP2PGame'
+import { DivergenceReport } from '@/components/hud/DivergenceReport'
 import { NO_OWNER } from '@/lib/engine/board'
 import { copy, type Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
@@ -119,6 +120,17 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               <p>
                 {COPY.incoming[locale]} — {game.offeredMoves.length} {COPY.moves[locale]}
               </p>
+
+              {/* Adopting someone else's history is a decision, and it was
+                  being asked with nothing but a move count to go on. */}
+              {game.divergence !== null ? (
+                <DivergenceReport
+                  divergence={game.divergence}
+                  cols={session.state.board.cols}
+                  locale={locale}
+                />
+              ) : null}
+
               <button
                 type="button"
                 onClick={game.acceptResync}

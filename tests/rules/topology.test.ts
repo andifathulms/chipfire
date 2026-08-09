@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createBoard, criticalMass } from '@/lib/engine/board'
+import { MAX_COLS, createBoard, criticalMass } from '@/lib/engine/board'
+import { cellName } from '@/lib/engine/notation'
 import { neighbours } from '@/lib/engine/topology'
 import { applyMove } from '@/lib/engine/apply'
 import { parseState } from '../helpers'
@@ -63,5 +64,19 @@ describe('thresholds differ by position', () => {
       'convert',
       'convert',
     ])
+  })
+})
+
+describe('cell names', () => {
+  it('names a cell by column letter and 1-based row', () => {
+    // 9 columns: index 0 is the top-left, index 31 is row 4, column 5.
+    expect(cellName(9, 0)).toBe('a1')
+    expect(cellName(9, 8)).toBe('i1')
+    expect(cellName(9, 9)).toBe('a2')
+    expect(cellName(9, 31)).toBe('e4')
+  })
+
+  it('covers the widest board the rules allow', () => {
+    expect(cellName(MAX_COLS, MAX_COLS - 1)).toBe('n1')
   })
 })

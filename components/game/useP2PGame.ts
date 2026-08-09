@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   acceptAnswer,
   acceptOffer,
@@ -10,6 +10,7 @@ import {
   type PeerLink,
 } from '@/lib/net/channel'
 import { verify, type NetMessage } from '@/lib/net/sync'
+import { findDivergence } from '@/lib/engine/diverge'
 import { hashState } from '@/lib/engine/hash'
 import { DEFAULT_CONFIG, type GameState } from '@/lib/engine/state'
 import { useGameSession } from './useGameSession'
@@ -225,6 +226,27 @@ export function useP2PGame() {
     setDesync(null)
   }, [offeredMoves])
 
+  /*
+   * Where the two games stopped agreeing.
+   *
+   * Only computable once the peer has offered their move list, which is exactly
+   * when it is needed: the resync panel currently asks a player to adopt
+   * somebody else's history without telling them how it differs from their own.
+   *
+   * No protocol change — `resync` already carries moves, and the desync report
+   * already carries the hash the peer computed. Both were on the wire and only
+   * the accept/decline was being asked of them.
+   */
+  const divergence = useMemo(() => {
+    if (offeredMoves === null) return null
+    return findDivergence(
+      session.config,
+      session.record.moves,
+      offeredMoves,
+      desync === null ? null : { turn: desync.turn, hash: desync.received },
+    )
+  }, [offeredMoves, session.config, session.record.moves, desync])
+
   const disconnect = useCallback(() => {
     linkRef.current?.send({ t: 'bye' })
     linkRef.current?.close()
@@ -245,6 +267,7 @@ export function useP2PGame() {
     error,
     desync,
     offeredMoves,
+    divergence,
     host,
     join,
     confirm,

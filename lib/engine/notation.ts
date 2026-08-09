@@ -71,6 +71,22 @@ export function parseNotation(notation: Notation): GameState {
   }
 }
 
+/** Column letters, so a cell has a name a player can say out loud. */
+const COLUMN_LETTERS = 'abcdefghijklmn'
+
+/**
+ * A cell's name: column letter, then 1-based row — `c4`.
+ *
+ * Anywhere two people have to refer to the same cell — a move list, a report
+ * that two games diverged at a particular turn — "index 31" is a number about
+ * the array and `c4` is a name for the square. The letters cover MAX_COLS.
+ */
+export function cellName(cols: number, index: number): string {
+  const row = Math.floor(index / cols) + 1
+  const column = COLUMN_LETTERS[index % cols] ?? '?'
+  return `${column}${row}`
+}
+
 /** Render a state back into notation, so failures read as boards. */
 export function renderNotation(state: GameState): string {
   const { rows, cols, owners, counts } = state.board
