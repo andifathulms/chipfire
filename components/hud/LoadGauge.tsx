@@ -17,6 +17,24 @@ import type { Locale } from '@/lib/i18n'
 const COPY = {
   load: { id: 'Muatan', en: 'Load' },
   primed: { id: 'Siap meledak', en: 'Primed' },
+  /** What the denominator is, next to the denominator. It is the sum of every
+   *  cell's limit minus one — the most orbs the board can hold with nothing
+   *  going off — and without saying so the ratio is two numbers and a slash. */
+  basis: {
+    id: (capacity: number) =>
+      `${capacity} adalah muatan maksimum papan ini sebelum ada yang meledak: jumlah dari (batas − 1) tiap sel.`,
+    en: (capacity: number) =>
+      `${capacity} is the most this board can hold with nothing going off: every cell's limit minus one, summed.`,
+  },
+  /** Honest about the one case the reading breaks. */
+  overflow: {
+    id: 'Di atas 100% karena permainan sudah selesai — rantai berhenti begitu satu pemain menguasai semuanya, jadi ada sel yang masih melewati batas.',
+    en: 'Over 100% because the game is already decided — the chain halts the moment one player owns everything, so some cells are still above their limit.',
+  },
+  primedBasis: {
+    id: 'Sel yang tinggal satu orb lagi meledak. Sel-sel inilah yang bergetar di papan.',
+    en: 'Cells one orb short of firing. These are the ones trembling on the board.',
+  },
 } as const
 
 export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
@@ -50,6 +68,10 @@ export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
         <span className="font-numeral text-base leading-flat tabular-nums">{load.percent}%</span>
       </div>
 
+      <p className="text-xs leading-snug text-trace-faint">
+        {load.percent > 100 ? COPY.overflow[locale] : COPY.basis[locale](load.capacity)}
+      </p>
+
       <div className="flex items-baseline justify-between gap-md">
         <span className="label-micro">{COPY.primed[locale]}</span>
         {/*
@@ -58,6 +80,8 @@ export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
          */}
         <span className="font-numeral text-base leading-flat">{load.primed}</span>
       </div>
+
+      <p className="text-xs leading-snug text-trace-faint">{COPY.primedBasis[locale]}</p>
     </div>
   )
 }
