@@ -292,7 +292,31 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             {/*
              * The board is sized to fit the viewport rather than the column, so
              * a tall board never demands a scroll to see the move you are about
-             * to make. --chrome is the vertical space the rest of the page needs.
+             * to make. --chrome is the vertical space everything else needs.
+             *
+             * What it accounts for, so the next person to add a panel knows
+             * whether they have invalidated it:
+             *
+             *   page padding      py-6                      3rem
+             *   header + rule     text-2xl + pb-3          ~3rem
+             *   gap               gap-5                    1.25rem
+             *   turn indicator    label + player cards     ~6rem
+             *   gap               gap-5                    1.25rem
+             *   [board]
+             *   gap               gap-3                    0.75rem
+             *   readout           min-h-[3.25rem]          3.25rem
+             *   site footer       shared, outside <main>   ~4rem
+             *
+             * Everything else in the rail sits below the readout and is below
+             * the fold by design, which is why this session's additions —
+             * the gauge, the cascade replay, the move list — did not move it.
+             * On lg the rail is a side column and only the header, readout and
+             * footer are stacked with the board, hence the much smaller value.
+             *
+             * The calc only binds on short, wide viewports; elsewhere the
+             * column width caps the board first. UNVERIFIED against a real
+             * browser — the numbers are estimates from the classes above, and
+             * a landscape phone is the case to check.
              */}
             <div
               className="mx-auto w-full [--chrome:32rem] sm:[--chrome:27rem] lg:[--chrome:17rem]"

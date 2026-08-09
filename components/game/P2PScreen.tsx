@@ -213,6 +213,10 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                 : COPY.theirTurn[locale]}
           </p>
 
+          {/* Same budget as the local screen, less the mode picker and rail:
+              header, turn banner, board, preview panel, footer. See the note
+              in PlayScreen for what the number accounts for and what it does
+              not. Also unverified in a browser. */}
           <div
             className="mx-auto w-full [--chrome:30rem] sm:[--chrome:25rem]"
             style={{
