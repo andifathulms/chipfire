@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
+import { useCascadeReview } from '@/components/cascade/useCascadeReview'
 import { Controls } from '@/components/hud/Controls'
 import { Setup } from '@/components/hud/Setup'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
@@ -18,6 +19,7 @@ import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { LoadGauge } from '@/components/hud/LoadGauge'
 import { MoveList } from '@/components/hud/MoveList'
+import { CascadeReplay } from '@/components/hud/CascadeReplay'
 import { HowToPlay } from '@/components/hud/HowToPlay'
 import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
@@ -79,14 +81,29 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const [lastMoveWasAi, setLastMoveWasAi] = useState(false)
   const player = useCascadePlayer(frames, speed, session.settle, lastMoveWasAi ? 3 : 1.6)
 
-  const view = player.frame ?? session.state.board
+  /*
+   * Watching the last cascade back. A separate clock from the one above: that
+   * one is part of taking a turn, this one steps through a recording of one.
+   */
+  const review = useCascadeReview(session.lastCascade?.frames ?? [], speed)
+
+  // Review wins over the live player — you cannot be reviewing and animating at
+  // the same time, because opening a review is only offered once one has ended.
+  const view = review.frame ?? player.frame ?? session.state.board
   const animating = session.pending !== null
   const finished = session.state.winner !== null && !animating
 
   // Player 0 is the human; everyone else is the machine. It gets no hidden
   // information and no illegal moves — only a deeper search.
+  // `!review.open` matters: without it the machine takes its turn under a board
+  // that is currently showing a recording, and the move lands somewhere the
+  // player is not looking.
   const aiTurn =
-    mode === 'ai' && !animating && session.state.winner === null && session.state.current !== 0
+    mode === 'ai' &&
+    !animating &&
+    !review.open &&
+    session.state.winner === null &&
+    session.state.current !== 0
 
   const ai = useAiOpponent({
     enabled: mode === 'ai',
@@ -139,8 +156,12 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [awaitingTap, setAwaitingTap] = useState<number | null>(null)
 
+  // A preview left over from before a review was opened would be drawn on top
+  // of a recording, describing a move against a position that is not on screen.
   const preview: MovePreview | null =
-    previewIndex === null || animating || finished ? null : previewMove(session.state, previewIndex)
+    previewIndex === null || animating || finished || review.open
+      ? null
+      : previewMove(session.state, previewIndex)
 
   const select = (index: number, viaTouch: boolean) => {
     // Touch has no hover, so the first tap shows the reach and the second commits.
@@ -221,10 +242,10 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 board={board}
                 view={view}
                 legal={session.legal}
-                exploding={player.frame?.exploding ?? []}
-                converted={player.frame?.converted ?? []}
-                frameKey={player.index}
-                interactive={!animating && !finished && !aiTurn}
+                exploding={review.frame?.exploding ?? player.frame?.exploding ?? []}
+                converted={review.frame?.converted ?? player.frame?.converted ?? []}
+                frameKey={review.open ? -review.index - 1 : player.index}
+                interactive={!animating && !finished && !aiTurn && !review.open}
                 onSelect={select}
                 labelFor={labelFor}
                 label={COPY.board[locale]}
@@ -345,6 +366,16 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               <Setup locale={locale} config={session.config} onApply={applyConfig} />
             </div>
           </details>
+
+          {/* Only while there is something to look back at, and never over the
+              top of a cascade that is still running. */}
+          {!animating && !finished ? (
+            <CascadeReplay
+              review={review}
+              explosions={session.history.at(-1)?.explosions ?? 0}
+              locale={locale}
+            />
+          ) : null}
 
           <MoveList locale={locale} moves={session.history} cols={board.cols} />
 

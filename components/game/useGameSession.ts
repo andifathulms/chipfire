@@ -32,6 +32,15 @@ export type Session = {
   readonly state: GameState
   readonly record: GameRecord
   readonly pending: Pending | null
+  /**
+   * The most recent resolved cascade, kept after it finishes playing.
+   *
+   * `pending` is cleared on settle because it drives the animation and the
+   * input lock. This is the same frames, retained so the one moment the whole
+   * game is built around is not unrecoverable the instant it ends. Cleared by
+   * anything that makes it no longer the last thing that happened.
+   */
+  readonly lastCascade: Pending | null
   readonly legal: ReadonlySet<number>
   readonly hash: string
   /** One line per move, derived from the record — never accumulated, so undo
@@ -53,6 +62,7 @@ export function useGameSession(initial: GameConfig): Session {
   const [state, setState] = useState(() => createGame(initial))
   const [moves, setMoves] = useState<readonly number[]>([])
   const [pending, setPending] = useState<Pending | null>(null)
+  const [lastCascade, setLastCascade] = useState<Pending | null>(null)
   const [longestCascade, setLongestCascade] = useState(0)
 
   const play = useCallback(
@@ -63,9 +73,15 @@ export function useGameSession(initial: GameConfig): Session {
 
       const result = applyMove(state, toMove(state, index))
 
+      const cascade: Pending = {
+        frames: buildFrames(state.board, result.events),
+        events: result.events,
+      }
+
       setState(result.state)
       setMoves((list) => [...list, index])
-      setPending({ frames: buildFrames(state.board, result.events), events: result.events })
+      setPending(cascade)
+      setLastCascade(cascade)
       setLongestCascade((best) => Math.max(best, countExplosions(result.events)))
 
       return result.state
@@ -81,6 +97,7 @@ export function useGameSession(initial: GameConfig): Session {
       setMoves(next)
       setState(rebuilt)
       setPending(null)
+      setLastCascade(null)
       return rebuilt
     },
     [config],
@@ -92,6 +109,8 @@ export function useGameSession(initial: GameConfig): Session {
     setMoves(shortened)
     setState(replay({ config, moves: shortened }))
     setPending(null)
+    // The cascade being reviewed is the one that just got taken back.
+    setLastCascade(null)
   }, [config, moves])
 
   const reset = useCallback((next?: GameConfig) => {
@@ -100,6 +119,7 @@ export function useGameSession(initial: GameConfig): Session {
     setState(createGame(target))
     setMoves([])
     setPending(null)
+    setLastCascade(null)
     setLongestCascade(0)
   }, [config])
 
@@ -113,6 +133,7 @@ export function useGameSession(initial: GameConfig): Session {
     state,
     record,
     pending,
+    lastCascade,
     legal,
     hash,
     history,
