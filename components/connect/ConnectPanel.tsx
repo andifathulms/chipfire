@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { LinkStatus } from '@/lib/net/channel'
+import type { FailureCause, LinkStatus } from '@/lib/net/channel'
 import { formatForReading } from '@/lib/net/signal'
 import type { Locale } from '@/lib/i18n'
 import type { Role } from '@/components/game/useP2PGame'
@@ -49,9 +49,24 @@ const COPY = {
     failed: { id: 'Gagal', en: 'Failed' },
     closed: { id: 'Terputus', en: 'Disconnected' },
   },
+  /*
+   * Two failures, two remedies. Saying "some networks do not allow it" for both
+   * is how someone spends an evening blaming their router for a STUN request
+   * that never left the building.
+   */
   failure: {
-    id: 'Koneksi langsung tidak berhasil. Sebagian jaringan memang tidak mendukung.',
-    en: 'The direct connection did not work. Some networks simply do not allow it.',
+    'no-route': {
+      id: 'Kedua sisi menemukan alamat publiknya, tapi tidak ada jalur yang bisa dibuka di antara kalian. Ini kasus yang butuh server relay, dan Chipfire memang tidak punya. Sebagian jaringan — NAT simetris, jaringan kantor yang ketat — memang tidak bisa.',
+      en: 'Both sides found their public address, but no path between you could be opened. This is the case that needs a relay server, and Chipfire deliberately has none. Some networks — symmetric NAT, strict corporate networks — simply cannot do it.',
+    },
+    'no-stun': {
+      id: 'Tidak ada satu pun alamat publik yang ditemukan: server STUN tidak menjawab. Biasanya karena jaringan memblokir UDP ke luar, atau perangkat sedang offline. Coba jaringan lain — hotspot ponsel sering cukup.',
+      en: 'No public address was found at all: the STUN server never answered. Usually that means the network blocks outbound UDP, or the device is offline. Another network often fixes it — a phone hotspot is usually enough.',
+    },
+    unknown: {
+      id: 'Koneksi langsung tidak berhasil.',
+      en: 'The direct connection did not work.',
+    },
   },
   fallback: { id: 'Main hotseat saja', en: 'Play hotseat instead' },
 
@@ -142,6 +157,7 @@ export function ConnectPanel({
   locale,
   role,
   status,
+  cause,
   offerCode,
   answerCode,
   error,
@@ -154,6 +170,8 @@ export function ConnectPanel({
   locale: Locale
   role: Role | null
   status: LinkStatus
+  /** What the local side could establish about the failure, if anything. */
+  cause: FailureCause | null
   offerCode: string
   answerCode: string
   error: string | null
@@ -241,7 +259,7 @@ export function ConnectPanel({
 
       {status === 'failed' ? (
         <div role="alert" className="flex flex-col gap-2 border border-p1 p-3 text-sm">
-          <p>{COPY.failure[locale]}</p>
+          <p className="max-w-prose">{COPY.failure[cause ?? 'unknown'][locale]}</p>
           {error !== null ? <p className="font-mono text-xs text-trace-faint">{error}</p> : null}
           <Link href={`/${locale}/main/`} className="underline">
             {COPY.fallback[locale]}

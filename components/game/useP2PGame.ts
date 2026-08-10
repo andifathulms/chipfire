@@ -6,6 +6,8 @@ import {
   acceptOffer,
   createLink,
   createOffer,
+  diagnose,
+  type FailureCause,
   type LinkStatus,
   type PeerLink,
 } from '@/lib/net/channel'
@@ -48,6 +50,9 @@ export function useP2PGame() {
    * still waiting for the right code — is not thrown away over a typo.
    */
   const [codeError, setCodeError] = useState<string | null>(null)
+  /** What the local side can actually tell about a failure, rather than a
+   *  guess. Null until something has genuinely failed. */
+  const [cause, setCause] = useState<FailureCause | null>(null)
   const [desync, setDesync] = useState<Desync | null>(null)
   const [offeredMoves, setOfferedMoves] = useState<readonly number[] | null>(null)
 
@@ -66,7 +71,17 @@ export function useP2PGame() {
   const [pendingCount, setPendingCount] = useState(0)
 
   const handlers = useRef({
-    onStatus: (next: LinkStatus) => setStatus(next),
+    onStatus: (next: LinkStatus) => {
+      /*
+       * Read the candidate tally at the moment of failure, while the link that
+       * failed is still the current one. Asking later races a retry.
+       */
+      if (next === 'failed') {
+        const link = linkRef.current
+        setCause(link === null ? null : diagnose(link))
+      }
+      setStatus(next)
+    },
     onMessage: (message: NetMessage) => {
       switch (message.t) {
         case 'hello':
@@ -133,8 +148,21 @@ export function useP2PGame() {
     }
   }, [connected, desync, animating, pendingCount])
 
-  const ensureLink = useCallback(() => {
-    if (linkRef.current !== null) return linkRef.current
+  /*
+   * A fresh connection for every attempt.
+   *
+   * This used to hand back whatever was in the ref, so once a connection had
+   * failed — for any reason, including pasting the wrong code once — every
+   * subsequent try reused the same dead RTCPeerConnection and failed again no
+   * matter what was pasted into it. A peer connection cannot be reopened after
+   * it fails; the only way to try again is to build another one.
+   */
+  const freshLink = useCallback(() => {
+    const previous = linkRef.current
+    if (previous !== null) {
+      previous.connection.close()
+      linkRef.current = null
+    }
     const link = createLink({
       onStatus: (next) => handlers.current.onStatus(next),
       onMessage: (message) => handlers.current.onMessage(message),
@@ -145,8 +173,10 @@ export function useP2PGame() {
 
   const host = useCallback(async () => {
     setError(null)
+    setCodeError(null)
+    setCause(null)
     setRole('host')
-    const link = ensureLink()
+    const link = freshLink()
     try {
       const code = await createOffer(
         link,
@@ -158,18 +188,19 @@ export function useP2PGame() {
         },
       )
       setOfferCode(code)
-    } catch (cause) {
+    } catch (thrown) {
       setStatus('failed')
-      setError(cause instanceof Error ? cause.message : String(cause))
+      setError(thrown instanceof Error ? thrown.message : String(thrown))
     }
-  }, [ensureLink])
+  }, [freshLink])
 
   const join = useCallback(
     async (code: string) => {
       setError(null)
       setCodeError(null)
+      setCause(null)
       setRole('guest')
-      const link = ensureLink()
+      const link = freshLink()
       try {
         const result = await acceptOffer(
           link,
@@ -193,7 +224,7 @@ export function useP2PGame() {
         setError(cause instanceof Error ? cause.message : String(cause))
       }
     },
-    [ensureLink],
+    [freshLink],
   )
 
   const confirm = useCallback(async (code: string) => {
@@ -323,6 +354,7 @@ export function useP2PGame() {
     answerCode,
     error,
     codeError,
+    cause,
     desync,
     offeredMoves,
     divergence,

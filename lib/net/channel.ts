@@ -31,11 +31,44 @@ export type LinkHandlers = {
   onMessage: (message: NetMessage) => void
 }
 
+/**
+ * What address discovery actually turned up, counted as candidates arrive.
+ *
+ * `srflx` is the one that matters: a server-reflexive candidate is your public
+ * address as STUN reported it. Zero of them means STUN never answered, which is
+ * a different problem from "no route between the two of you" and has a
+ * different remedy. Without this the panel had no evidence for anything and
+ * blamed the network for every failure regardless.
+ */
+export type IceReport = {
+  host: number
+  srflx: number
+  relay: number
+  /** False when gathering was still running when the timeout cut it short. */
+  complete: boolean
+}
+
 export type PeerLink = {
   readonly connection: RTCPeerConnection
   channel: RTCDataChannel | null
+  readonly ice: IceReport
   send: (message: NetMessage) => boolean
   close: () => void
+}
+
+/**
+ * Why a connection failed, as far as the local side can actually tell.
+ *
+ * `no-stun` is diagnosable and often fixable. `no-route` is the case PRD §7
+ * accepts and declines to solve: both sides know their public address and no
+ * path between them opened, which is what a TURN relay exists for and there
+ * isn't one. Only the second deserves the "some networks simply do not allow
+ * it" message that was previously shown for everything.
+ */
+export type FailureCause = 'no-stun' | 'no-route'
+
+export function diagnose(link: PeerLink): FailureCause {
+  return link.ice.srflx === 0 ? 'no-stun' : 'no-route'
 }
 
 function attach(link: PeerLink, channel: RTCDataChannel, handlers: LinkHandlers): void {
@@ -50,10 +83,12 @@ function attach(link: PeerLink, channel: RTCDataChannel, handlers: LinkHandlers)
 
 export function createLink(handlers: LinkHandlers): PeerLink {
   const connection = new RTCPeerConnection({ iceServers: STUN_SERVERS })
+  const ice: IceReport = { host: 0, srflx: 0, relay: 0, complete: false }
 
   const link: PeerLink = {
     connection,
     channel: null,
+    ice,
     send(message) {
       if (link.channel === null || link.channel.readyState !== 'open') return false
       link.channel.send(encodeMessage(message))
@@ -65,6 +100,22 @@ export function createLink(handlers: LinkHandlers): PeerLink {
       handlers.onStatus('closed')
     },
   }
+
+  /*
+   * Counted rather than inspected after the fact: the candidate list is not
+   * retrievable from the connection once gathering ends, so if we do not tally
+   * them as they arrive we have nothing to say when it fails.
+   */
+  connection.addEventListener('icecandidate', (event) => {
+    const candidate = event.candidate
+    if (candidate === null) {
+      ice.complete = true
+      return
+    }
+    if (candidate.type === 'host') ice.host += 1
+    else if (candidate.type === 'srflx') ice.srflx += 1
+    else if (candidate.type === 'relay') ice.relay += 1
+  })
 
   connection.addEventListener('connectionstatechange', () => {
     // Fail fast and say so, rather than spinning forever on a path that will
