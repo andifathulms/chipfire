@@ -72,10 +72,22 @@ export const FIGURE_AFTER: readonly MiniCell[] = [
   [0, 1], EMPTY_CELL, EMPTY_CELL, [1, 1],
 ]
 
+/** Between two boards, centred against them. It used to carry a top margin to
+ *  clear the label above it; in the grid the labels have their own row, so the
+ *  margin would only push it out of line. */
 function Arrow() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="mt-lg h-4 w-4 shrink-0 text-trace-faint">
-      <path d="M3 12h18m0 0-6.5-6.5M21 12l-6.5 6.5" fill="none" stroke="currentColor" strokeWidth={1.5} />
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      className="h-4 w-4 shrink-0 self-center text-trace-faint"
+    >
+      <path
+        d="M3 12h18m0 0-6.5-6.5M21 12l-6.5 6.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      />
     </svg>
   )
 }
@@ -90,27 +102,36 @@ export function CascadeFigure({ locale }: { locale: Locale }) {
      * themselves are aria-hidden through Orbs.
      */
     <figure className="flex flex-col gap-sm">
-      <div className="flex items-start gap-2xs sm:gap-xs">
-        <div className="flex min-w-0 flex-1 flex-col gap-2xs">
-          <span className="label-micro">{t.figureBefore}</span>
+      {/*
+       * A grid rather than three stacked columns, so every label sits in one
+       * row and every board in the next.
+       *
+       * As three flex columns each label pushed its own board down, so a label
+       * that wrapped to two lines — "Dua tahap kemudian" does, and a translation
+       * might wrap any of them — left that board a line lower than its
+       * neighbours. Sharing the rows aligns them by construction rather than by
+       * hoping the labels stay the same length.
+       */}
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-2xs sm:gap-x-xs">
+        <span className="label-micro">{t.figureBefore}</span>
+        <span aria-hidden="true" />
+        <span className="label-micro">{t.figureDuring}</span>
+        <span aria-hidden="true" />
+        <span className="label-micro">{t.figureAfter}</span>
+
+        <div className="pt-2xs">
           <MiniBoard cells={FIGURE_BEFORE} cols={FIGURE_COLS} played={FIGURE_MOVE} />
         </div>
 
         <Arrow />
 
-        <div className="flex min-w-0 flex-1 flex-col gap-2xs">
-          <span className="label-micro">{t.figureDuring}</span>
-          <MiniBoard
-            cells={FIGURE_MIDWAY}
-            cols={FIGURE_COLS}
-            firing={FIGURE_MIDWAY_FIRING}
-          />
+        <div className="pt-2xs">
+          <MiniBoard cells={FIGURE_MIDWAY} cols={FIGURE_COLS} firing={FIGURE_MIDWAY_FIRING} />
         </div>
 
         <Arrow />
 
-        <div className="flex min-w-0 flex-1 flex-col gap-2xs">
-          <span className="label-micro">{t.figureAfter}</span>
+        <div className="pt-2xs">
           <MiniBoard cells={FIGURE_AFTER} cols={FIGURE_COLS} />
         </div>
       </div>
