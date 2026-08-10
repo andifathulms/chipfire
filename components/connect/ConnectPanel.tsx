@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { FailureCause, LinkStatus } from '@/lib/net/channel'
+import type { FailureCause, IceReport, LinkStatus } from '@/lib/net/channel'
 import { formatForReading } from '@/lib/net/signal'
 import type { Locale } from '@/lib/i18n'
 import type { Role } from '@/components/game/useP2PGame'
@@ -55,9 +55,15 @@ const COPY = {
    * that never left the building.
    */
   failure: {
+    /*
+     * "This device", not "both sides". The tally is local — nothing here has
+     * any information about what the other machine gathered — and the first
+     * draft of this message asserted otherwise, which is the same overclaim it
+     * was written to replace.
+     */
     'no-route': {
-      id: 'Kedua sisi menemukan alamat publiknya, tapi tidak ada jalur yang bisa dibuka di antara kalian. Ini kasus yang butuh server relay, dan Chipfire memang tidak punya. Sebagian jaringan — NAT simetris, jaringan kantor yang ketat — memang tidak bisa.',
-      en: 'Both sides found their public address, but no path between you could be opened. This is the case that needs a relay server, and Chipfire deliberately has none. Some networks — symmetric NAT, strict corporate networks — simply cannot do it.',
+      id: 'Perangkat ini menemukan alamat publiknya, tapi tidak ada jalur yang terbuka ke lawanmu. Penyebab paling umum: VPN yang aktif, NAT simetris, atau jaringan kantor. Kalau salah satu dari kalian pakai VPN, matikan dulu lalu ulangi dari awal — hotspot ponsel juga sering langsung berhasil. Kalau tetap gagal, ini kasus yang butuh server relay, dan Chipfire memang tidak punya.',
+      en: 'This device found its public address, but no path to your opponent opened. The usual causes are an active VPN, symmetric NAT, or a corporate network. If either of you is on a VPN, turn it off and start over — a phone hotspot often works immediately too. If it still fails, this is the case that needs a relay server, and Chipfire deliberately has none.',
     },
     'no-stun': {
       id: 'Tidak ada satu pun alamat publik yang ditemukan: server STUN tidak menjawab. Biasanya karena jaringan memblokir UDP ke luar, atau perangkat sedang offline. Coba jaringan lain — hotspot ponsel sering cukup.',
@@ -68,6 +74,8 @@ const COPY = {
       en: 'The direct connection did not work.',
     },
   },
+  tally: { id: 'Alamat yang ditemukan perangkat ini', en: 'Addresses this device found' },
+  cut: { id: 'pencarian terpotong waktu', en: 'search cut short by the timeout' },
   fallback: { id: 'Main hotseat saja', en: 'Play hotseat instead' },
 
   /*
@@ -158,6 +166,7 @@ export function ConnectPanel({
   role,
   status,
   cause,
+  ice,
   offerCode,
   answerCode,
   error,
@@ -172,6 +181,8 @@ export function ConnectPanel({
   status: LinkStatus
   /** What the local side could establish about the failure, if anything. */
   cause: FailureCause | null
+  /** The local candidate tally, shown as the evidence behind the diagnosis. */
+  ice: IceReport | null
   offerCode: string
   answerCode: string
   error: string | null
@@ -260,6 +271,14 @@ export function ConnectPanel({
       {status === 'failed' ? (
         <div role="alert" className="flex flex-col gap-2 border border-p1 p-3 text-sm">
           <p className="max-w-prose">{COPY.failure[cause ?? 'unknown'][locale]}</p>
+          {/* The numbers the verdict was read off, so it can be checked rather
+              than believed. Local to this device, which is all it can see. */}
+          {ice !== null ? (
+            <p className="font-mono text-xs text-trace-faint">
+              {COPY.tally[locale]}: host {ice.host} · srflx {ice.srflx} · relay {ice.relay}
+              {ice.complete ? '' : ` · ${COPY.cut[locale]}`}
+            </p>
+          ) : null}
           {error !== null ? <p className="font-mono text-xs text-trace-faint">{error}</p> : null}
           <Link href={`/${locale}/main/`} className="underline">
             {COPY.fallback[locale]}

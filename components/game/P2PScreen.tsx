@@ -132,6 +132,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           role={game.role}
           status={game.status}
           cause={game.cause}
+          ice={game.ice}
           offerCode={game.offerCode}
           answerCode={game.answerCode}
           error={game.error}

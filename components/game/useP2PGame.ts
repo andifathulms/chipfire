@@ -8,6 +8,7 @@ import {
   createOffer,
   diagnose,
   type FailureCause,
+  type IceReport,
   type LinkStatus,
   type PeerLink,
 } from '@/lib/net/channel'
@@ -53,6 +54,7 @@ export function useP2PGame() {
   /** What the local side can actually tell about a failure, rather than a
    *  guess. Null until something has genuinely failed. */
   const [cause, setCause] = useState<FailureCause | null>(null)
+  const [ice, setIce] = useState<IceReport | null>(null)
   const [desync, setDesync] = useState<Desync | null>(null)
   const [offeredMoves, setOfferedMoves] = useState<readonly number[] | null>(null)
 
@@ -79,6 +81,7 @@ export function useP2PGame() {
       if (next === 'failed') {
         const link = linkRef.current
         setCause(link === null ? null : diagnose(link))
+        setIce(link === null ? null : { ...link.ice })
       }
       setStatus(next)
     },
@@ -355,6 +358,7 @@ export function useP2PGame() {
     error,
     codeError,
     cause,
+    ice,
     desync,
     offeredMoves,
     divergence,
