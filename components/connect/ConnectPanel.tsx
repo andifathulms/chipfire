@@ -62,8 +62,8 @@ const COPY = {
      * was written to replace.
      */
     'no-route': {
-      id: 'Perangkat ini menemukan alamat publiknya, tapi tidak ada jalur yang terbuka ke lawanmu. Penyebab paling umum: VPN yang aktif, NAT simetris, atau jaringan kantor. Kalau salah satu dari kalian pakai VPN, matikan dulu lalu ulangi dari awal — hotspot ponsel juga sering langsung berhasil. Kalau tetap gagal, ini kasus yang butuh server relay, dan Chipfire memang tidak punya.',
-      en: 'This device found its public address, but no path to your opponent opened. The usual causes are an active VPN, symmetric NAT, or a corporate network. If either of you is on a VPN, turn it off and start over — a phone hotspot often works immediately too. If it still fails, this is the case that needs a relay server, and Chipfire deliberately has none.',
+      id: 'Perangkat ini menemukan alamatnya, tapi tidak ada jalur yang terbuka ke lawanmu.',
+      en: 'This device found its addresses, but no path to your opponent opened.',
     },
     'no-stun': {
       id: 'Tidak ada satu pun alamat publik yang ditemukan: server STUN tidak menjawab. Biasanya karena jaringan memblokir UDP ke luar, atau perangkat sedang offline. Coba jaringan lain — hotspot ponsel sering cukup.',
@@ -75,6 +75,37 @@ const COPY = {
     },
   },
   tally: { id: 'Alamat yang ditemukan perangkat ini', en: 'Addresses this device found' },
+
+  /*
+   * Ordered by how often each actually works, which is not the order they came
+   * to mind in. The first version of this message led with "turn off your VPN"
+   * and never mentioned the one remedy that nearly always succeeds: put both
+   * devices on one network, where they reach each other by local address and
+   * never traverse NAT at all. Data on a phone is the worst case — carrier NAT
+   * is symmetric almost everywhere — and no amount of retrying changes that.
+   */
+  remedies: {
+    id: [
+      'Sambungkan kedua perangkat ke Wi-Fi yang sama. Ini yang paling sering berhasil: keduanya saling menyapa lewat alamat lokal, tanpa perlu menembus NAT sama sekali.',
+      'Kalau tidak ada Wi-Fi bersama, nyalakan hotspot di satu ponsel dan sambungkan perangkat satunya ke situ — hasilnya sama: satu jaringan.',
+      'Matikan VPN di kedua sisi kalau ada, lalu ulangi dari awal.',
+      'Data seluler adalah kasus terburuk: NAT operator hampir selalu simetris, dan dua-duanya di data seluler biasanya memang tidak bisa.',
+    ],
+    en: [
+      'Put both devices on the same Wi-Fi. This is the one that nearly always works: they reach each other by local address and never traverse NAT at all.',
+      'No shared Wi-Fi? Turn on a hotspot on one phone and connect the other device to it — same effect: one network.',
+      'Turn off any VPN on both sides, then start over.',
+      'Mobile data is the worst case: carrier NAT is almost always symmetric, and two devices both on mobile data usually cannot connect at all.',
+    ],
+  },
+  caveat: {
+    id: 'Sebagian Wi-Fi publik dan kantor memblokir lalu lintas antar-perangkat, jadi satu jaringan pun belum tentu cukup di sana.',
+    en: 'Some public and office Wi-Fi blocks device-to-device traffic, so even one network is not always enough there.',
+  },
+  noRelay: {
+    id: 'Kalau semuanya sudah dicoba dan tetap gagal, ini memang kasus yang butuh server relay. Chipfire sengaja tidak punya — itu berarti server berbayar, dan sebagian koneksi memang tidak akan pernah bisa.',
+    en: 'If all of that fails, this genuinely is the case that needs a relay server. Chipfire deliberately has none — that would mean a paid server — and some connections simply never work.',
+  },
   cut: { id: 'pencarian terpotong waktu', en: 'search cut short by the timeout' },
   fallback: { id: 'Main hotseat saja', en: 'Play hotseat instead' },
 
@@ -278,6 +309,20 @@ export function ConnectPanel({
               {COPY.tally[locale]}: host {ice.host} · srflx {ice.srflx} · relay {ice.relay}
               {ice.complete ? '' : ` · ${COPY.cut[locale]}`}
             </p>
+          ) : null}
+
+          {/* What to actually do, in the order most likely to work. Only for
+              the failure that has remedies; a dead STUN has its own. */}
+          {cause === 'no-route' ? (
+            <>
+              <ol className="flex max-w-prose list-decimal flex-col gap-1 pl-4 text-trace-soft">
+                {COPY.remedies[locale].map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ol>
+              <p className="max-w-prose text-xs text-trace-faint">{COPY.caveat[locale]}</p>
+              <p className="max-w-prose text-xs text-trace-faint">{COPY.noRelay[locale]}</p>
+            </>
           ) : null}
           {error !== null ? <p className="font-mono text-xs text-trace-faint">{error}</p> : null}
           <Link href={`/${locale}/main/`} className="underline">
