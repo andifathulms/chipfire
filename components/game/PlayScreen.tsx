@@ -337,7 +337,16 @@ export function PlayScreen({ locale }: { locale: Locale }) {
            * board first. Reading order now matches what is on top.
            */}
             {finished ? (
-              <div className="absolute inset-0 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
+              /*
+               * z-10 is load-bearing, not decoration. This sits first in the
+               * DOM so the keyboard reaches "Main lagi" before fifty-four board
+               * cells — but every one of those cells is `relative`, and
+               * positioned siblings with no z-index paint in tree order, so
+               * coming first meant the whole board painted on top of the
+               * result. The win message was legible only where no orb happened
+               * to be behind it.
+               */
+              <div className="absolute inset-0 z-10 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
                 <p className="font-numeral text-3xl">
                   <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>{' '}
                   {COPY.wins[locale]}
@@ -495,15 +504,21 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             board={{ ...board, owners: view.owners, counts: view.counts }}
           />
 
-          {/* Only while there is something to look back at, and never over the
-              top of a cascade that is still running. */}
-          {!animating && !finished ? (
-            <CascadeReplay
-              review={review}
-              explosions={session.history.at(-1)?.explosions ?? 0}
-              locale={locale}
-            />
-          ) : null}
+          {/*
+           * Always mounted, disabled when there is nothing to replay.
+           *
+           * It used to unmount while a cascade ran and again once the game
+           * ended, so every move collapsed its height and shunted the whole
+           * rail — controls, move list, everything — up and then back down a
+           * second later. Reserving the space is the difference between hiding
+           * something and removing it.
+           */}
+          <CascadeReplay
+            review={review}
+            explosions={session.history.at(-1)?.explosions ?? 0}
+            busy={animating || finished}
+            locale={locale}
+          />
 
           <Controls
             locale={locale}

@@ -28,33 +28,44 @@ const BUTTON =
 export function CascadeReplay({
   review,
   explosions,
+  busy,
   locale,
 }: {
   review: CascadeReview
   /** Explosions in the cascade under review; zero means there is nothing to see. */
   explosions: number
+  /** A cascade is still running, or the game is over — nothing to replay yet,
+   *  but the control keeps its place rather than vanishing. */
+  busy: boolean
   locale: Locale
 }) {
-  if (review.total === 0) return null
+  /*
+   * A fixed floor, so this block is the same height whether it is offering the
+   * button, showing the transport bar, or waiting with nothing to replay.
+   * Returning null here collapsed the rail below it on every single move.
+   */
+  const shell = 'flex min-h-[2.75rem] items-center'
 
   if (!review.open) {
     return (
-      <button
-        type="button"
-        onClick={review.start}
-        disabled={explosions === 0}
-        className={`${BUTTON} self-start text-sm`}
+      <div className={shell}>
+        <button
+          type="button"
+          onClick={review.start}
+          disabled={busy || review.total === 0 || explosions === 0}
+          className={`${BUTTON} text-sm`}
         // A move that detonated nothing still has frames — the placement — and
         // offering to replay it would be offering to watch one orb land.
-        title={explosions === 0 ? COPY.none[locale] : undefined}
-      >
-        {COPY.rewatch[locale]}
-      </button>
+          title={explosions === 0 ? COPY.none[locale] : undefined}
+        >
+          {COPY.rewatch[locale]}
+        </button>
+      </div>
     )
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-xs border border-trace-rule px-2 py-1.5 text-sm">
+    <div className={`${shell} flex-wrap gap-xs border border-trace-rule px-2 py-1.5 text-sm`}>
       <button
         type="button"
         onClick={() => review.step(-1)}
