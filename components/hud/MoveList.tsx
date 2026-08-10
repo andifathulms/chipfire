@@ -52,15 +52,24 @@ export function MoveList({
   cols: number
   locale: Locale
 }) {
-  const endRef = useRef<HTMLLIElement | null>(null)
+  const listRef = useRef<HTMLOListElement | null>(null)
 
   /*
    * Play order, newest last, scrolled to the end. Reversing would keep the
    * recent move in view for free, but a move list that runs backwards stops
    * being a record of the game and becomes a feed.
+   *
+   * Set on the list's own scrollTop rather than by scrollIntoView on the last
+   * row. scrollIntoView scrolls *every* scrollable ancestor, the document
+   * included — so on a laptop, where this sits below the fold in the rail,
+   * every single move dragged the whole page down to reveal it and the player
+   * had to scroll back up to see the board they were playing on. `block:
+   * 'nearest'` minimises the distance within each container; it does not stop
+   * the window being one of them.
    */
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'nearest' })
+    const list = listRef.current
+    if (list !== null) list.scrollTop = list.scrollHeight
   }, [moves.length])
 
   return (
@@ -81,6 +90,7 @@ export function MoveList({
          * is the second and last role added in this pass.
          */
         <ol
+          ref={listRef}
           tabIndex={0}
           role="region"
           aria-labelledby={LIST_ID}
@@ -94,7 +104,6 @@ export function MoveList({
             return (
               <li
                 key={`${turn}:${move.index}`}
-                ref={position === moves.length - 1 ? endRef : null}
                 className="flex items-center gap-sm border-b border-trace-hairline py-1"
               >
                 <span
