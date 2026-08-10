@@ -10,6 +10,7 @@ import {
   type PeerLink,
 } from '@/lib/net/channel'
 import { verify, type NetMessage } from '@/lib/net/sync'
+import { SignalFormatError } from '@/lib/net/signal'
 import { findDivergence } from '@/lib/engine/diverge'
 import { hashState } from '@/lib/engine/hash'
 import { DEFAULT_CONFIG, type GameState } from '@/lib/engine/state'
@@ -41,6 +42,12 @@ export function useP2PGame() {
   const [offerCode, setOfferCode] = useState('')
   const [answerCode, setAnswerCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  /*
+   * A bad paste is not a failed connection. It has its own slot so the panel
+   * can say what actually went wrong, and so the link — which is still open and
+   * still waiting for the right code — is not thrown away over a typo.
+   */
+  const [codeError, setCodeError] = useState<string | null>(null)
   const [desync, setDesync] = useState<Desync | null>(null)
   const [offeredMoves, setOfferedMoves] = useState<readonly number[] | null>(null)
 
@@ -160,6 +167,7 @@ export function useP2PGame() {
   const join = useCallback(
     async (code: string) => {
       setError(null)
+      setCodeError(null)
       setRole('guest')
       const link = ensureLink()
       try {
@@ -176,6 +184,11 @@ export function useP2PGame() {
           seed: result.setup.seed ?? DEFAULT_CONFIG.seed,
         })
       } catch (cause) {
+        if (cause instanceof SignalFormatError) {
+          setCodeError(cause.name === 'SignalKindError' ? 'kind' : 'format')
+          setStatus('idle')
+          return
+        }
         setStatus('failed')
         setError(cause instanceof Error ? cause.message : String(cause))
       }
@@ -185,6 +198,7 @@ export function useP2PGame() {
 
   const confirm = useCallback(async (code: string) => {
     setError(null)
+    setCodeError(null)
     const link = linkRef.current
     if (link === null) return
     try {
@@ -194,6 +208,17 @@ export function useP2PGame() {
         code,
       )
     } catch (cause) {
+      /*
+       * A code problem leaves the connection exactly as it was: the offer is
+       * still valid and the peer can still answer it, so the status goes back
+       * to waiting rather than to failed. Only a genuine transport failure
+       * ends the attempt.
+       */
+      if (cause instanceof SignalFormatError) {
+        setCodeError(cause.name === 'SignalKindError' ? 'kind' : 'format')
+        setStatus('waiting')
+        return
+      }
       setStatus('failed')
       setError(cause instanceof Error ? cause.message : String(cause))
     }
@@ -297,6 +322,7 @@ export function useP2PGame() {
     offerCode,
     answerCode,
     error,
+    codeError,
     desync,
     offeredMoves,
     divergence,

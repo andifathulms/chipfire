@@ -54,6 +54,27 @@ const COPY = {
     en: 'The direct connection did not work. Some networks simply do not allow it.',
   },
   fallback: { id: 'Main hotseat saja', en: 'Play hotseat instead' },
+
+  /*
+   * A pasted code that is the wrong sort is not a network failure, and saying
+   * "some networks do not allow it" when someone has pasted the wrong half of
+   * the exchange blames the internet for a two-second mistake. These name what
+   * actually happened and what to do about it.
+   */
+  wrongKind: {
+    host: {
+      id: 'Itu kode undangan, bukan kode balasan. Yang dibutuhkan di sini adalah kode yang muncul di layar lawanmu setelah dia menempel undanganmu.',
+      en: 'That is an invitation code, not a reply. What goes here is the code that appeared on your opponent’s screen after they pasted yours.',
+    },
+    guest: {
+      id: 'Itu kode balasan, bukan kode undangan. Yang dibutuhkan di sini adalah kode yang dikirim lawanmu lebih dulu.',
+      en: 'That is a reply code, not an invitation. What goes here is the code your opponent sent you first.',
+    },
+  },
+  badCode: {
+    id: 'Kode itu tidak terbaca — mungkin terpotong saat disalin. Minta lawanmu mengirim ulang seluruhnya.',
+    en: 'That code could not be read — it may have been cut short when copied. Ask your opponent to send the whole thing again.',
+  },
 } as const
 
 function CodeBox({ code, locale }: { code: string; locale: Locale }) {
@@ -124,6 +145,7 @@ export function ConnectPanel({
   offerCode,
   answerCode,
   error,
+  codeError,
   onHost,
   onRole,
   onJoin,
@@ -135,6 +157,9 @@ export function ConnectPanel({
   offerCode: string
   answerCode: string
   error: string | null
+  /** 'kind' when the wrong half of the exchange was pasted, 'format' when the
+   *  code itself is unreadable. Neither is a connection failure. */
+  codeError: string | null
   onHost: () => void
   onRole: (role: Role) => void
   onJoin: (code: string) => void
@@ -182,6 +207,13 @@ export function ConnectPanel({
             <div className="flex flex-col gap-2">
               <p className="text-sm">{COPY.answerWait[locale]}</p>
               <PasteBox locale={locale} onSubmit={onConfirm} />
+              {/* Beside the box that caused it, not in the failure panel — the
+                  connection is still fine and still waiting for the right code. */}
+              {codeError !== null ? (
+                <p role="alert" className="max-w-prose border-l-2 border-p1 pl-3 text-sm text-p1-ink">
+                  {codeError === 'kind' ? COPY.wrongKind.host[locale] : COPY.badCode[locale]}
+                </p>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -192,6 +224,11 @@ export function ConnectPanel({
           <div className="flex flex-col gap-2">
             <p className="text-sm">{COPY.pasteOffer[locale]}</p>
             <PasteBox locale={locale} onSubmit={onJoin} />
+            {codeError !== null ? (
+              <p role="alert" className="max-w-prose border-l-2 border-p1 pl-3 text-sm text-p1-ink">
+                {codeError === 'kind' ? COPY.wrongKind.guest[locale] : COPY.badCode[locale]}
+              </p>
+            ) : null}
           </div>
           {answerCode ? (
             <div className="flex flex-col gap-2">

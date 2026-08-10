@@ -92,6 +92,32 @@ export class SignalFormatError extends Error {
   }
 }
 
+/**
+ * A well-formed code of the wrong sort — an offer pasted where the reply goes,
+ * or the reverse.
+ *
+ * Its own type because it is the one signalling failure that is neither a
+ * broken code nor a network that will not carry the connection. It is a
+ * recoverable mistake with an obvious remedy, and the panel has to be able to
+ * tell it apart from the two that are not.
+ */
+export class SignalKindError extends SignalFormatError {
+  constructor(
+    readonly expected: SignalKind,
+    readonly received: SignalKind,
+  ) {
+    super(`expected a ${expected} code, got an ${received}`)
+    this.name = 'SignalKindError'
+  }
+}
+
+/** Decode, and refuse anything that is not the sort of code we asked for. */
+export async function decodeSignalOfKind(code: string, expected: SignalKind): Promise<SignalPayload> {
+  const payload = await decodeSignal(code)
+  if (payload.kind !== expected) throw new SignalKindError(expected, payload.kind)
+  return payload
+}
+
 export async function decodeSignal(code: string): Promise<SignalPayload> {
   // People paste with stray spaces and line breaks. That is not an error.
   const cleaned = code.trim().replace(/\s+/g, '')

@@ -1,4 +1,4 @@
-import { encodeSignal, decodeSignal, type SignalPayload } from './signal'
+import { encodeSignal, decodeSignalOfKind, type SignalPayload } from './signal'
 import { encodeMessage, decodeMessage, type NetMessage } from './sync'
 
 /**
@@ -137,8 +137,16 @@ export async function acceptOffer(
 ): Promise<{ answer: string; setup: SignalPayload }> {
   handlers.onStatus('generating')
 
-  const payload = await decodeSignal(code)
-  await link.connection.setRemoteDescription({ type: 'offer', sdp: payload.sdp })
+  /*
+   * The code says which sort it is, and until now both call sites read that
+   * and then ignored it, forcing the type they happened to want. Paste an
+   * offer where the reply belongs and WebRTC was handed an offer labelled as
+   * an answer; it looks at `a=setup:actpass`, which only an offer carries, and
+   * fails with "Answerer must use either active or passive value for setup
+   * attribute" — a true statement about SDP that tells the player nothing.
+   */
+  const payload = await decodeSignalOfKind(code, 'offer')
+  await link.connection.setRemoteDescription({ type: payload.kind, sdp: payload.sdp })
 
   const answer = await link.connection.createAnswer()
   await link.connection.setLocalDescription(answer)
@@ -161,7 +169,7 @@ export async function acceptAnswer(
   handlers: LinkHandlers,
   code: string,
 ): Promise<void> {
-  const payload = await decodeSignal(code)
-  await link.connection.setRemoteDescription({ type: 'answer', sdp: payload.sdp })
+  const payload = await decodeSignalOfKind(code, 'answer')
+  await link.connection.setRemoteDescription({ type: payload.kind, sdp: payload.sdp })
   handlers.onStatus('connecting')
 }

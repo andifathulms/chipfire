@@ -134,6 +134,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           offerCode={game.offerCode}
           answerCode={game.answerCode}
           error={game.error}
+          codeError={game.codeError}
           onHost={() => void game.host()}
           onRole={game.setRole}
           onJoin={(code) => void game.join(code)}

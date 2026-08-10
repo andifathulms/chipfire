@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { decodeSignal, encodeSignal, formatForReading, SignalFormatError } from '@/lib/net/signal'
+import {
+  decodeSignal,
+  decodeSignalOfKind,
+  encodeSignal,
+  formatForReading,
+  SignalFormatError,
+  SignalKindError,
+  SIGNAL_VERSION,
+} from '@/lib/net/signal'
 
 const SDP = [
   'v=0',
@@ -62,5 +70,43 @@ describe('signal codes', () => {
   it('rejects a future version rather than guessing at it', async () => {
     const code = await encodeSignal({ v: 2, kind: 'offer', sdp: SDP })
     await expect(decodeSignal(code)).rejects.toThrow(/versi/)
+  })
+})
+
+describe('a code of the wrong sort', () => {
+  /**
+   * The failure the player actually hit: an offer pasted where the reply goes.
+   * Both call sites used to read the code's declared kind and then force the
+   * type they wanted, so WebRTC was handed an offer labelled as an answer and
+   * complained about `a=setup:actpass` — true, and useless to anyone.
+   */
+  it('is refused, and says which way round it was', async () => {
+    const offer = await encodeSignal({ v: SIGNAL_VERSION, kind: 'offer', sdp: 'v=0' })
+    const answer = await encodeSignal({ v: SIGNAL_VERSION, kind: 'answer', sdp: 'v=0' })
+
+    await expect(decodeSignalOfKind(offer, 'answer')).rejects.toBeInstanceOf(SignalKindError)
+    await expect(decodeSignalOfKind(answer, 'offer')).rejects.toBeInstanceOf(SignalKindError)
+
+    await expect(decodeSignalOfKind(offer, 'answer')).rejects.toMatchObject({
+      expected: 'answer',
+      received: 'offer',
+    })
+  })
+
+  it('lets the right sort through unchanged', async () => {
+    const offer = await encodeSignal({ v: SIGNAL_VERSION, kind: 'offer', sdp: 'v=0', rows: 6 })
+    await expect(decodeSignalOfKind(offer, 'offer')).resolves.toMatchObject({
+      kind: 'offer',
+      rows: 6,
+    })
+  })
+
+  /** A wrong code and a broken code are different problems with different
+   *  remedies, but both are the code rather than the network — which is what
+   *  the panel keys off. */
+  it('is still a format error, so nothing mistakes it for a dead connection', async () => {
+    const offer = await encodeSignal({ v: SIGNAL_VERSION, kind: 'offer', sdp: 'v=0' })
+    await expect(decodeSignalOfKind(offer, 'answer')).rejects.toBeInstanceOf(SignalFormatError)
+    await expect(decodeSignalOfKind('nonsense', 'offer')).rejects.toBeInstanceOf(SignalFormatError)
   })
 })
