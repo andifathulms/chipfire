@@ -108,6 +108,17 @@
   --alpha-hairline: 0.2; /* dividers, table rules, panel seams */
   --alpha-rule: 0.32; /* the border of something you can press */
   --alpha-data: 0.7; /* bars, gauges, the filled part of a reading */
+
+  /* ── The plate ──
+   * A sequential ramp for the sandpile portrait's four chip heights: one hue,
+   * light to dark, which is what an ordered quantity wants. Deliberately not
+   * the four player colours — saturated colour in this app means ownership
+   * (PRD §12), and chip height is not ownership. Ink tints also make it read
+   * as a printed plate, which is what it is.
+   */
+  --alpha-plate-1: 0.14;
+  --alpha-plate-2: 0.38;
+  --alpha-plate-3: 0.72;
   --alpha-scrim: 0.32; /* behind a modal — its own name, not a borrowed one */
 
   /* ── Targets ──

@@ -80,6 +80,13 @@ const config: Config = {
           rule: 'rgb(var(--color-trace) / var(--alpha-rule))',
           data: 'rgb(var(--color-trace) / var(--alpha-data))',
         },
+        /* The sandpile plate's four heights. Level 0 is the paper itself and
+           is never painted, which halves the shapes the picture needs. */
+        plate: {
+          1: 'rgb(var(--color-trace) / var(--alpha-plate-1))',
+          2: 'rgb(var(--color-trace) / var(--alpha-plate-2))',
+          3: 'rgb(var(--color-trace) / var(--alpha-plate-3))',
+        },
         /*
          * The brand mark's core, and only the mark's. The brand rules fix it:
          * the tile inverts on dark and the outer orbs follow, but the rust core

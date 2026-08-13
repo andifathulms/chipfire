@@ -5,6 +5,7 @@ import { copy, isLocale, type Locale } from '@/lib/i18n'
 import { notFound } from 'next/navigation'
 import { Wordmark } from '@/components/site/Mark'
 import { CascadeFigure } from '@/components/site/CascadeFigure'
+import { SandpilePlate } from '@/components/site/SandpilePlate'
 
 export { generateStaticParams } from './layout'
 
@@ -100,6 +101,15 @@ export default function HomePage({ params }: { params: { locale: string } }) {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/*
+       * After the rules, deliberately. Above them it would compete with the
+       * one thing on this page that teaches; here it is what a reader who
+       * already understands the game gets for scrolling.
+       */}
+      <section className="border-t border-trace-hairline pt-lg">
+        <SandpilePlate locale={locale} />
       </section>
 
       <section className="flex flex-col gap-xs">

@@ -43,6 +43,10 @@ type Copy = {
   learnHint: string
   puzzles: string
   puzzlesHint: string
+  plateTitle: string
+  plateBody: string
+  plateCaveat: string
+  plateAlt: string
 }
 
 const DICTIONARY: Record<Locale, Copy> = {
@@ -75,6 +79,13 @@ const DICTIONARY: Record<Locale, Copy> = {
     learnHint: 'Enam langkah singkat sampai paham. Sekitar tiga menit.',
     puzzles: 'Teka-teki',
     puzzlesHint: 'Dua belas papan, satu langkah menang di tiap papan.',
+    plateTitle: 'Unsur identitas',
+    plateBody:
+      'Gambar ini tidak dibuat, tapi dihitung — dengan aturan meledak yang sama persis dengan permainannya. Inilah unsur identitas dari model tumpukan pasir abelian: satu-satunya susunan yang, kalau ditambahkan ke susunan mana pun, tidak mengubah apa-apa. Tingginya cuma empat nilai, 0 sampai 3.',
+    plateCaveat:
+      'Model klasiknya (Dhar 1990, atas Bak–Tang–Wiesenfeld 1987) membuang orb yang jatuh dari tepi, dan tiap selnya meledak di angka empat. Papan Chipfire tidak membuang apa pun dan batasnya mengikuti jumlah tetangga — 2 di sudut, 3 di tepi. Jadi ini leluhur permainannya, bukan potret papannya.',
+    plateAlt:
+      'Petak 64 kali 64 dengan empat tingkat tinggi, simetris, berpola rumit di tepi dan rata di tengah.',
   },
   en: {
     siteTagline: 'chain reaction',
@@ -105,6 +116,13 @@ const DICTIONARY: Record<Locale, Copy> = {
     learnHint: 'Six short steps until it clicks. About three minutes.',
     puzzles: 'Puzzles',
     puzzlesHint: 'Twelve boards, one winning move on each.',
+    plateTitle: 'The identity element',
+    plateBody:
+      'This picture was not drawn. It was computed, by exactly the toppling rule the game runs on. It is the identity element of the abelian sandpile: the one configuration that, added to any other, changes nothing. Four heights, 0 to 3.',
+    plateCaveat:
+      'The classical model (Dhar 1990, on Bak–Tang–Wiesenfeld 1987) lets orbs fall off the edge and topples every cell at four. Chipfire’s board loses nothing and takes its threshold from the neighbour count — 2 in corners, 3 on edges. So this is the game’s ancestor, not a portrait of its board.',
+    plateAlt:
+      'A 64 by 64 plate of four heights, symmetric, intricate at the edges and flat through the middle.',
   },
 }
 
