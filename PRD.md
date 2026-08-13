@@ -188,6 +188,8 @@ The subject is a controlled detonation propagating through a lattice — accumul
 
 **Structure.** The grid is printed, not drawn — a fixed hairline lattice that exists before the game starts, the way chart paper does. Cells sit in it rather than being it. Orbs cluster inside a cell in fixed positions, so count is readable at a glance without counting.
 
+**The trace.** Chart paper with nothing written on it is a set, not an instrument. The station writes: a strip chart records one tick per move, one lane per player on a shared axis, tick height on the doubling scale the avalanche distribution already uses. It is drawn during play and complete at the end, where it is the record of that particular game. Logarithmic because avalanche sizes are heavy-tailed and a linear axis would flatten most of the game into the baseline — the same reason seismic magnitude is logarithmic — and because a scale that rescales rewrites its own history while it is being read.
+
 **Motion.** One orchestrated moment, and it is the whole product: the cascade propagating outward, cell to cell, in event order, with a slight ease so the chain has rhythm. A cell at `criticalMass - 1` trembles very slightly — the only ambient motion in the app, and it encodes real information about danger.
 
 **Copy.** Indonesian first, plain and short. The connection panel says exactly what is happening, including *"Koneksi langsung tidak berhasil. Sebagian jaringan memang tidak mendukung."* — honest, unapologetic, with hotseat offered right there.
