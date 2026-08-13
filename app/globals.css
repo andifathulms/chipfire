@@ -131,11 +131,75 @@
    */
   --control-min: 2.25rem;
 
+  /* ── The glow ──
+   * The trace of the last cascade. One token, and it does opposite things in
+   * the two schemes for free: on paper the ink smudges the cells the fire went
+   * through, on the night ground the same ink is light and they bloom. Nothing
+   * conditional, because the ink already inverted.
+   */
+  --alpha-glow-min: 0.05;
+  --alpha-glow-max: 0.2;
+
   /* ── Lattice ──
    * The printed grid: chart paper exists before the game starts.
    */
   --grid-line: rgb(var(--color-chart-line));
   --grid-size: 24px;
+}
+
+/*
+ * ─── Station at night ─────────────────────────────────────────────────────
+ *
+ * Not a dark mode in the sense of the same design with the lights off. The
+ * subject is a monitoring station, and a station's own display is emissive: a
+ * detonation on an instrument is light, not ink. The whole app was drawn in the
+ * one medium that cannot glow.
+ *
+ * Only the colour tokens are redefined. Everything downstream — every border,
+ * every alpha, the board, the seismogram, the sandpile plate — inverts by
+ * construction, because nothing outside this block holds a literal colour. That
+ * is what the token pass was for, and this is the first thing to test it.
+ *
+ * Two values change role rather than merely darkening, which is the part worth
+ * noticing: today's trace ink becomes the raised surface, and today's chart
+ * stock becomes the ink. The palette folds in on itself instead of being
+ * replaced by a second one.
+ *
+ * Measured against both grounds before it was written. Lowest text pairing is
+ * 4.83:1 (faint on the raised surface) and the player colours clear 4.5:1
+ * unaided, so their darkened -ink variants are not needed here and are set back
+ * to the identity colours.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-chart: 23 26 24; /* night ground   #171A18 */
+    --color-chart-deep: 31 36 33; /* today's trace ink, raised   #1F2421 */
+    --color-chart-line: 42 48 44; /* the lattice, barely there   #2A302C */
+
+    --color-trace: 232 228 220; /* today's chart stock, now the ink  13.83:1 */
+    --color-trace-soft: 168 173 166; /* 7.68:1 */
+    --color-trace-faint: 138 144 138; /* 5.38:1 */
+
+    /* Lifted until each carries words on the night ground. */
+    --color-p1: 226 112 58; /* 5.52:1 */
+    --color-p1-ink: 226 112 58;
+    --color-p2: 111 168 214; /* 6.89:1 */
+    --color-p2-ink: 111 168 214;
+    --color-p3: 217 174 73; /* 8.44:1 */
+    --color-p3-ink: 217 174 73;
+    --color-p4: 111 174 146; /* 6.80:1 */
+    --color-p4-ink: 111 174 146;
+
+    /*
+     * The mark's rust core does not move. The brand rules fix it: the tile
+     * inverts and the outer orbs follow, and the core stays put — which is
+     * exactly why it was never allowed to be a player colour.
+     */
+
+    /* Emission needs more room than a smudge on paper does. */
+    --alpha-glow-min: 0.08;
+    --alpha-glow-max: 0.32;
+  }
 }
 
 html,

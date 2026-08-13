@@ -60,7 +60,12 @@ const mono = localFont({
 export const FONT_VARIABLES = `${display.variable} ${sans.variable} ${mono.variable}`
 
 export const viewport: Viewport = {
-  themeColor: '#EDEAE3',
+  /* The browser chrome follows the ground the page is actually on. One value
+     here would frame a night board in daylight. */
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#EDEAE3' },
+    { media: '(prefers-color-scheme: dark)', color: '#171A18' },
+  ],
   width: 'device-width',
   initialScale: 1,
 }
