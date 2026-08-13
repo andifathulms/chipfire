@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { NO_OWNER, type Board as EngineBoard } from '@/lib/engine/board'
+import type { Afterglow } from '@/components/cascade/frames'
 import type { MovePreview } from '@/lib/engine/preview'
 import { styleFor } from '@/lib/players'
 import { Orbs } from './Orbs'
@@ -53,6 +54,11 @@ type BoardProps = {
    * nowhere. You know where you clicked; you have no idea where they did.
    */
   readonly lastMove?: number | null
+  /**
+   * Where the last cascade went. Null while one is playing — the burst is
+   * already saying it — and again once there is nothing to remember.
+   */
+  readonly afterglow?: Afterglow | null
 }
 
 export function Board({
@@ -71,6 +77,7 @@ export function Board({
   markLegal = false,
   label,
   lastMove = null,
+  afterglow = null,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
@@ -191,6 +198,24 @@ export function Board({
             : '',
         ].join(' ')}
       >
+        {/*
+         * The trace of the last cascade, under everything else in the cell.
+         * Brightest where the fire reached last, which is the one thing the
+         * board never said once the dust settled: the position told you what
+         * happened and nothing about how it got there.
+         */}
+        {afterglow !== null && afterglow.cells[index] > 0 ? (
+          <span
+            aria-hidden="true"
+            className="glow pointer-events-none absolute inset-0"
+            style={
+              {
+                '--t': (afterglow.cells[index] - 1) / afterglow.depth,
+              } as React.CSSProperties
+            }
+          />
+        ) : null}
+
         {/* Capacity ticks: how many orbs this cell holds before it goes. The
             rule that critical mass differs by position is otherwise invisible. */}
         {count === 0 && !flashing.has(index) ? (

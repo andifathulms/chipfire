@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
 import { useCascadeReview } from '@/components/cascade/useCascadeReview'
+import { buildAfterglow } from '@/components/cascade/frames'
 import { Controls } from '@/components/hud/Controls'
 import { Setup } from '@/components/hud/Setup'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
@@ -234,6 +235,17 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     if (!finished) clearReview()
   }, [finished, clearReview])
 
+  /*
+   * The last cascade's path, kept until the next move replaces it. Not drawn
+   * while one is playing — the burst is already saying it — and not under a
+   * review, where the board is showing a recording rather than the position.
+   */
+  const afterglow = useMemo(() => {
+    const events = session.lastCascade?.events
+    if (events === undefined || animating || review.open) return null
+    return buildAfterglow(session.state.board.owners.length, events)
+  }, [session.lastCascade, animating, review.open, session.state.board.owners.length])
+
   const applyConfig = (config: GameConfig) => session.reset(config)
 
   // Considered, not committed. The engine answers what the move would do.
@@ -418,6 +430,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 labelFor={labelFor}
                 label={COPY.board[locale]}
                 lastMove={session.record.moves.at(-1) ?? null}
+                afterglow={afterglow}
                 preview={preview}
                 previewIndex={previewIndex}
                 onPreview={(index) => {

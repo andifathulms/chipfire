@@ -283,6 +283,28 @@ dialog::backdrop {
   background-color: rgb(var(--color-trace) / var(--alpha-scrim));
 }
 
+/**
+ * The afterglow: where the last cascade went.
+ *
+ * Intensity is interpolated between the two glow alphas by --t, which the board
+ * sets per cell from the generation that cell fired in. One rule serves both
+ * schemes because the ink token has already inverted — on paper this is soot
+ * where the fire passed, on the night ground it is the cells still emitting.
+ *
+ * No animation, deliberately. It is a reading rather than an effect: it stays
+ * until the next move replaces it, which is exactly what makes it useful, and
+ * it means there is nothing for reduced motion to switch off — the still state
+ * is the complete state.
+ */
+.glow {
+  background-color: rgb(
+    var(--color-trace) /
+      calc(
+        var(--alpha-glow-min) + (var(--alpha-glow-max) - var(--alpha-glow-min)) * var(--t, 0)
+      )
+  );
+}
+
 /*
  * A panel's title, one step above the labels inside it.
  *

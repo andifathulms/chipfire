@@ -90,3 +90,44 @@ export function buildFrames(base: Board, events: readonly GameEvent[]): Frame[] 
   flush()
   return frames
 }
+
+/**
+ * Where the last cascade went, and how deep into it each cell was.
+ *
+ * The event stream has always carried `step` — the generation a cell fired in —
+ * and the renderer used it to pace the animation and then discarded it. Once
+ * the board settled, the shape of what had just happened was gone: forty cells
+ * detonate, the dust clears, and the position gives no account of how it got
+ * there.
+ *
+ * This keeps it. One value per cell, the last generation in which it fired, so
+ * the trace can be drawn brightest where the fire reached last. A cell can go
+ * off more than once in a chain, and the most recent time is the one that
+ * should show.
+ *
+ * Derived from events rather than frames because the generation is a fact the
+ * engine states, not something the frame builder happens to preserve.
+ */
+export type Afterglow = {
+  /** Generation + 1 per cell; 0 means it never fired. */
+  readonly cells: Uint8Array
+  /** Generations in the chain, for scaling intensity. At least 1. */
+  readonly depth: number
+}
+
+export function buildAfterglow(size: number, events: readonly GameEvent[]): Afterglow | null {
+  const cells = new Uint8Array(size)
+  let depth = 0
+  let any = false
+
+  for (const event of events) {
+    if (event.type !== 'explode') continue
+    any = true
+    // +1 so that "fired in generation 0" is distinguishable from "never fired".
+    const generation = Math.min(255, event.step + 1)
+    if (generation > cells[event.index]) cells[event.index] = generation
+    if (event.step + 1 > depth) depth = event.step + 1
+  }
+
+  return any ? { cells, depth: Math.max(1, depth) } : null
+}
