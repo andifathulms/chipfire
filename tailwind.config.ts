@@ -165,9 +165,12 @@ const config: Config = {
         settle: 'settle 220ms ease-out both',
         // Fixed durations rather than durations derived from the speed setting:
         // at 'cepat' the frames advance faster than these run, and the overlap
-        // is what makes a long chain look like one propagating event.
-        burst: 'burst 300ms ease-out forwards',
-        claim: 'claim 420ms ease-out forwards',
+        // is what makes a long chain look like one propagating event. `both`
+        // rather than `forwards`: cells further from the move carry a ripple
+        // delay (Board.tsx), and without it they'd sit at full strength for
+        // that delay before jumping to the starting keyframe.
+        burst: 'burst 300ms ease-out both',
+        claim: 'claim 420ms ease-out both',
         arrive: 'arrive 180ms ease-out',
       },
     },

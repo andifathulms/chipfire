@@ -3,9 +3,30 @@
 import { useEffect, useRef, useState } from 'react'
 import { NO_OWNER, type Board as EngineBoard } from '@/lib/engine/board'
 import type { Afterglow } from '@/components/cascade/frames'
+import { useReducedMotion } from '@/components/cascade/useCascadePlayer'
 import type { MovePreview } from '@/lib/engine/preview'
 import { styleFor } from '@/lib/players'
 import { Orbs } from './Orbs'
+
+/**
+ * A generation's explosions are simultaneous in the rules, but drawn as a
+ * ripple outward from where the move was played — the burst keyframe already
+ * scales past the cell edge so that *successive frames* overlap into one
+ * wave; this makes the cells *within* a frame do the same. Distance is plain
+ * Manhattan distance over the orthogonal grid, not a rules computation, and
+ * the delay is capped so a chain that reaches across the whole board never
+ * pushes a single generation past a quarter second.
+ */
+const RIPPLE_STEP_MS = 22
+const RIPPLE_MAX_STEPS = 6
+
+function rippleDelay(index: number, origin: number | null, cols: number): number {
+  if (origin === null) return 0
+  const dRow = Math.floor(index / cols) - Math.floor(origin / cols)
+  const dCol = (index % cols) - (origin % cols)
+  const distance = Math.abs(dRow) + Math.abs(dCol)
+  return Math.min(distance, RIPPLE_MAX_STEPS) * RIPPLE_STEP_MS
+}
 
 /**
  * The grid is printed, not drawn: a fixed hairline lattice that exists before
@@ -81,6 +102,9 @@ export function Board({
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
+  // A staggered ripple reads as a wave; a real-time pause before a
+  // near-instant flash reads as lag. Reduced motion gets neither.
+  const reduced = useReducedMotion()
   const cellRefs = useRef<(HTMLButtonElement | null)[]>([])
   const flashing = new Set(exploding)
   const claimed = new Set(converted)
@@ -150,6 +174,7 @@ export function Board({
     const touched = preview?.touched[index] === 1
     const captured = preview?.captured[index] === 1
     const origin = previewIndex === index
+    const delay = reduced ? 0 : rippleDelay(index, lastMove, board.cols)
 
     cells.push(
       <button
@@ -239,16 +264,20 @@ export function Board({
           <span
             key={`claim-${frameKey}`}
             aria-hidden="true"
+            style={{ animationDelay: `${delay}ms` }}
             className={`pointer-events-none absolute inset-0 animate-claim ${styleFor(owner).fill}`}
           />
         ) : null}
 
         {/* The release. Scaled past the cell edge so consecutive generations
-            overlap into one wave rather than a row of blinks. */}
+            overlap into one wave rather than a row of blinks; the delay does
+            the same within a single generation, rippling outward from the
+            move that started it. */}
         {flashing.has(index) ? (
           <span
             key={`burst-${frameKey}`}
             aria-hidden="true"
+            style={{ animationDelay: `${delay}ms` }}
             className="pointer-events-none absolute inset-0 animate-burst border border-trace"
           />
         ) : null}
