@@ -93,7 +93,19 @@ const COPY = {
   boardSetup: { id: 'Ukuran papan', en: 'Board size' },
   evaluation: { id: 'Penilaian AI', en: "The AI's evaluation" },
   lastMove: { id: 'langkah terakhir', en: 'last move' },
+  positionNow: { id: 'Posisi ini', en: 'This position' },
 } as const
+
+/**
+ * A shared card treatment for the rail's clusters, below. The rail was a
+ * dozen `label-micro` blocks in a row with nothing but a gap between them —
+ * every one of them read as the same weight, which is the exact mistake
+ * `.heading-panel` was introduced to fix for a single panel and had never
+ * been applied to the rail as a whole. The wash and hairline are the same
+ * two tokens the readout under the board already uses; this is not a new
+ * visual language, just that one applied one level higher.
+ */
+const CLUSTER = 'flex flex-col gap-3 border border-trace-hairline bg-chart-deep/30 p-3'
 
 export function PlayScreen({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState<Speed>('normal')
@@ -507,32 +519,42 @@ export function PlayScreen({ locale }: { locale: Locale }) {
          */}
         <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
           {/*
-           * Driven by the animation frame rather than the settled state, so the
-           * needle moves with the cascade instead of jumping to the answer
-           * before the board has finished showing the working. Watching load
-           * spike and then drop as an avalanche runs is the clearest statement
-           * of the mechanic the app can make without words.
+           * "This position": the reading and the rewind, clustered rather than
+           * loose in the rail. Both are about the move just played rather than
+           * the game as a whole, which is what the next cluster down is for.
            */}
-          <LoadGauge
-            locale={locale}
-            board={{ ...board, owners: view.owners, counts: view.counts }}
-          />
+          <div className={CLUSTER}>
+            <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
 
-          {/*
-           * Always mounted, disabled when there is nothing to replay.
-           *
-           * It used to unmount while a cascade ran and again once the game
-           * ended, so every move collapsed its height and shunted the whole
-           * rail — controls, move list, everything — up and then back down a
-           * second later. Reserving the space is the difference between hiding
-           * something and removing it.
-           */}
-          <CascadeReplay
-            review={review}
-            explosions={session.history.at(-1)?.explosions ?? 0}
-            busy={animating || finished}
-            locale={locale}
-          />
+            {/*
+             * Driven by the animation frame rather than the settled state, so
+             * the needle moves with the cascade instead of jumping to the
+             * answer before the board has finished showing the working.
+             * Watching load spike and then drop as an avalanche runs is the
+             * clearest statement of the mechanic the app can make without
+             * words.
+             */}
+            <LoadGauge
+              locale={locale}
+              board={{ ...board, owners: view.owners, counts: view.counts }}
+            />
+
+            {/*
+             * Always mounted, disabled when there is nothing to replay.
+             *
+             * It used to unmount while a cascade ran and again once the game
+             * ended, so every move collapsed its height and shunted the whole
+             * rail — controls, move list, everything — up and then back down a
+             * second later. Reserving the space is the difference between
+             * hiding something and removing it.
+             */}
+            <CascadeReplay
+              review={review}
+              explosions={session.history.at(-1)?.explosions ?? 0}
+              busy={animating || finished}
+              locale={locale}
+            />
+          </div>
 
           <Controls
             locale={locale}
@@ -553,19 +575,24 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           />
 
           {/*
+           * The game's own record, clustered apart from the controls above it:
+           * a monitoring station keeps a trace and an event log side by side,
+           * and neither one is a setting you change between turns.
+           *
            * Above the move list, not instead of it. The list is precise and
-           * per-move; the strip is the shape of the whole game. A monitoring
-           * station keeps both a trace and an event log, and they answer
-           * different questions — "how big was move 24" against "what has this
-           * game been like".
+           * per-move; the strip is the shape of the whole game — "how big was
+           * move 24" against "what has this game been like". Each already
+           * carries its own heading, so the cluster needs none of its own.
            */}
-          <Seismogram
-            locale={locale}
-            moves={session.history}
-            players={session.state.players}
-          />
+          <div className={CLUSTER}>
+            <Seismogram
+              locale={locale}
+              moves={session.history}
+              players={session.state.players}
+            />
 
-          <MoveList locale={locale} moves={session.history} cols={board.cols} />
+            <MoveList locale={locale} moves={session.history} cols={board.cols} />
+          </div>
 
           <ModePicker
             locale={locale}

@@ -72,15 +72,20 @@ export const FIGURE_AFTER: readonly MiniCell[] = [
   [0, 1], EMPTY_CELL, EMPTY_CELL, [1, 1],
 ]
 
-/** Between two boards, centred against them. It used to carry a top margin to
- *  clear the label above it; in the grid the labels have their own row, so the
- *  margin would only push it out of line. */
+/**
+ * Between two boards, centred against them. It used to carry a top margin to
+ * clear the label above it; in the grid the labels have their own row, so the
+ * margin would only push it out of line.
+ *
+ * Points down below `sm`, where the panels stack — see the note on the grid
+ * below for why three boards abreast do not fit a phone.
+ */
 function Arrow() {
   return (
     <svg
       viewBox="0 0 24 24"
       aria-hidden="true"
-      className="h-4 w-4 shrink-0 self-center text-trace-faint"
+      className="h-4 w-4 shrink-0 origin-center rotate-90 self-center text-trace-faint sm:rotate-0"
     >
       <path
         d="M3 12h18m0 0-6.5-6.5M21 12l-6.5 6.5"
@@ -103,35 +108,45 @@ export function CascadeFigure({ locale }: { locale: Locale }) {
      */
     <figure className="flex flex-col gap-sm">
       {/*
-       * A grid rather than three stacked columns, so every label sits in one
-       * row and every board in the next.
+       * A grid on `sm` and up, so every label sits in one row and every board
+       * in the next — three flex columns did this with three separate labels,
+       * and a label that wrapped to two lines ("Dua tahap kemudian" does, and a
+       * translation might wrap any of them) left that board a line lower than
+       * its neighbours. Sharing the rows aligns them by construction rather
+       * than by hoping the labels stay the same length. Each item is given an
+       * explicit column and row on `sm` rather than left to auto-placement,
+       * because auto-placement fills row-major through however many columns
+       * the grid has — with the label/board pairs now adjacent in the source
+       * (for the mobile order below) rather than grouped by row, letting the
+       * grid place them itself would scatter a board into the label row.
        *
-       * As three flex columns each label pushed its own board down, so a label
-       * that wrapped to two lines — "Dua tahap kemudian" does, and a translation
-       * might wrap any of them — left that board a line lower than its
-       * neighbours. Sharing the rows aligns them by construction rather than by
-       * hoping the labels stay the same length.
+       * Below `sm` the three panels stack instead of sharing a row: at phone
+       * width three boards abreast leaves each one under 100px on a side,
+       * which is where the capacity dots and orb shapes this figure exists to
+       * show stop being legible. One column, source order, each label
+       * directly above its own board.
        */}
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-x-2xs sm:gap-x-xs">
-        <span className="label-micro">{t.figureBefore}</span>
-        <span aria-hidden="true" />
-        <span className="label-micro">{t.figureDuring}</span>
-        <span aria-hidden="true" />
-        <span className="label-micro">{t.figureAfter}</span>
-
-        <div className="pt-2xs">
+      <div className="grid grid-cols-1 items-start gap-x-2xs gap-y-2xs sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)_auto_minmax(0,1fr)] sm:gap-x-xs sm:gap-y-0">
+        <span className="label-micro sm:col-start-1 sm:row-start-1">{t.figureBefore}</span>
+        <div className="pt-2xs sm:col-start-1 sm:row-start-2">
           <MiniBoard cells={FIGURE_BEFORE} cols={FIGURE_COLS} played={FIGURE_MOVE} />
         </div>
 
-        <Arrow />
+        <span aria-hidden="true" className="sm:col-start-2 sm:row-start-2">
+          <Arrow />
+        </span>
 
-        <div className="pt-2xs">
+        <span className="label-micro sm:col-start-3 sm:row-start-1">{t.figureDuring}</span>
+        <div className="pt-2xs sm:col-start-3 sm:row-start-2">
           <MiniBoard cells={FIGURE_MIDWAY} cols={FIGURE_COLS} firing={FIGURE_MIDWAY_FIRING} />
         </div>
 
-        <Arrow />
+        <span aria-hidden="true" className="sm:col-start-4 sm:row-start-2">
+          <Arrow />
+        </span>
 
-        <div className="pt-2xs">
+        <span className="label-micro sm:col-start-5 sm:row-start-1">{t.figureAfter}</span>
+        <div className="pt-2xs sm:col-start-5 sm:row-start-2">
           <MiniBoard cells={FIGURE_AFTER} cols={FIGURE_COLS} />
         </div>
       </div>
