@@ -20,6 +20,7 @@ import { playerName, styleFor } from '@/lib/players'
 import { GameSummary } from '@/components/hud/GameSummary'
 import { LoadGauge } from '@/components/hud/LoadGauge'
 import { MoveList } from '@/components/hud/MoveList'
+import { Seismogram } from '@/components/hud/Seismogram'
 import { MoveAnnouncer } from '@/components/hud/MoveAnnouncer'
 import { CascadeReplay } from '@/components/hud/CascadeReplay'
 import { EvaluationPanel } from '@/components/hud/EvaluationPanel'
@@ -536,6 +537,19 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               setPreviewIndex(null)
               setAwaitingTap(null)
             }}
+          />
+
+          {/*
+           * Above the move list, not instead of it. The list is precise and
+           * per-move; the strip is the shape of the whole game. A monitoring
+           * station keeps both a trace and an event log, and they answer
+           * different questions — "how big was move 24" against "what has this
+           * game been like".
+           */}
+          <Seismogram
+            locale={locale}
+            moves={session.history}
+            players={session.state.players}
           />
 
           <MoveList locale={locale} moves={session.history} cols={board.cols} />
