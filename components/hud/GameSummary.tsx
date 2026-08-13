@@ -2,11 +2,12 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { GameRecord } from '@/lib/engine/replay'
+import type { GameRecord, MoveSummary } from '@/lib/engine/replay'
 import { encodeRecord } from '@/lib/share'
 import type { Locale } from '@/lib/i18n'
 import type { Stats } from '@/lib/stats'
 import { AvalancheChart } from './AvalancheChart'
+import { Seismogram } from './Seismogram'
 
 const COPY = {
   code: { id: 'Kode permainan', en: 'Game code' },
@@ -23,6 +24,8 @@ export function GameSummary({
   record,
   stats,
   review = null,
+  history,
+  players,
 }: {
   locale: Locale
   record: GameRecord
@@ -30,6 +33,10 @@ export function GameSummary({
   /** The post-mortem, passed in rather than owned here — it needs a worker,
    *  and the summary is otherwise a pure render of a finished record. */
   review?: React.ReactNode
+  /** The finished game, for the record strip. Derived from the move list, so
+   *  it costs nothing that was not already computed. */
+  history: readonly MoveSummary[]
+  players: number
 }) {
   const [copied, setCopied] = useState(false)
   const code = encodeRecord(record)
@@ -64,6 +71,16 @@ export function GameSummary({
         <span className="font-numeral text-xs text-trace-faint">
           {COPY.played[locale]}: {total} · {COPY.longest[locale]}: {stats.longestCascade}
         </span>
+      </div>
+
+      {/*
+       * The whole game in one strip, at the moment it is over. This is the
+       * screenshot: a long flat run and then the spike that ended it, which is
+       * the shape of the model the game is built on rather than a decoration
+       * of it.
+       */}
+      <div className="border-t border-trace-hairline pt-sm">
+        <Seismogram locale={locale} moves={history} players={players} />
       </div>
 
       {review !== null ? (

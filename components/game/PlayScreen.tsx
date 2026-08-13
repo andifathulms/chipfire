@@ -621,6 +621,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           locale={locale}
           record={session.record}
           stats={stats}
+          history={session.history}
+          players={session.state.players}
           review={
             reviewSubject === null ? null : (
               <PostMortemPanel
