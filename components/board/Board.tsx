@@ -211,7 +211,10 @@ export function Board({
         onBlur={() => onPreview?.(null)}
         aria-label={labelFor(index)}
         className={[
-          'relative aspect-square border-[0.5px] border-trace/25 p-[12%] transition-colors',
+          // `transition-colors` doesn't reach outline-color, so the legal-move
+          // and captured-cell rings used to snap in a beat after the wash
+          // they sit beside had already eased.
+          'relative aspect-square border-[0.5px] border-trace/25 p-[12%] transition-[background-color,outline-color]',
           playable ? 'cursor-pointer hover:bg-chart-deep' : 'cursor-default',
           flashing.has(index) ? 'bg-trace/10' : '',
           // The reach of the move under consideration, drawn on the lattice
