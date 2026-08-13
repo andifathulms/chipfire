@@ -68,7 +68,11 @@ export function TurnIndicator({
               key={player}
               aria-current={active ? 'true' : undefined}
               className={[
-                'flex flex-col gap-2 border px-3 py-2 transition-colors',
+                // `transition-colors` doesn't reach box-shadow, so the rule
+                // down the left edge used to pop in a frame after the border
+                // it sits beside had already eased. One explicit list, one
+                // handoff.
+                'flex flex-col gap-2 border px-3 py-2 transition-[color,background-color,border-color,box-shadow] duration-200',
                 // The active player gets ink-weight border, a raised ground and
                 // a rule down the left edge. Weight rather than hue, so the cue
                 // survives a colour-blind read.
