@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-14T00:00:00Z",
+  "title": "Design System: Chipfire",
+  "extensions": {
+    "colorMeta": {
+      "signal-rust": { "role": "primary", "displayName": "Signal Rust", "canonical": "#C0501E", "tonalRamp": ["#421C0A", "#7C3313", "#B54B1C", "#DF6934", "#E8936D", "#F0B79E", "#F7D8CA", "#FCEFE9"] },
+      "signal-orange": { "role": "secondary", "displayName": "Signal Orange", "canonical": "#C4561E", "tonalRamp": ["#421D0A", "#7C3613", "#B5501C", "#E06E34", "#E9976D", "#F0B99E", "#F7D9CA", "#FCEFE9"] },
+      "signal-orange-ink": { "role": "secondary", "displayName": "Signal Orange Ink", "canonical": "#A34719", "tonalRamp": ["#331608", "#5F290F", "#8C3C15", "#B54F1E", "#C97748", "#DBA07C", "#EBC6AC", "#F9E5D8"] },
+      "station-blue": { "role": "secondary", "displayName": "Station Blue", "canonical": "#2C5F87", "tonalRamp": ["#13293A", "#234C6C", "#336F9E", "#4E91C5", "#80B0D6", "#AACAE3", "#D1E2F0", "#ECF3F9"] },
+      "ochre": { "role": "secondary", "displayName": "Ochre", "canonical": "#B08721", "tonalRamp": ["#40310C", "#785C17", "#B08721", "#DAAC39", "#E4C371", "#EDD7A1", "#F5E9CB", "#FBF6EA"] },
+      "ochre-ink": { "role": "secondary", "displayName": "Ochre Ink", "canonical": "#7B5F17", "tonalRamp": ["#2C2209", "#544111", "#7C5F19", "#A17B22", "#BC9A50", "#D3B981", "#E6D5AF", "#F6EDDC"] },
+      "slate-green": { "role": "secondary", "displayName": "Slate Green", "canonical": "#3E6B5A", "tonalRamp": ["#1C3029", "#345A4C", "#4D846F", "#6AA991", "#94C1B0", "#B8D6CB", "#D8E9E2", "#EFF6F3"] },
+      "chart-stock": { "role": "neutral", "displayName": "Chart Stock", "canonical": "#EDEAE3", "tonalRamp": ["#2F2A1E", "#574E38", "#7F7252", "#A39470", "#BDB299", "#D3CCBB", "#E7E3DA", "#F5F3EF"] },
+      "chart-stock-deep": { "role": "neutral", "displayName": "Chart Stock Deep", "canonical": "#E3DFD5" },
+      "lattice-line": { "role": "neutral", "displayName": "Lattice Line", "canonical": "#D6D1C4" },
+      "trace-ink": { "role": "neutral", "displayName": "Trace Ink", "canonical": "#1F2421", "tonalRamp": ["#232926", "#424D46", "#617067", "#819288", "#A5B1AA", "#C3CBC6", "#DEE3E0", "#F1F3F2"] },
+      "trace-ink-soft": { "role": "neutral", "displayName": "Trace Ink Soft", "canonical": "#4A504B" },
+      "trace-ink-faint": { "role": "neutral", "displayName": "Trace Ink Faint", "canonical": "#5E635E" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display / Numeral", "purpose": "Wordmark, panel titles, and every numeral in the app via .font-numeral (tabular figures) — counters must not reflow their own width as they tick." },
+      "body": { "displayName": "Body", "purpose": "Prose, rule explanations, captions. Deliberately unremarkable so it never competes with adjacent numerals." },
+      "label": { "displayName": "Label (instrument lettering)", "purpose": ".label-micro — field labels and micro-headers inside a panel. Rationed to one per logical group." },
+      "mono": { "displayName": "Mono", "purpose": "Connection codes, state hashes, cell notation — read character-by-character and pasted accurately. Not preloaded; never appears in a first paint." }
+    },
+    "shadows": [
+      { "name": "rule-edge", "value": "inset 2px 0 0 0 currentColor", "purpose": "Marks the active player's card. A line, not a lift — never combined with a blurred shadow." },
+      { "name": "overlay-lift", "value": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)", "purpose": "The one floating surface in the whole system: the native <dialog> (How to Play). Nothing else gets this." }
+    ],
+    "motion": [
+      { "name": "tremble", "value": "260ms ease-in-out infinite", "purpose": "The only ambient/looping motion in the app. A cell one orb from firing shakes because it genuinely is about to — never decorative." },
+      { "name": "settle", "value": "220ms ease-out both, runs once", "purpose": "The win moment. The one place the app is allowed to be pleased with itself; never a loop." },
+      { "name": "burst", "value": "300ms ease-out both", "purpose": "A cell releasing its orbs; scales past the cell edge so overlapping generations read as one wave." },
+      { "name": "claim", "value": "420ms ease-out both", "purpose": "A cell changing hands, washed in the capturing player's color." },
+      { "name": "arrive", "value": "180ms ease-out", "purpose": "Orbs entering a cell — small enough to register as weight, not bounce." },
+      { "name": "ripple-step", "value": "22ms per Manhattan-distance step, capped at 6 steps", "purpose": "Per-cell delay (not duration) that makes a cascade generation propagate outward from the triggering move rather than flashing simultaneously." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled, solid action on a page of hairlines — never more than one visible at a time.",
+      "html": "<button class=\"ds-btn-primary\">Main</button>",
+      "css": ".ds-btn-primary { background: var(--color-trace, #1F2421); color: var(--color-chart, #EDEAE3); border: 1px solid var(--color-trace, #1F2421); border-radius: 0; padding: 8px 24px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; font-size: 15px; cursor: pointer; transition: opacity 0.2s; } .ds-btn-primary:hover { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-trace, #1F2421); outline-offset: 2px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined action — the default for anything that isn't the single primary CTA.",
+      "html": "<button class=\"ds-btn-secondary\">Belajar</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: var(--color-trace, #1F2421); border: 1px solid rgb(31 36 33 / 0.32); border-radius: 0; padding: 6px 12px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; font-size: 15px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; } .ds-btn-secondary:hover { background: #E3DFD5; border-color: var(--color-trace, #1F2421); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--color-trace, #1F2421); outline-offset: 2px; }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "custom",
+      "description": "The system's one-of-N choice pattern (speed, difficulty, on/off) — equal-width buttons sharing one border, active option filled.",
+      "html": "<div class=\"ds-segmented\" role=\"group\"><button class=\"ds-segmented-item is-active\">Normal</button><button class=\"ds-segmented-item\">Cepat</button><button class=\"ds-segmented-item\">Langsung</button></div>",
+      "css": ".ds-segmented { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid rgb(31 36 33 / 0.32); } .ds-segmented-item { background: transparent; color: var(--color-trace, #1F2421); border: none; border-radius: 0; padding: 6px 4px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; font-size: 13px; min-height: 2.25rem; cursor: pointer; transition: background-color 0.2s, color 0.2s; } .ds-segmented-item:hover { background: #E3DFD5; } .ds-segmented-item.is-active { background: var(--color-trace, #1F2421); color: var(--color-chart, #EDEAE3); }"
+    },
+    {
+      "name": "Panel Cluster",
+      "kind": "card",
+      "refersTo": "panel-cluster",
+      "description": "Groups related instrument readouts under one titled unit so a long HUD rail reads as sections, not a flat list.",
+      "html": "<section class=\"ds-cluster\"><h2 class=\"ds-cluster-title\">Posisi ini</h2><p class=\"ds-cluster-row\"><span class=\"ds-label\">Muatan</span><span class=\"ds-numeral\">0/132</span></p></section>",
+      "css": ".ds-cluster { display: flex; flex-direction: column; gap: 12px; border: 1px solid rgb(31 36 33 / 0.2); background: rgb(227 223 213 / 0.3); border-radius: 0; padding: 12px; } .ds-cluster-title { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 15px; font-weight: 500; color: var(--color-trace, #1F2421); margin: 0; } .ds-cluster-row { display: flex; justify-content: space-between; align-items: baseline; margin: 0; } .ds-label { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.14em; color: #5E635E; } .ds-numeral { font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Player Card",
+      "kind": "custom",
+      "description": "Whose turn it is, with shape and color both carrying identity. Active state is an ink-weight border and an inset rule-edge, never hue alone.",
+      "html": "<div class=\"ds-player-card is-active\"><span class=\"ds-player-orb\" style=\"color:#C4561E\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"currentColor\"/></svg></span><span class=\"ds-player-name\" style=\"color:#A34719\">Jingga</span><span class=\"ds-player-count ds-numeral\">2</span></div>",
+      "css": ".ds-player-card { display: flex; align-items: center; gap: 8px; border: 1px solid rgb(31 36 33 / 0.2); border-radius: 0; padding: 8px 12px; font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif; font-size: 15px; transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s; } .ds-player-card.is-active { border-color: var(--color-trace, #1F2421); background: #E3DFD5; box-shadow: inset 2px 0 0 0 currentColor; } .ds-player-name { font-weight: 500; } .ds-player-count { margin-left: auto; font-size: 18px; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Labeled-above field, numeral font for numeric values, no radius.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Baris</span><input class=\"ds-input\" type=\"number\" value=\"6\"/></label>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 4px; } .ds-input { background: var(--color-chart, #EDEAE3); color: var(--color-trace, #1F2421); border: 1px solid rgb(31 36 33 / 0.32); border-radius: 0; padding: 4px 8px; font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif; font-variant-numeric: tabular-nums; } .ds-input:focus-visible { outline: 2px solid var(--color-trace, #1F2421); outline-offset: 2px; }"
+    },
+    {
+      "name": "Orb",
+      "kind": "custom",
+      "description": "Player identity as shape, not just color — disc / ring / diamond / triangle, one per player, always paired with that player's hue.",
+      "html": "<svg class=\"ds-orb\" viewBox=\"0 0 100 100\" style=\"color:#2C5F87\"><circle cx=\"50\" cy=\"50\" r=\"11\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"5\"/></svg>",
+      "css": ".ds-orb { width: 32px; height: 32px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Blast-Monitoring Station",
+    "overview": "Chipfire's subject is a controlled detonation propagating through a lattice — accumulation, threshold, release. The visual world is not a game skin; it is the instrument that would actually sit in the room watching that happen: a seismograph and a blast-monitoring chart. A fine grid, ink traces, a station clock. Everything is precise and legible rather than arcade — no glow-for-its-own-sake, no celebratory chrome, no decoration that isn't also a reading. When the system needs to say something, it says it the way an instrument does: a mark, a number, a trace left on the paper — never a badge or a burst of color.\n\nThe system runs in exactly two states, never a blend. By day it is chart paper: cream stock, a hairline-printed grid, dark ink. By night it is the station's own display, which is emissive rather than reflective — the palette folds in on itself (today's ink becomes the raised surface, today's paper becomes the ink) rather than being replaced by an invented dark theme.",
+    "keyCharacteristics": [
+      "Flat, printed-paper materiality — a hairline lattice exists before any game state does.",
+      "Zero border-radius on every container, button, card, and input; roundness is reserved for data points only.",
+      "One saturated hue per player, and saturated color appears nowhere else.",
+      "Motion is a reading, not decoration — cascades propagate in event order, trembling encodes real danger, afterglow does not animate.",
+      "Space Grotesk for display and every numeral, IBM Plex Sans for prose, IBM Plex Mono for anything copied character-by-character."
+    ],
+    "rules": [
+      { "name": "The One-Hue-Per-Player Rule", "body": "Saturated color exists in this system for exactly one purpose — telling players apart. It never decorates a button, a chart axis, an icon, or a piece of chrome.", "section": "colors" },
+      { "name": "The Shape-Before-Color Rule", "body": "Every player color is paired with a distinct orb silhouette and every UI element that names a player repeats both. Color-vision deficiency must never cost a player the ability to read the board.", "section": "colors" },
+      { "name": "The One Weight Above Rule", "body": "A panel's title sits exactly one visual step above the label-micro fields inside it — sentence case and the display face, not louder tracking.", "section": "typography" },
+      { "name": "The One Overlay Rule", "body": "Only a true modal (a native dialog) gets a lift shadow. Everything else that needs to read as above its neighbor does so with a deeper paper tone or a border.", "section": "elevation" },
+      { "name": "The Sharp-Edged Rule", "body": "Radius is zero everywhere except an actual data point (a capacity dot, a bar's flowing edge). A rounded corner on a container is always a mistake in this system.", "section": "shapes" }
+    ],
+    "dos": [
+      "Do keep every container, button, card, and input at zero border-radius.",
+      "Do express raised or grouped with chart-deep tone and a hairline border, never a drop shadow.",
+      "Do pair every player-color usage with that player's orb shape.",
+      "Do use the numeral font (Space Grotesk, tabular figures) for every counter, score, and hash-adjacent number.",
+      "Do keep saturated color scoped to the four player hues and the brand mark's rust core.",
+      "Do honor prefers-reduced-motion: any animation above trivial must degrade to an instant, fully-informative state."
+    ],
+    "donts": [
+      "Don't introduce a second raised-surface tone beyond Chart Stock and Chart Stock Deep.",
+      "Don't use Signal Rust (the mark's core) as a player color.",
+      "Don't animate the afterglow or add a decay effect to it.",
+      "Don't add a shadow, glow, or gradient fill to a button, card, or panel.",
+      "Don't derive a cascade animation's duration from the speed setting — only the delay between generations should change."
+    ]
+  }
+}
