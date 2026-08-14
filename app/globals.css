@@ -209,15 +209,28 @@ body {
 
 body {
   background-color: rgb(var(--color-chart));
-  background-image:
-    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-  background-size: var(--grid-size) var(--grid-size);
   color: rgb(var(--color-trace));
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * The printed lattice, scoped rather than global. It used to sit on `body`
+ * and showed through every screen — including the HUD, where a stack of
+ * bordered panels (Controls, MoveList, EvaluationPanel...) has no background
+ * of its own, so the grid lines and the panel hairlines read as the same
+ * kind of line and the chrome turned to noise. The board draws its own
+ * lattice at cell resolution and never needed this. What did was the one
+ * place the "chart paper" idea has open room to mean something: the
+ * homepage hero, ahead of any game state.
+ */
+.bg-lattice {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
 }
 
 /*

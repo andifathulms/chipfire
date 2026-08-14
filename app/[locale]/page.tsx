@@ -40,7 +40,7 @@ export default function HomePage({ params }: { params: { locale: string } }) {
   ]
 
   return (
-    <main className="mx-auto flex w-full flex-1 max-w-5xl flex-col justify-center gap-xl px-6 py-xl">
+    <main className="bg-lattice mx-auto flex w-full flex-1 max-w-5xl flex-col justify-center gap-xl px-6 py-xl">
       {/*
        * Two columns where there is room, so the sentence that says what this
        * is and the picture that proves it are one glance apart rather than one
