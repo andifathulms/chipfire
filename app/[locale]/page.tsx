@@ -61,7 +61,19 @@ export default function HomePage({ params }: { params: { locale: string } }) {
             <p className="max-w-measure text-base text-trace-soft">{t.tagline}</p>
           </header>
 
-          <nav className="flex flex-wrap items-center gap-sm">
+          {/*
+           * A stack, not a wrapped row. The two tiles never actually had room
+           * to sit side by side at any supported width — the hero column
+           * tops out around 470px and the pair need close to 840px together —
+           * so `flex-wrap` was only ever landing on its second line, and each
+           * tile's width was whatever its own hint text happened to need.
+           * That made "Main" and "Belajar" different widths by accident of
+           * copy length, and would keep drifting with every translation.
+           * `flex-col` makes the stack the actual layout instead of a wrap
+           * fallback, and default `align-items: stretch` gives both tiles the
+           * same width — the column's — by construction.
+           */}
+          <nav className="flex flex-col gap-sm">
             {/* The primary action is filled, not outlined. On a page of
                 hairlines one solid block is unmistakably the way in. */}
             <Link
