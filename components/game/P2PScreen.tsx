@@ -54,6 +54,15 @@ const COPY = {
   captures: { id: 'Sel direbut', en: 'Cells taken' },
 } as const
 
+/**
+ * Same treatment as the game rail's "Posisi ini" cluster in PlayScreen: a
+ * group of readouts that are about the session rather than urgent or
+ * blocking gets one shared surface instead of two more loose bordered blocks
+ * in a column that already has ten. Not shared as a component with
+ * PlayScreen's — one string, two call sites, not yet a real abstraction.
+ */
+const CLUSTER = 'flex flex-col gap-3 border border-trace-hairline bg-chart-deep/30 p-3'
+
 export function P2PScreen({ locale }: { locale: Locale }) {
   const [speed] = useState<Speed>('normal')
   const game = useP2PGame()
@@ -256,63 +265,75 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           </div>
 
           {/*
-           * Two flags, stated as four sentences, because "waiting for them" and
-           * "they are waiting for you" are different situations and a single
-           * on/off control would show the same thing for both.
+           * "About this session" rather than "what to do now": the preview
+           * agreement and the move count/hash are both low-frequency-glance
+           * facts, not part of the turn-by-turn path above them. Clustered so
+           * the column reads as connect → play → session, not nine loose
+           * bordered blocks of identical weight in a row.
            */}
-          <section className="flex flex-wrap items-center gap-x-3 gap-y-2 border border-trace-hairline px-3 py-2 text-sm">
-            <span className="label-micro">{COPY.preview[locale]}</span>
-            <span aria-live="polite" className="text-trace-soft">
-              {game.previewAgreed
-                ? COPY.previewOn[locale]
-                : game.previewMine
-                  ? COPY.previewWaiting[locale]
-                  : game.previewTheirs
-                    ? COPY.previewOffered[locale]
-                    : COPY.previewOff[locale]}
-            </span>
-            <button
-              type="button"
-              onClick={() => {
-                game.setPreview(!game.previewMine)
-                setPreviewIndex(null)
-              }}
-              className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
-            >
-              {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
-            </button>
-
+          <div className={CLUSTER}>
             {/*
-             * Always mounted once the preview is agreed, so hovering a cell
-             * cannot resize the panel under the board. The same mistake was
-             * made and fixed on the local screen: in an interface driven
-             * entirely by pointing at cells, a readout that appears on hover
-             * moves the page every time you look at anything.
+             * Two flags, stated as four sentences, because "waiting for them"
+             * and "they are waiting for you" are different situations and a
+             * single on/off control would show the same thing for both.
              */}
-            {game.previewAgreed ? (
-              <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace-hairline pt-2">
-                <span className="flex items-baseline gap-1">
-                  <span className="label-micro">{COPY.reach[locale]}</span>
-                  <span className="font-numeral">{preview?.explosions ?? '—'}</span>
-                </span>
-                <span className="flex items-baseline gap-1">
-                  <span className="label-micro">{COPY.captures[locale]}</span>
-                  <span className="font-numeral">{preview?.capturedCount ?? '—'}</span>
-                </span>
+            <section className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+              <span className="label-micro">{COPY.preview[locale]}</span>
+              <span aria-live="polite" className="text-trace-soft">
+                {game.previewAgreed
+                  ? COPY.previewOn[locale]
+                  : game.previewMine
+                    ? COPY.previewWaiting[locale]
+                    : game.previewTheirs
+                      ? COPY.previewOffered[locale]
+                      : COPY.previewOff[locale]}
               </span>
-            ) : null}
-          </section>
+              <button
+                type="button"
+                onClick={() => {
+                  game.setPreview(!game.previewMine)
+                  setPreviewIndex(null)
+                }}
+                className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
+              >
+                {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
+              </button>
 
-          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
-            <span className="font-numeral text-trace">{session.record.moves.length}</span>
-            <span className="text-trace-soft">{COPY.moves[locale]}</span>
-            <span className="break-all font-mono text-trace-faint">{session.hash}</span>
-          </p>
+              {/*
+               * Always mounted once the preview is agreed, so hovering a cell
+               * cannot resize the panel under the board. The same mistake was
+               * made and fixed on the local screen: in an interface driven
+               * entirely by pointing at cells, a readout that appears on hover
+               * moves the page every time you look at anything.
+               */}
+              {game.previewAgreed ? (
+                <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace-hairline pt-2">
+                  <span className="flex items-baseline gap-1">
+                    <span className="label-micro">{COPY.reach[locale]}</span>
+                    <span className="font-numeral">{preview?.explosions ?? '—'}</span>
+                  </span>
+                  <span className="flex items-baseline gap-1">
+                    <span className="label-micro">{COPY.captures[locale]}</span>
+                    <span className="font-numeral">{preview?.capturedCount ?? '—'}</span>
+                  </span>
+                </span>
+              ) : null}
+            </section>
 
+            <p className="flex flex-wrap items-baseline gap-x-2 border-t border-trace-hairline pt-3 text-xs">
+              <span className="font-numeral text-trace">{session.record.moves.length}</span>
+              <span className="text-trace-soft">{COPY.moves[locale]}</span>
+              <span className="break-all font-mono text-trace-faint">{session.hash}</span>
+            </p>
+          </div>
+
+          {/* Set apart from the session cluster above rather than following
+              it at the same gap: this is the one action on the screen that
+              ends things, and it read as just the next item in the list. */}
           <button
             type="button"
             onClick={game.disconnect}
-            className="self-start border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+            className="self-start border border-trace-rule px-3 py-1.5 text-sm transition-colors hover:bg-chart-deep"
           >
             {COPY.disconnect[locale]}
           </button>
