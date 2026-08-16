@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
@@ -94,6 +94,12 @@ const COPY = {
   evaluation: { id: 'Penilaian AI', en: "The AI's evaluation" },
   lastMove: { id: 'langkah terakhir', en: 'last move' },
   positionNow: { id: 'Posisi ini', en: 'This position' },
+  /**
+   * The phone drawer's handle (DESIGN-REWORK.md §5): labelled with what's
+   * inside rather than a chevron, so opening it is a choice about content,
+   * not a mystery disclosure.
+   */
+  drawer: { id: 'Muatan · rekaman · daftar langkah', en: 'Load · record · move list' },
 } as const
 
 /**
@@ -169,6 +175,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const showTurnIndicator = phase === 'main' || phase === 'longsor'
   const showPlayRail = phase === 'main' || phase === 'longsor'
   const showEvaluation = mode === 'ai' && phase !== 'siap'
+  /*
+   * DESIGN-REWORK.md §5: on a narrow viewport during play, only the board,
+   * turn indicator, and controls are on screen by default — LoadGauge,
+   * Seismogram, and MoveList live in this in-flow drawer instead. Closed by
+   * default and not persisted: "each game starts closed."
+   */
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const drawerId = useId()
 
   // Player 0 is the human; everyone else is the machine. It gets no hidden
   // information and no illegal moves — only a deeper search.
@@ -293,10 +307,19 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     return buildAfterglow(session.state.board.owners.length, events)
   }, [session.lastCascade, animating, review.open, session.state.board.owners.length])
 
-  const applyConfig = (config: GameConfig) => {
+  /*
+   * Every path that starts a fresh game — a new board, a mode switch, the
+   * "play again" overlay, plain restart — closes both the setup escape hatch
+   * and the phone drawer along with it. Neither is game state, but "each
+   * game starts closed" (DESIGN-REWORK.md §5) applies to both the same way.
+   */
+  const startFresh = (config?: GameConfig) => {
     session.reset(config)
     setSetupOpen(false)
+    setDrawerOpen(false)
   }
+
+  const applyConfig = (config: GameConfig) => startFresh(config)
 
   // Considered, not committed. The engine answers what the move would do.
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
@@ -423,7 +446,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 <button
                   ref={againRef}
                   type="button"
-                  onClick={() => session.reset()}
+                  onClick={() => startFresh()}
                   className="border border-trace bg-trace px-5 py-2 text-chart transition-opacity hover:opacity-85"
                 >
                   {COPY.again[locale]}
@@ -572,44 +595,74 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                * to look at or not. It demotes on the next move because `phase`
                * is recomputed fresh every render, not because anything here
                * remembers it was promoted.
+               *
+               * Two variants, one per breakpoint, rather than one cluster
+               * reflowed with CSS: DESIGN-REWORK.md §5 keeps LoadGauge out of
+               * this cluster entirely on a phone — it moves to the drawer
+               * below — while `lg` and up keep the step-4 arrangement
+               * unchanged ("those instruments are in the rail as they are
+               * now"). CascadeReplay stays here at every width; it is the
+               * one thing `longsor` promotes, and the drawer is for readings
+               * that can wait, not the transport for the cascade that just
+               * ran.
                */}
-              <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
-                <div className="flex items-baseline justify-between gap-2">
-                  <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
-                  {phase === 'longsor' ? (
-                    <span className="flex items-baseline gap-1">
-                      <span className="label-micro">{COPY.reach[locale]}</span>
-                      <span className="font-numeral text-base leading-none">
-                        {session.history.at(-1)?.explosions ?? 0}
+              <div className="lg:hidden">
+                <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
+                    {phase === 'longsor' ? (
+                      <span className="flex items-baseline gap-1">
+                        <span className="label-micro">{COPY.reach[locale]}</span>
+                        <span className="font-numeral text-base leading-none">
+                          {session.history.at(-1)?.explosions ?? 0}
+                        </span>
                       </span>
-                    </span>
-                  ) : null}
+                    ) : null}
+                  </div>
+
+                  <CascadeReplay
+                    review={review}
+                    explosions={session.history.at(-1)?.explosions ?? 0}
+                    busy={animating || finished}
+                    locale={locale}
+                  />
                 </div>
+              </div>
 
-                {/*
-                 * Driven by the animation frame rather than the settled state, so
-                 * the needle moves with the cascade instead of jumping to the
-                 * answer before the board has finished showing the working.
-                 * Watching load spike and then drop as an avalanche runs is the
-                 * clearest statement of the mechanic the app can make without
-                 * words.
-                 */}
-                <LoadGauge
-                  locale={locale}
-                  board={{ ...board, owners: view.owners, counts: view.counts }}
-                />
+              <div className="hidden lg:block">
+                <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
+                    {phase === 'longsor' ? (
+                      <span className="flex items-baseline gap-1">
+                        <span className="label-micro">{COPY.reach[locale]}</span>
+                        <span className="font-numeral text-base leading-none">
+                          {session.history.at(-1)?.explosions ?? 0}
+                        </span>
+                      </span>
+                    ) : null}
+                  </div>
 
-                {/*
-                 * Always mounted (while the rail itself is), disabled when
-                 * there is nothing to replay yet — inert until `longsor`
-                 * promotes it above, per DESIGN-REWORK.md §3.
-                 */}
-                <CascadeReplay
-                  review={review}
-                  explosions={session.history.at(-1)?.explosions ?? 0}
-                  busy={animating || finished}
-                  locale={locale}
-                />
+                  {/*
+                   * Driven by the animation frame rather than the settled state,
+                   * so the needle moves with the cascade instead of jumping to
+                   * the answer before the board has finished showing the
+                   * working. Watching load spike and then drop as an avalanche
+                   * runs is the clearest statement of the mechanic the app can
+                   * make without words.
+                   */}
+                  <LoadGauge
+                    locale={locale}
+                    board={{ ...board, owners: view.owners, counts: view.counts }}
+                  />
+
+                  <CascadeReplay
+                    review={review}
+                    explosions={session.history.at(-1)?.explosions ?? 0}
+                    busy={animating || finished}
+                    locale={locale}
+                  />
+                </div>
               </div>
 
               <Controls
@@ -617,7 +670,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 speed={speed}
                 onSpeed={setSpeed}
                 onUndo={session.undo}
-                onReset={() => session.reset()}
+                onReset={() => startFresh()}
                 canUndo={session.record.moves.length > 0 && !animating}
                 longestCascade={session.longestCascade}
                 preview={previewOn}
@@ -632,6 +685,50 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               />
 
               {/*
+               * DESIGN-REWORK.md §5: below the controls bar, in document flow
+               * — never an overlay, per DESIGN.md's One Overlay Rule, which
+               * reserves that treatment for the single native <dialog> in the
+               * whole system. The board stays visible and playable with this
+               * open; the page scrolls to it rather than anything scrolling
+               * over the board. Closed by default, and every place a fresh
+               * game starts (`startFresh`) closes it again.
+               */}
+              <div className="border border-trace-hairline bg-chart-deep/30 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => setDrawerOpen((open) => !open)}
+                  aria-expanded={drawerOpen}
+                  aria-controls={drawerId}
+                  className={[
+                    'control-target w-full px-3 py-2 text-left text-sm transition-colors',
+                    drawerOpen ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
+                  ].join(' ')}
+                >
+                  {COPY.drawer[locale]}
+                </button>
+
+                {drawerOpen ? (
+                  <div
+                    id={drawerId}
+                    className="flex animate-settle flex-col gap-4 border-t border-trace-hairline p-3"
+                  >
+                    <LoadGauge
+                      locale={locale}
+                      board={{ ...board, owners: view.owners, counts: view.counts }}
+                    />
+
+                    <Seismogram
+                      locale={locale}
+                      moves={session.history}
+                      players={session.state.players}
+                    />
+
+                    <MoveList locale={locale} moves={session.history} cols={board.cols} />
+                  </div>
+                ) : null}
+              </div>
+
+              {/*
                * The game's own record, clustered apart from the controls above it:
                * a monitoring station keeps a trace and an event log side by side,
                * and neither one is a setting you change between turns.
@@ -640,15 +737,20 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                * per-move; the strip is the shape of the whole game — "how big was
                * move 24" against "what has this game been like". Each already
                * carries its own heading, so the cluster needs none of its own.
+               *
+               * `lg` and up only — below that, the same two instruments live in
+               * the drawer above instead.
                */}
-              <div className={CLUSTER}>
-                <Seismogram
-                  locale={locale}
-                  moves={session.history}
-                  players={session.state.players}
-                />
+              <div className="hidden lg:block">
+                <div className={CLUSTER}>
+                  <Seismogram
+                    locale={locale}
+                    moves={session.history}
+                    players={session.state.players}
+                  />
 
-                <MoveList locale={locale} moves={session.history} cols={board.cols} />
+                  <MoveList locale={locale} moves={session.history} cols={board.cols} />
+                </div>
               </div>
             </>
           ) : null}
@@ -669,8 +771,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 difficulty={difficulty}
                 onMode={(next) => {
                   setMode(next)
-                  session.reset()
-                  setSetupOpen(false)
+                  startFresh()
                 }}
                 onDifficulty={setDifficulty}
               />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { cellName } from '@/lib/engine/notation'
 import type { MoveSummary } from '@/lib/engine/replay'
 import type { Locale } from '@/lib/i18n'
@@ -39,10 +39,6 @@ const COPY = {
   },
 } as const
 
-/** Names the scroll region from the heading above it rather than repeating the
- *  title in an aria-label. */
-const LIST_ID = 'move-list-title'
-
 export function MoveList({
   moves,
   cols,
@@ -53,6 +49,14 @@ export function MoveList({
   locale: Locale
 }) {
   const listRef = useRef<HTMLOListElement | null>(null)
+  /*
+   * Names the scroll region from the heading above it rather than repeating
+   * the title in an aria-label. Generated per instance, not a fixed string:
+   * the phone drawer (DESIGN-REWORK.md §5) and the desktop rail can both be
+   * in the DOM at once, one hidden by a breakpoint, and two fixed ids on the
+   * same page is invalid HTML even when only one copy is ever visible.
+   */
+  const listId = useId()
 
   /*
    * Play order, newest last, scrolled to the end. Reversing would keep the
@@ -74,7 +78,7 @@ export function MoveList({
 
   return (
     <section className="flex flex-col gap-xs">
-      <h2 id={LIST_ID} className="heading-panel">
+      <h2 id={listId} className="heading-panel">
         {COPY.title[locale]}
       </h2>
 
@@ -93,7 +97,7 @@ export function MoveList({
           ref={listRef}
           tabIndex={0}
           role="region"
-          aria-labelledby={LIST_ID}
+          aria-labelledby={listId}
           className="max-h-[min(12rem,40dvh)] overflow-y-auto border-t border-trace-hairline text-sm"
         >
           {moves.map((move, position) => {
