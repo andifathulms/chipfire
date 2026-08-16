@@ -118,7 +118,16 @@ Chart paper with ink on it, plus exactly four saturated hues that never appear a
 - **Trace Ink Faint** (#5E635E): tertiary text, meta lines, disabled-adjacent copy. 5.1:1 — still comfortably above AA; the palette never drops a text color below the floor to fake a fourth weight.
 
 ### Night ground (the same system, inverted by construction)
-Under `prefers-color-scheme: dark`, only the color tokens are redefined; every border, alpha, and component inherits the change automatically because nothing outside the token layer holds a literal color. Night ground `#171A18`, raised surface `#1F2421` (today's Trace Ink, now a surface), ink `#E8E4DC` (today's Chart Stock, now the ink, 13.83:1), and all four player hues lift in lightness until each clears text contrast unaided on the night ground (Orange → `#E2703A`, Blue → `#6FA8D6`, Ochre → `#D9AE49`, Green → `#6FAE92`). Signal Rust does not move; the brand mark's core is invariant across both grounds by rule, not by accident. Contrast floor on both grounds: 4.83:1.
+Only the color tokens are redefined; every border, alpha, and component inherits the change automatically because nothing outside the token layer holds a literal color. Night ground `#171A18`, raised surface `#1F2421` (today's Trace Ink, now a surface), ink `#E8E4DC` (today's Chart Stock, now the ink), and all four player hues lift in lightness until each clears text contrast unaided on the night ground (Orange → `#E2703A`, Blue → `#6FA8D6`, Ochre → `#D9AE49`, Green → `#6FAE92`). Signal Rust does not move; the brand mark's core is invariant across both grounds by rule, not by accident.
+
+Applied by `prefers-color-scheme: dark` when there is no explicit choice, or forced either direction by the theme toggle (see Components) through a `data-theme` attribute — an explicit `light` wins on a dark system and an explicit `dark` wins on a light one, both by construction, not by a media query that only ever answers to the OS.
+
+Measured against both night grounds, the same treatment the light values above get, and reverified continuously rather than trusted by eye: `scripts/contrast.mjs` recomputes every ratio below from the live custom properties, and `tests/style/contrast.test.ts` asserts them in CI, so a token edit that quietly drops one fails the build instead of shipping.
+
+    trace 13.83:1 · soft 7.68:1 · faint 5.38:1   on #171A18
+    trace 12.43:1 · soft 6.90:1 · faint 4.83:1   on #1F2421
+
+Lowest text pairing overall is 4.83:1 (faint on the raised surface). Every player ink clears 4.5:1 at every lift — lowest, Orange on the raised surface, 4.96:1 — so unlike the light palette's Signal Orange Ink and Ochre Ink, no darkened night variant was needed; the `-ink` tokens are set back to the identity colours here.
 
 ### Named Rules
 **The One-Hue-Per-Player Rule.** Saturated color exists in this system for exactly one purpose — telling players apart. It never decorates a button, a chart axis, an icon, or a piece of chrome. If a color other than ink, tinted paper, or an active player's hue appears on screen, something has drifted.
@@ -148,11 +157,28 @@ Under `prefers-color-scheme: dark`, only the color tokens are redefined; every b
 
 Two container widths, chosen by what the page is for: `max-w-5xl` for reading surfaces (the landing page), `max-w-6xl` for the game screen, where a wide two-column board-plus-rail layout needs the room. Section rhythm on reading pages uses the `xl` (40px) and `2xl` (64px) spacing steps; the game screen is denser, using `sm`/`md` (12–16px) between HUD elements since it is read continuously during play rather than scanned once.
 
-The board itself is not laid out by the page grid at all — it is sized to fit the viewport (`(100dvh − chrome) × aspect-ratio`) so a tall board never forces a scroll to see the move about to be made, with every other element's height accounted for in a documented constant.
+The board itself is not laid out by the page grid at all — it is sized to fit the viewport (`(100dvh − chrome) × aspect-ratio`) so a tall board never forces a scroll to see the move about to be made, with every other element's height accounted for in one documented `--chrome` constant per screen (`32rem` on `/main/`, `30rem` on `/tanding/`, both below the `sm` breakpoint at every width phones actually come in). That constant is deliberately **not** fragmented per phase — see Phase below — which is what keeps the board's own rendered size identical across every phase transition without separate tuning. Measured against real content at three phone widths, and re-measured after phase gating landed to confirm the board's size genuinely held still (`CHROME-MEASUREMENTS.md`): the constant rarely even binds at those widths — a `15rem` floor or the column's own width is almost always the tighter limit — but board and readout still fit without scrolling at every configuration measured.
 
 Spacing is a named scale, not arbitrary Tailwind numerics: `2xs` 4px, `xs` 8px, `sm` 12px, `md` 16px, `lg` 24px, `xl` 40px, `2xl` 64px, referenced by role (`gap-lg` states a rhythm) rather than by raw measurement.
 
 Responsive collapse: the board-plus-rail two-column layout (`lg:grid-cols-[1fr_18rem]`) stacks to a single column below `lg`, with the turn indicator explicitly reordered above the board on narrow viewports rather than left to source order. Multi-panel figures (the landing page's before/during/after cascade diagram) stack vertically below `sm` rather than compressing three panels into a width too narrow to read.
+
+### Phase
+
+`/main/` is phase-aware rather than mounting every instrument regardless of what's happening. `lib/phase.ts` derives one of four phases from state alone, never stored, never decided by a renderer:
+
+- **`siap`** — before the first move. Mounts the board configurator (Setup, ModePicker); mounts no reading, because there is nothing yet to read.
+- **`main`** — a game in progress. Mounts the running readouts (TurnIndicator, LoadGauge, CascadeReplay, Seismogram, MoveList) and not the configurator.
+- **`longsor`** — the one turn immediately following a cascade of more than one generation. The same console as `main`, with the CascadeReplay cluster promoted: a full-weight border and an explosion-count reading, in place until the next move replaces it — because a phase is recomputed fresh every render, not remembered.
+- **`selesai`** — game over. Mounts the summary and analysis panels; unmounts the mid-game controls that no longer apply.
+
+`/tanding/` does not use this `Phase` type — an incoming peer move would interrupt a re-watch, so `longsor` does not exist there — and gates far less by phase overall: a desync (or a peer offering their move list to replay) hides the board, TurnIndicator, and session details entirely rather than sitting above them, because a desync means the position on screen may be wrong.
+
+**The Nothing-to-Say Rule.** An instrument with nothing to say for the current phase is not mounted — not disabled, not collapsed to a header, not shown empty. A phase-aware console quietly reverting to mounting everything, always, as new panels get added is the regression this rule exists to name.
+
+**The Board-Never-Resizes Rule.** The board's rendered pixel size stays fixed across every phase transition within one session. A board that grows when the game ends is disorienting, and worse, it makes the final position look different from the position that was actually played — which the afterglow, a still reading of how that position was reached, depends on the cells it marks staying exactly where they were.
+
+On a narrow viewport during `main`/`longsor`, the rail goes further: only the board, TurnIndicator, and Controls (plus the promoted CascadeReplay cluster) are on screen by default. LoadGauge, Seismogram, and MoveList live in an in-flow drawer instead — see the One Overlay Rule below for why that drawer is not a second floating surface.
 
 ## Elevation & Depth
 
@@ -164,6 +190,8 @@ Flat by default, with depth read from paper tone rather than shadow. Chart Stock
 
 ### Named Rules
 **The One Overlay Rule.** Only a true modal (a native `<dialog>`) gets a lift shadow. Everything else that needs to read as "above" its neighbor does so with a deeper paper tone or a border, because this system has exactly one thing that is ever actually floating above the page.
+
+The `/main/` phone drawer (a `chart-deep/30` cluster behind a segmented-control-styled handle, holding LoadGauge/Seismogram/MoveList below `lg`) is not a second exception to carve out: it expands **in the document flow**, pushing the page down rather than floating over the board, and the board stays visible and playable while it's open. It reads that way by this rule, not by the drawer's own restraint — a future bottom sheet, or anything else that would float, is refused here rather than argued about case by case later.
 
 ## Shapes
 
@@ -207,6 +235,11 @@ The defining custom component. A CSS Grid of square cells over a hairline lattic
 
 ### Orbs (signature component)
 Player identity rendered as SVG shape (disc / ring / diamond / triangle) at fixed positions per count inside a cell — 1 through 5 have hand-placed layouts, 6+ falls back to a tabular numeral. Shape always carries the same information as color, independently.
+
+### Theme Toggle
+A segmented-control instance — the same shell as the Buttons section above — with three mutually-exclusive options: ikuti sistem / siang / malam (follow system / day / night). Defaults to system, lives in the site footer so it's reachable from every route.
+
+This is a **display preference, not game state**: never part of the move list, never hashed, never on the wire (`lib/theme.ts`) — the same guarantee the P2P cascade-preview agreement holds itself to. Applied through a `data-theme` attribute stamped on `<html>` by an inline script that runs before first paint, so neither a fresh load nor a switch between devices ever flashes the wrong scheme.
 
 ## Do's and Don'ts
 
