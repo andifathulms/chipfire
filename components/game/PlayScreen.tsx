@@ -32,6 +32,7 @@ import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 import { playWin } from '@/lib/sound'
 import { readPreviewEnabled, setPreviewEnabled } from '@/lib/settings'
+import { derivePhase } from '@/lib/phase'
 
 const COPY = {
   title: { id: 'Main', en: 'Play' },
@@ -90,7 +91,6 @@ const COPY = {
   empty: { id: 'kosong', en: 'empty' },
   owned: { id: 'milik', en: 'owned by' },
   mass: { id: 'massa kritis', en: 'critical mass' },
-  boardSetup: { id: 'Ukuran papan', en: 'Board size' },
   evaluation: { id: 'Penilaian AI', en: "The AI's evaluation" },
   lastMove: { id: 'langkah terakhir', en: 'last move' },
   positionNow: { id: 'Posisi ini', en: 'This position' },
@@ -106,6 +106,13 @@ const COPY = {
  * visual language, just that one applied one level higher.
  */
 const CLUSTER = 'flex flex-col gap-3 border border-trace-hairline bg-chart-deep/30 p-3'
+
+/*
+ * The same cluster, promoted: a full-weight border rather than a hairline —
+ * the same distinction DESIGN.md draws for an active player's card — for the
+ * one turn `derivePhase` reports `longsor`.
+ */
+const CLUSTER_LONGSOR = 'flex flex-col gap-3 border border-trace bg-chart-deep/30 p-3'
 
 export function PlayScreen({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState<Speed>('normal')
@@ -134,6 +141,34 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const view = review.frame ?? player.frame ?? session.state.board
   const animating = session.pending !== null
   const finished = session.state.winner !== null && !animating
+
+  /*
+   * DESIGN-REWORK.md §3: the console mounts by phase rather than showing
+   * every instrument at once. `winner` is gated on `finished`, not the raw
+   * engine state, so the game does not jump to `selesai` — GameSummary,
+   * the frozen board — while the winning cascade is still animating; the
+   * other two facts (moves played, the last cascade's own depth) are read
+   * live, so leaving `siap` and promoting to `longsor` both happen the
+   * instant the move that causes them is played, same as the move list
+   * itself already does.
+   */
+  const phase = derivePhase({
+    movesPlayed: session.record.moves.length,
+    winner: finished ? session.state.winner : null,
+    lastCascadeEvents: session.lastCascade?.events ?? null,
+  })
+  /*
+   * Setup and ModePicker end the game in progress the moment they're used,
+   * so unmounting them outside `siap` costs nothing except a way back to
+   * them. This is that way back — local, ephemeral UI state, never the
+   * move list, never phase: DESIGN-REWORK.md §3 asks only that they stay
+   * reachable from Controls, not that they come back automatically.
+   */
+  const [setupOpen, setSetupOpen] = useState(false)
+  const showSetup = phase === 'siap' || setupOpen
+  const showTurnIndicator = phase === 'main' || phase === 'longsor'
+  const showPlayRail = phase === 'main' || phase === 'longsor'
+  const showEvaluation = mode === 'ai' && phase !== 'siap'
 
   // Player 0 is the human; everyone else is the machine. It gets no hidden
   // information and no illegal moves — only a deeper search.
@@ -258,7 +293,10 @@ export function PlayScreen({ locale }: { locale: Locale }) {
     return buildAfterglow(session.state.board.owners.length, events)
   }, [session.lastCascade, animating, review.open, session.state.board.owners.length])
 
-  const applyConfig = (config: GameConfig) => session.reset(config)
+  const applyConfig = (config: GameConfig) => {
+    session.reset(config)
+    setSetupOpen(false)
+  }
 
   // Considered, not committed. The engine answers what the move would do.
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
@@ -340,14 +378,16 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           settled={!animating}
         />
 
-        <div className="lg:col-start-2 lg:row-start-1">
-          <TurnIndicator
-            state={session.state}
-            locale={locale}
-            busy={animating}
-            thinkingPlayer={ai.thinking ? session.state.current : null}
-          />
-        </div>
+        {showTurnIndicator ? (
+          <div className="lg:col-start-2 lg:row-start-1">
+            <TurnIndicator
+              state={session.state}
+              locale={locale}
+              busy={animating}
+              thinkingPlayer={ai.thinking ? session.state.current : null}
+            />
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <div className="relative">
@@ -509,123 +549,145 @@ export function PlayScreen({ locale }: { locale: Locale }) {
         </div>
 
         {/*
-         * Ordered by how often it is used, not by when it was added.
-         *
-         * Reading, then the two things you do on your own turn, then the
-         * record, then the settings you change between games, then the panel
-         * you open once out of curiosity, then the meta line. The column had
-         * drifted into arrival order, which put board configuration above
-         * "replay that cascade" — a control that acts on the move just played.
+         * DESIGN-REWORK.md §3: the rail mounts by phase rather than showing
+         * every instrument at once regardless of what's happening. `siap`
+         * gets the configurator; `main`/`longsor` get the running readouts;
+         * an instrument with nothing to say — the opposite phase's group —
+         * is absent, not disabled or collapsed to a header.
          */}
         <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
+          {showPlayRail ? (
+            <>
+              {/*
+               * "This position": the reading and the rewind, clustered rather
+               * than loose in the rail. Both are about the move just played
+               * rather than the game as a whole, which is what the next
+               * cluster down is for.
+               *
+               * Promoted for the one turn right after a cascade of more than
+               * one generation — DESIGN-REWORK.md §3's `longsor` phase: the
+               * full-weight border and the explosion count make this the
+               * moment the game is actually about, rather than a cluster the
+               * same weight as everything else whether there was an avalanche
+               * to look at or not. It demotes on the next move because `phase`
+               * is recomputed fresh every render, not because anything here
+               * remembers it was promoted.
+               */}
+              <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
+                  {phase === 'longsor' ? (
+                    <span className="flex items-baseline gap-1">
+                      <span className="label-micro">{COPY.reach[locale]}</span>
+                      <span className="font-numeral text-base leading-none">
+                        {session.history.at(-1)?.explosions ?? 0}
+                      </span>
+                    </span>
+                  ) : null}
+                </div>
+
+                {/*
+                 * Driven by the animation frame rather than the settled state, so
+                 * the needle moves with the cascade instead of jumping to the
+                 * answer before the board has finished showing the working.
+                 * Watching load spike and then drop as an avalanche runs is the
+                 * clearest statement of the mechanic the app can make without
+                 * words.
+                 */}
+                <LoadGauge
+                  locale={locale}
+                  board={{ ...board, owners: view.owners, counts: view.counts }}
+                />
+
+                {/*
+                 * Always mounted (while the rail itself is), disabled when
+                 * there is nothing to replay yet — inert until `longsor`
+                 * promotes it above, per DESIGN-REWORK.md §3.
+                 */}
+                <CascadeReplay
+                  review={review}
+                  explosions={session.history.at(-1)?.explosions ?? 0}
+                  busy={animating || finished}
+                  locale={locale}
+                />
+              </div>
+
+              <Controls
+                locale={locale}
+                speed={speed}
+                onSpeed={setSpeed}
+                onUndo={session.undo}
+                onReset={() => session.reset()}
+                canUndo={session.record.moves.length > 0 && !animating}
+                longestCascade={session.longestCascade}
+                preview={previewOn}
+                onPreview={(on) => {
+                  setPreviewOn(on)
+                  setPreviewEnabled(on)
+                  // Whatever was being considered is no longer being shown.
+                  setPreviewIndex(null)
+                  setAwaitingTap(null)
+                }}
+                onChangeSetup={() => setSetupOpen((open) => !open)}
+              />
+
+              {/*
+               * The game's own record, clustered apart from the controls above it:
+               * a monitoring station keeps a trace and an event log side by side,
+               * and neither one is a setting you change between turns.
+               *
+               * Above the move list, not instead of it. The list is precise and
+               * per-move; the strip is the shape of the whole game — "how big was
+               * move 24" against "what has this game been like". Each already
+               * carries its own heading, so the cluster needs none of its own.
+               */}
+              <div className={CLUSTER}>
+                <Seismogram
+                  locale={locale}
+                  moves={session.history}
+                  players={session.state.players}
+                />
+
+                <MoveList locale={locale} moves={session.history} cols={board.cols} />
+              </div>
+            </>
+          ) : null}
+
           {/*
-           * "This position": the reading and the rewind, clustered rather than
-           * loose in the rail. Both are about the move just played rather than
-           * the game as a whole, which is what the next cluster down is for.
+           * `siap`: the configurator is the primary content, not a fold — but
+           * `Controls`' "change board" button re-mounts this same pair over a
+           * game already in progress (`setupOpen`), which is why the
+           * visibility check isn't just `phase === 'siap'`. Ending the game in
+           * progress this way is exactly what `Setup`/`ModePicker` already do
+           * once submitted, per the warning `Setup` itself states.
            */}
-          <div className={CLUSTER}>
-            <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
+          {showSetup ? (
+            <>
+              <ModePicker
+                locale={locale}
+                mode={mode}
+                difficulty={difficulty}
+                onMode={(next) => {
+                  setMode(next)
+                  session.reset()
+                  setSetupOpen(false)
+                }}
+                onDifficulty={setDifficulty}
+              />
 
-            {/*
-             * Driven by the animation frame rather than the settled state, so
-             * the needle moves with the cascade instead of jumping to the
-             * answer before the board has finished showing the working.
-             * Watching load spike and then drop as an avalanche runs is the
-             * clearest statement of the mechanic the app can make without
-             * words.
-             */}
-            <LoadGauge
-              locale={locale}
-              board={{ ...board, owners: view.owners, counts: view.counts }}
-            />
-
-            {/*
-             * Always mounted, disabled when there is nothing to replay.
-             *
-             * It used to unmount while a cascade ran and again once the game
-             * ended, so every move collapsed its height and shunted the whole
-             * rail — controls, move list, everything — up and then back down a
-             * second later. Reserving the space is the difference between
-             * hiding something and removing it.
-             */}
-            <CascadeReplay
-              review={review}
-              explosions={session.history.at(-1)?.explosions ?? 0}
-              busy={animating || finished}
-              locale={locale}
-            />
-          </div>
-
-          <Controls
-            locale={locale}
-            speed={speed}
-            onSpeed={setSpeed}
-            onUndo={session.undo}
-            onReset={() => session.reset()}
-            canUndo={session.record.moves.length > 0 && !animating}
-            longestCascade={session.longestCascade}
-            preview={previewOn}
-            onPreview={(on) => {
-              setPreviewOn(on)
-              setPreviewEnabled(on)
-              // Whatever was being considered is no longer being shown.
-              setPreviewIndex(null)
-              setAwaitingTap(null)
-            }}
-          />
-
-          {/*
-           * The game's own record, clustered apart from the controls above it:
-           * a monitoring station keeps a trace and an event log side by side,
-           * and neither one is a setting you change between turns.
-           *
-           * Above the move list, not instead of it. The list is precise and
-           * per-move; the strip is the shape of the whole game — "how big was
-           * move 24" against "what has this game been like". Each already
-           * carries its own heading, so the cluster needs none of its own.
-           */}
-          <div className={CLUSTER}>
-            <Seismogram
-              locale={locale}
-              moves={session.history}
-              players={session.state.players}
-            />
-
-            <MoveList locale={locale} moves={session.history} cols={board.cols} />
-          </div>
-
-          <ModePicker
-            locale={locale}
-            mode={mode}
-            difficulty={difficulty}
-            onMode={(next) => {
-              setMode(next)
-              session.reset()
-            }}
-            onDifficulty={setDifficulty}
-          />
-
-          {/*
-           * Board size is a between-games decision, not a mid-game one, so it
-           * folds away instead of competing with the controls that are used
-           * every turn.
-           */}
-          <details className="border-t border-trace-hairline pt-3">
-            <summary className="label-micro cursor-pointer select-none py-1">
-              {COPY.boardSetup[locale]}
-            </summary>
-            <div className="pt-3">
               <Setup locale={locale} config={session.config} onApply={applyConfig} />
-            </div>
-          </details>
+            </>
+          ) : null}
 
           {/*
-           * Only in AI mode, and folded away. It answers "is this thing
-           * actually searching, or is it just weighted toward corners" — a
-           * question worth being able to answer and not one asked every turn.
-           * Left open it would quietly coach, which is not what it is for.
+           * Only in AI mode, folded away, and — per DESIGN-REWORK.md §3 — not
+           * `siap`, where there is no position yet to evaluate. It answers "is
+           * this thing actually searching, or is it just weighted toward
+           * corners" — a question worth being able to answer and not one
+           * asked every turn. Left open it would quietly coach, which is not
+           * what it is for.
            */}
-          {mode === 'ai' ? (
+          {showEvaluation ? (
             <details className="border-t border-trace-hairline pt-3">
               <summary className="label-micro cursor-pointer select-none py-1">
                 {COPY.evaluation[locale]}
@@ -636,23 +698,25 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             </details>
           ) : null}
 
-          {/*
-           * No longer a live region. It wrapped the turn number and the eight
-           * character state hash together, so every move read the hash aloud —
-           * a string that exists to be compared by machines, announced to a
-           * person who cannot act on it. The move announcer covers the turn;
-           * the hash stays visible for anyone who wants it.
-           */}
-          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
-            <span className="label-micro">{COPY.turn[locale]}</span>
-            <span className="font-numeral text-trace">{session.state.turn}</span>
-            <span className="font-mono text-trace-faint">{session.hash}</span>
-            {ai.thinking ? (
-              <span className="label-micro animate-pulse text-trace-soft">
-                {COPY.thinking[locale]}
-              </span>
-            ) : null}
-          </p>
+          {showPlayRail ? (
+            /*
+             * No longer a live region. It wrapped the turn number and the eight
+             * character state hash together, so every move read the hash aloud —
+             * a string that exists to be compared by machines, announced to a
+             * person who cannot act on it. The move announcer covers the turn;
+             * the hash stays visible for anyone who wants it.
+             */
+            <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
+              <span className="label-micro">{COPY.turn[locale]}</span>
+              <span className="font-numeral text-trace">{session.state.turn}</span>
+              <span className="font-mono text-trace-faint">{session.hash}</span>
+              {ai.thinking ? (
+                <span className="label-micro animate-pulse text-trace-soft">
+                  {COPY.thinking[locale]}
+                </span>
+              ) : null}
+            </p>
+          ) : null}
         </div>
       </div>
 

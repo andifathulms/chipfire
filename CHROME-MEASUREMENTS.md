@@ -78,3 +78,22 @@ For each of the three viewports, both screens, and each phase reachable today (t
 - `longsor` (a 2-generation cascade) was reached on the default board by alternately stacking an interior cell (index 13, critical mass 4) and the edge cell directly above it (index 4, critical mass 3) one below their own thresholds, using a far corner (index 53) to pass the opponent's turns harmlessly, then placing the interior cell's 4th orb — its explosion sheds into the primed edge cell, which explodes in the next generation. Confirmed via the in-page readout ("2 ledakan" / "Rantai terpanjang: 2").
 - `/tanding/` was driven to a genuinely connected state with two Playwright browser contexts performing the real manual offer/answer/confirm exchange through `ConnectPanel` (`components/game/useP2PGame.ts`, `lib/net/*` — read only, not modified), including real WebRTC ICE gathering over the loopback interface. This succeeded without a STUN/TURN dependency being an issue in this environment.
 - No file in the repository was modified to produce these numbers. The measurement script itself lives outside the repo, in the session scratchpad, and was not committed.
+
+## 6. Re-measured after step 4 (phase gating on `/main/`)
+
+`DESIGN-REWORK.md` §10: *"Re-measure after step 4 — the phase gating changes the chrome budget, which is the whole point of measuring it first."* Step 4 gated `PlayScreen`'s instruments by `Phase` (`lib/phase.ts`) but deliberately left the `--chrome` CSS mechanism itself untouched (per §4.3, the board's rendered size must stay constant across phase changes within a session — the simplest way to guarantee that for now is to not make `--chrome` phase-dependent yet, which §4.2's per-phase tuning is future work, not this step's).
+
+Re-checked at 390×844 (Chromium, same method as §5) across every transition the gating touches:
+
+| Transition | Board box (x, y, w×h px) |
+|---|---|
+| `siap` (fresh load, default 6×9 board) | 16, 91, 358×239 |
+| → `main` (first move played) | 16, 180, 358×239 |
+| → `longsor` (a 2-generation cascade resolves) | 16, 180, 358×239 |
+| → `main` again (the next move is quiet, demotes) | 16, 180, 358×239 |
+| `selesai` (game over, on a resized 3×3 board) | 29, 180, 332×332 |
+| `main` on that same 3×3 board, before game-over | 29, 180, 332×332 |
+
+Board width/height are identical across every phase transition on a fixed board configuration, confirming §4.3 holds — gating which instruments mount did not change the board's rendered size, because the CSS calc that sizes it never reads `Phase`. (The `y` position shifts slightly, 91→180, only between `siap` and `main`/`longsor` on the default board, because `TurnIndicator` — absent in `siap` per §3 — adds height above the board once it mounts; the board's own box is unaffected.) The 3×3 board's `selesai` and `main` rows differ from the 6×9 rows only because it's a different board configuration (a deliberate resize, not a phase change), matching the aspect-ratio-driven sizing already documented in §2–§4.
+
+This was a targeted re-check of the specific transitions step 4 introduced, not a full redo of the three-viewport sweep in §1–§4 — nothing about the sizing mechanism changed, so there was nothing new to sweep.

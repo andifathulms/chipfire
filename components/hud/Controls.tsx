@@ -18,6 +18,7 @@ const COPY = {
   off: { id: 'Mati', en: 'Off' },
   undo: { id: 'Batal langkah', en: 'Undo' },
   reset: { id: 'Mulai ulang', en: 'Restart' },
+  changeSetup: { id: 'Ubah papan', en: 'Change board' },
   longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
 } as const
 
@@ -31,6 +32,7 @@ export function Controls({
   longestCascade,
   preview,
   onPreview,
+  onChangeSetup,
 }: {
   locale: Locale
   speed: Speed
@@ -41,6 +43,12 @@ export function Controls({
   longestCascade: number
   preview: boolean
   onPreview: (on: boolean) => void
+  /**
+   * DESIGN-REWORK.md §3: unmounting Setup/ModePicker outside `siap` must not
+   * mean the only way back to them is finishing the game — this is that way
+   * back, reachable from Controls rather than requiring a restart.
+   */
+  onChangeSetup: () => void
 }) {
   const speeds = Object.keys(SPEED_LABELS) as Speed[]
 
@@ -114,6 +122,14 @@ export function Controls({
           {COPY.reset[locale]}
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={onChangeSetup}
+        className="control-target border border-trace-rule px-3 py-1.5 text-left transition-colors hover:bg-chart-deep"
+      >
+        {COPY.changeSetup[locale]}
+      </button>
 
       <p className="flex items-baseline justify-between gap-2">
         <span className="label-micro">{COPY.longest[locale]}</span>
