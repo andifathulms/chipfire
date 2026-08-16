@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { LOCALES, isLocale } from '@/lib/i18n'
 import { SiteFooter } from '@/components/site/SiteFooter'
-import { FONT_VARIABLES, baseMetadata, viewport } from '../chrome'
+import { FONT_VARIABLES, THEME_INIT_SCRIPT, baseMetadata, viewport } from '../chrome'
 import '../globals.css'
 
 export function generateStaticParams() {
@@ -39,6 +39,10 @@ export default function LocaleLayout({
    */
   return (
     <html lang={params.locale} className={FONT_VARIABLES}>
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts, react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>
         <div className="flex min-h-screen flex-col">
           <div className="flex flex-1 flex-col">{children}</div>

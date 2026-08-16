@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import localFont from 'next/font/local'
 import { basePath, siteUrl, alternatesFor, metaFor, OG_LOCALE, type Route } from '@/lib/site'
 import type { Locale } from '@/lib/i18n'
+import { THEME_STORAGE_KEY } from '@/lib/theme'
 
 /**
  * Everything the two root layouts share.
@@ -58,6 +59,20 @@ const mono = localFont({
 })
 
 export const FONT_VARIABLES = `${display.variable} ${sans.variable} ${mono.variable}`
+
+/**
+ * DESIGN-REWORK.md §6: "applied before first paint so there is no flash on a
+ * night load." A static export has no server that knows this device's
+ * preference, so the only way to avoid painting the wrong scheme first and
+ * flipping a frame later is to read it synchronously before anything renders
+ * — the one legitimate use of an inline script in this codebase, and why it
+ * exists here rather than as a React effect. `data-theme` is the only thing
+ * it touches; globals.css does the rest, exactly as `prefers-color-scheme`
+ * already did before this existed.
+ */
+export const THEME_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem(${JSON.stringify(
+  THEME_STORAGE_KEY,
+)});if(v==="light"||v==="dark"){document.documentElement.setAttribute("data-theme",v)}}catch(e){}})();`
 
 export const viewport: Viewport = {
   /* The browser chrome follows the ground the page is actually on. One value

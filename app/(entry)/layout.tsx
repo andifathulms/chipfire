@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { FONT_VARIABLES, baseMetadata, viewport } from '../chrome'
+import { FONT_VARIABLES, THEME_INIT_SCRIPT, baseMetadata, viewport } from '../chrome'
 import { DEFAULT_LOCALE } from '@/lib/i18n'
 import '../globals.css'
 
@@ -20,6 +20,10 @@ export default function EntryLayout({ children }: { children: React.ReactNode })
   // The stub sends everyone to the default locale, so that is what it is in.
   return (
     <html lang={DEFAULT_LOCALE} className={FONT_VARIABLES}>
+      <head>
+        {/* eslint-disable-next-line @next/next/no-sync-scripts, react/no-danger */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   )

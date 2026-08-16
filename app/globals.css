@@ -180,9 +180,20 @@
  * player colours clear 4.5:1 unaided at every lift below (lowest, p1 on the
  * raised surface, 4.96:1), so their darkened -ink variants are not needed
  * here and are set back to the identity colours.
+ *
+ * Two ways in, one destination. `prefers-color-scheme` is the system's own
+ * word and stays the default with no `data-theme` set at all — a page that
+ * never touches the toggle behaves exactly as it always has. An explicit
+ * choice (DESIGN-REWORK.md §6's toggle, `lib/theme.ts`) stamps `data-theme`
+ * on `<html>` and wins over the system either direction: `:not([data-theme=
+ * "light"])` lets a forced night stay on a light system, and the plain
+ * `[data-theme="dark"]` block below forces night on a light system the same
+ * way. Both blocks redefine the same tokens because CSS has no way to share
+ * a declaration list across two selectors without a preprocessor this
+ * project doesn't have — keep them in sync by hand.
  */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --color-chart: 23 26 24; /* night ground   #171A18 */
     --color-chart-deep: 31 36 33; /* today's trace ink, raised   #1F2421 */
     --color-chart-line: 42 48 44; /* the lattice, barely there   #2A302C */
@@ -211,6 +222,28 @@
     --alpha-glow-min: 0.08;
     --alpha-glow-max: 0.32;
   }
+}
+
+:root[data-theme='dark'] {
+  --color-chart: 23 26 24;
+  --color-chart-deep: 31 36 33;
+  --color-chart-line: 42 48 44;
+
+  --color-trace: 232 228 220;
+  --color-trace-soft: 168 173 166;
+  --color-trace-faint: 138 144 138;
+
+  --color-p1: 226 112 58;
+  --color-p1-ink: 226 112 58;
+  --color-p2: 111 168 214;
+  --color-p2-ink: 111 168 214;
+  --color-p3: 217 174 73;
+  --color-p3-ink: 217 174 73;
+  --color-p4: 111 174 146;
+  --color-p4-ink: 111 174 146;
+
+  --alpha-glow-min: 0.08;
+  --alpha-glow-max: 0.32;
 }
 
 html,

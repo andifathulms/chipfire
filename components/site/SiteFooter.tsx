@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { copy, type Locale } from '@/lib/i18n'
 import { MakerSignature } from './MakerSignature'
+import { ThemeToggle } from './ThemeToggle'
 
 /**
  * The one bottom bar for the whole site.
@@ -21,14 +22,18 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     /* Was text-xs — 12px, under the readable floor for anything anyone is
        expected to actually read, and the language switch lives here. */
     <footer className="mx-auto flex w-full max-w-6xl flex-col gap-4 border-t border-trace-hairline px-4 py-4 text-sm sm:flex-row sm:items-start sm:justify-between lg:px-8">
-      <div className="flex flex-col items-start gap-1.5 text-trace-faint">
-        <span>{t.footer}</span>
-        <Link
-          href={locale === 'id' ? '/en/' : '/id/'}
-          className="underline decoration-trace-faint underline-offset-2 transition-colors hover:text-p1-ink hover:decoration-p1-ink"
-        >
-          {locale === 'id' ? 'English' : 'Bahasa Indonesia'}
-        </Link>
+      <div className="flex flex-col items-start gap-3 text-trace-faint">
+        <div className="flex flex-col items-start gap-1.5">
+          <span>{t.footer}</span>
+          <Link
+            href={locale === 'id' ? '/en/' : '/id/'}
+            className="underline decoration-trace-faint underline-offset-2 transition-colors hover:text-p1-ink hover:decoration-p1-ink"
+          >
+            {locale === 'id' ? 'English' : 'Bahasa Indonesia'}
+          </Link>
+        </div>
+
+        <ThemeToggle locale={locale} />
       </div>
 
       <MakerSignature locale={locale} />
