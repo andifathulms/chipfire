@@ -23,7 +23,9 @@
 :root {
   /* ── Colour ──
    * The identity is unchanged from PRD §12; this only moves it into variables.
-   * Measured, not eyeballed, against both chart grounds:
+   * Measured, not eyeballed, against both chart grounds — and reverified by
+   * scripts/contrast.mjs / tests/style/contrast.test.ts, so this comment
+   * cannot drift from the tokens it describes without CI catching it:
    *
    *   trace 13.1:1 · soft 6.9:1 · faint 5.1:1   on #EDEAE3
    *   trace 11.8:1 · soft 6.2:1 · faint 4.6:1   on #E3DFD5
@@ -165,10 +167,19 @@
  * stock becomes the ink. The palette folds in on itself instead of being
  * replaced by a second one.
  *
- * Measured against both grounds before it was written. Lowest text pairing is
- * 4.83:1 (faint on the raised surface) and the player colours clear 4.5:1
- * unaided, so their darkened -ink variants are not needed here and are set back
- * to the identity colours.
+ * Computed against both grounds, the same treatment the light values above
+ * get — scripts/contrast.mjs (`pnpm contrast`) recomputes these from the live
+ * custom properties rather than trusting the comment, and
+ * tests/style/contrast.test.ts asserts every pairing here in CI, so a token
+ * edit that quietly drops a ratio fails the build instead of shipping:
+ *
+ *   trace 13.83:1 · soft 7.68:1 · faint 5.38:1   on #171A18
+ *   trace 12.43:1 · soft 6.90:1 · faint 4.83:1   on #1F2421
+ *
+ * Lowest text pairing overall is 4.83:1 (faint on the raised surface). The
+ * player colours clear 4.5:1 unaided at every lift below (lowest, p1 on the
+ * raised surface, 4.96:1), so their darkened -ink variants are not needed
+ * here and are set back to the identity colours.
  */
 @media (prefers-color-scheme: dark) {
   :root {
