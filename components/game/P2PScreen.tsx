@@ -74,6 +74,13 @@ export function P2PScreen({ locale }: { locale: Locale }) {
   const animating = session.pending !== null
   const finished = session.state.winner !== null && !animating
   const myTurn = game.connected && session.state.current === game.me && game.desync === null
+  /*
+   * DESIGN-REWORK.md §6: a peer offering their move list to replay is the
+   * same signal as a locally-detected desync — both mean the position on
+   * screen cannot be trusted — even on the side that never received its own
+   * `desync` message.
+   */
+  const isDiverging = game.desync !== null || game.offeredMoves !== null
 
   /*
    * The preview finally exists here, and only by agreement (PRD §9.2). It was
@@ -135,23 +142,27 @@ export function P2PScreen({ locale }: { locale: Locale }) {
         </Link>
       </header>
 
-      {!game.connected ? (
-        <ConnectPanel
-          locale={locale}
-          role={game.role}
-          status={game.status}
-          cause={game.cause}
-          ice={game.ice}
-          offerCode={game.offerCode}
-          answerCode={game.answerCode}
-          error={game.error}
-          codeError={game.codeError}
-          onHost={() => void game.host()}
-          onRole={game.setRole}
-          onJoin={(code) => void game.join(code)}
-          onConfirm={(code) => void game.confirm(code)}
-        />
-      ) : null}
+      {/*
+       * DESIGN-REWORK.md §6: always mounted, not swapped out at
+       * `game.connected` — it collapses to its own one-line status strip
+       * internally once connected, rather than being replaced by a
+       * different component here.
+       */}
+      <ConnectPanel
+        locale={locale}
+        role={game.role}
+        status={game.status}
+        cause={game.cause}
+        ice={game.ice}
+        offerCode={game.offerCode}
+        answerCode={game.answerCode}
+        error={game.error}
+        codeError={game.codeError}
+        onHost={() => void game.host()}
+        onRole={game.setRole}
+        onJoin={(code) => void game.join(code)}
+        onConfirm={(code) => void game.confirm(code)}
+      />
 
       {game.connected ? (
         <>
@@ -163,173 +174,186 @@ export function P2PScreen({ locale }: { locale: Locale }) {
             settled={!animating}
           />
 
-          <TurnIndicator state={session.state} locale={locale} busy={animating} />
-
           {/*
-           * Desync halts the game, so it is reported above the board rather
-           * than below it. Below, on a board tall enough to fill the viewport,
-           * the one message that explains why nothing responds is off-screen.
+           * A desync means the position on screen may be wrong, so nothing
+           * below — the board included — is trustworthy to keep showing.
+           * `DESIGN-REWORK.md` §6: this takes precedence over everything,
+           * not just a message placed above an otherwise-still-visible
+           * board. `game.offeredMoves` counts too: a peer offering their
+           * move list to replay is the same signal even on the side that
+           * never received its own `desync` message.
            */}
-          {game.desync !== null ? (
-            <section
-              role="alert"
-              className="flex flex-col gap-3 border-l-2 border-p1 bg-chart-deep p-4 text-sm"
-            >
-              <p className="font-numeral text-base text-p1-ink">{COPY.desyncTitle[locale]}</p>
-              <p className="max-w-prose text-trace-soft">{COPY.desyncBody[locale]}</p>
-              <p className="break-all font-mono text-xs">
-                {game.desync.expected} ≠ {game.desync.received}
-              </p>
-              <button
-                type="button"
-                onClick={game.offerResync}
-                className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
-              >
-                {COPY.offerList[locale]}
-              </button>
-            </section>
-          ) : null}
-
-          {game.offeredMoves !== null ? (
-            <section className="flex flex-col gap-2 border border-trace p-4 text-sm">
-              <p>
-                {COPY.incoming[locale]} — {game.offeredMoves.length} {COPY.moves[locale]}
-              </p>
-
-              {/* Adopting someone else's history is a decision, and it was
-                  being asked with nothing but a move count to go on. */}
-              {game.divergence !== null ? (
-                <DivergenceReport
-                  divergence={game.divergence}
-                  cols={session.state.board.cols}
-                  locale={locale}
-                />
+          {isDiverging ? (
+            <>
+              {game.desync !== null ? (
+                <section
+                  role="alert"
+                  className="flex flex-col gap-3 border-l-2 border-p1 bg-chart-deep p-4 text-sm"
+                >
+                  <p className="font-numeral text-base text-p1-ink">{COPY.desyncTitle[locale]}</p>
+                  <p className="max-w-prose text-trace-soft">{COPY.desyncBody[locale]}</p>
+                  <p className="break-all font-mono text-xs">
+                    {game.desync.expected} ≠ {game.desync.received}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={game.offerResync}
+                    className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
+                  >
+                    {COPY.offerList[locale]}
+                  </button>
+                </section>
               ) : null}
 
-              <button
-                type="button"
-                onClick={game.acceptResync}
-                className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
-              >
-                {COPY.accept[locale]}
-              </button>
-            </section>
-          ) : null}
+              {game.offeredMoves !== null ? (
+                <section className="flex flex-col gap-2 border border-trace p-4 text-sm">
+                  <p>
+                    {COPY.incoming[locale]} — {game.offeredMoves.length} {COPY.moves[locale]}
+                  </p>
 
-          {/*
-           * Across two devices there is nobody sitting beside you to make the
-           * turn obvious, so it is stated at full size rather than in a caption.
-           */}
-          <p
-            aria-live="polite"
-            className={[
-              'border px-3 py-2 font-numeral text-base',
-              finished || myTurn ? 'border-trace bg-chart-deep' : 'border-trace-hairline text-trace-soft',
-            ].join(' ')}
-          >
-            {finished
-              ? `${playerName(session.state.winner ?? 0, locale)} ${COPY.wins[locale]}`
-              : myTurn
-                ? COPY.yourTurn[locale]
-                : COPY.theirTurn[locale]}
-          </p>
+                  {/* Adopting someone else's history is a decision, and it was
+                      being asked with nothing but a move count to go on. */}
+                  {game.divergence !== null ? (
+                    <DivergenceReport
+                      divergence={game.divergence}
+                      cols={session.state.board.cols}
+                      locale={locale}
+                    />
+                  ) : null}
 
-          {/* Same budget as the local screen, less the mode picker and rail:
-              header, turn banner, board, preview panel, footer. See the note
-              in PlayScreen for what the number accounts for and what it does
-              not. Also unverified in a browser. */}
-          <div
-            className="mx-auto w-full [--chrome:30rem] sm:[--chrome:25rem]"
-            style={{
-              maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
-                session.state.board.cols / session.state.board.rows
-              }))`,
-            }}
-          >
-            <Board
-              board={session.state.board}
-              view={view}
-              legal={session.legal}
-              exploding={player.frame?.exploding ?? []}
-              converted={player.frame?.converted ?? []}
-              frameKey={player.index}
-              interactive={myTurn && !animating && !finished}
-              onSelect={game.play}
-              labelFor={labelFor}
-              label={COPY.board[locale]}
-              lastMove={session.record.moves.at(-1) ?? null}
-              preview={preview}
-              previewIndex={game.previewAgreed ? previewIndex : null}
-              onPreview={game.previewAgreed ? setPreviewIndex : undefined}
-            />
-          </div>
-
-          {/*
-           * "About this session" rather than "what to do now": the preview
-           * agreement and the move count/hash are both low-frequency-glance
-           * facts, not part of the turn-by-turn path above them. Clustered so
-           * the column reads as connect → play → session, not nine loose
-           * bordered blocks of identical weight in a row.
-           */}
-          <div className={CLUSTER}>
-            {/*
-             * Two flags, stated as four sentences, because "waiting for them"
-             * and "they are waiting for you" are different situations and a
-             * single on/off control would show the same thing for both.
-             */}
-            <section className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-              <span className="label-micro">{COPY.preview[locale]}</span>
-              <span aria-live="polite" className="text-trace-soft">
-                {game.previewAgreed
-                  ? COPY.previewOn[locale]
-                  : game.previewMine
-                    ? COPY.previewWaiting[locale]
-                    : game.previewTheirs
-                      ? COPY.previewOffered[locale]
-                      : COPY.previewOff[locale]}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  game.setPreview(!game.previewMine)
-                  setPreviewIndex(null)
+                  <button
+                    type="button"
+                    onClick={game.acceptResync}
+                    className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
+                  >
+                    {COPY.accept[locale]}
+                  </button>
+                </section>
+              ) : null}
+            </>
+          ) : (
+            <>
+              {/*
+               * Board immediately below the status strip — the ceremony is
+               * over and the game is the only thing left. Whose turn it is
+               * now reads below the board rather than above it.
+               */}
+              <div
+                className="mx-auto w-full [--chrome:30rem] sm:[--chrome:25rem]"
+                style={{
+                  maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
+                    session.state.board.cols / session.state.board.rows
+                  }))`,
                 }}
-                className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
               >
-                {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
-              </button>
+                <Board
+                  board={session.state.board}
+                  view={view}
+                  legal={session.legal}
+                  exploding={player.frame?.exploding ?? []}
+                  converted={player.frame?.converted ?? []}
+                  frameKey={player.index}
+                  interactive={myTurn && !animating && !finished}
+                  onSelect={game.play}
+                  labelFor={labelFor}
+                  label={COPY.board[locale]}
+                  lastMove={session.record.moves.at(-1) ?? null}
+                  preview={preview}
+                  previewIndex={game.previewAgreed ? previewIndex : null}
+                  onPreview={game.previewAgreed ? setPreviewIndex : undefined}
+                />
+              </div>
+
+              <TurnIndicator state={session.state} locale={locale} busy={animating} />
 
               {/*
-               * Always mounted once the preview is agreed, so hovering a cell
-               * cannot resize the panel under the board. The same mistake was
-               * made and fixed on the local screen: in an interface driven
-               * entirely by pointing at cells, a readout that appears on hover
-               * moves the page every time you look at anything.
+               * Across two devices there is nobody sitting beside you to make
+               * the turn obvious, so it is stated at full size rather than in
+               * a caption.
                */}
-              {game.previewAgreed ? (
-                <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace-hairline pt-2">
-                  <span className="flex items-baseline gap-1">
-                    <span className="label-micro">{COPY.reach[locale]}</span>
-                    <span className="font-numeral">{preview?.explosions ?? '—'}</span>
-                  </span>
-                  <span className="flex items-baseline gap-1">
-                    <span className="label-micro">{COPY.captures[locale]}</span>
-                    <span className="font-numeral">{preview?.capturedCount ?? '—'}</span>
-                  </span>
-                </span>
-              ) : null}
-            </section>
+              <p
+                aria-live="polite"
+                className={[
+                  'border px-3 py-2 font-numeral text-base',
+                  finished || myTurn
+                    ? 'border-trace bg-chart-deep'
+                    : 'border-trace-hairline text-trace-soft',
+                ].join(' ')}
+              >
+                {finished
+                  ? `${playerName(session.state.winner ?? 0, locale)} ${COPY.wins[locale]}`
+                  : myTurn
+                    ? COPY.yourTurn[locale]
+                    : COPY.theirTurn[locale]}
+              </p>
 
-            <p className="flex flex-wrap items-baseline gap-x-2 border-t border-trace-hairline pt-3 text-xs">
-              <span className="font-numeral text-trace">{session.record.moves.length}</span>
-              <span className="text-trace-soft">{COPY.moves[locale]}</span>
-              <span className="break-all font-mono text-trace-faint">{session.hash}</span>
-            </p>
-          </div>
+              {/*
+               * "About this session" rather than "what to do now": the preview
+               * agreement and the move count/hash are both low-frequency-glance
+               * facts, not part of the turn-by-turn path above them. Clustered so
+               * the column reads as connect → play → session, not nine loose
+               * bordered blocks of identical weight in a row.
+               */}
+              <div className={CLUSTER}>
+                {/*
+                 * Two flags, stated as four sentences, because "waiting for them"
+                 * and "they are waiting for you" are different situations and a
+                 * single on/off control would show the same thing for both.
+                 */}
+                <section className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+                  <span className="label-micro">{COPY.preview[locale]}</span>
+                  <span aria-live="polite" className="text-trace-soft">
+                    {game.previewAgreed
+                      ? COPY.previewOn[locale]
+                      : game.previewMine
+                        ? COPY.previewWaiting[locale]
+                        : game.previewTheirs
+                          ? COPY.previewOffered[locale]
+                          : COPY.previewOff[locale]}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      game.setPreview(!game.previewMine)
+                      setPreviewIndex(null)
+                    }}
+                    className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
+                  >
+                    {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
+                  </button>
 
-          {/* Set apart from the session cluster above rather than following
-              it at the same gap: this is the one action on the screen that
-              ends things, and it read as just the next item in the list. */}
+                  {/*
+                   * Always mounted once the preview is agreed, so hovering a cell
+                   * cannot resize the panel under the board. The same mistake was
+                   * made and fixed on the local screen: in an interface driven
+                   * entirely by pointing at cells, a readout that appears on hover
+                   * moves the page every time you look at anything.
+                   */}
+                  {game.previewAgreed ? (
+                    <span className="flex min-h-[1.75rem] w-full items-center gap-4 border-t border-trace-hairline pt-2">
+                      <span className="flex items-baseline gap-1">
+                        <span className="label-micro">{COPY.reach[locale]}</span>
+                        <span className="font-numeral">{preview?.explosions ?? '—'}</span>
+                      </span>
+                      <span className="flex items-baseline gap-1">
+                        <span className="label-micro">{COPY.captures[locale]}</span>
+                        <span className="font-numeral">{preview?.capturedCount ?? '—'}</span>
+                      </span>
+                    </span>
+                  ) : null}
+                </section>
+
+                <p className="flex flex-wrap items-baseline gap-x-2 border-t border-trace-hairline pt-3 text-xs">
+                  <span className="font-numeral text-trace">{session.record.moves.length}</span>
+                  <span className="text-trace-soft">{COPY.moves[locale]}</span>
+                  <span className="break-all font-mono text-trace-faint">{session.hash}</span>
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* Reachable even while diverging — the one escape hatch that
+              should never be part of what a desync hides. */}
           <button
             type="button"
             onClick={game.disconnect}

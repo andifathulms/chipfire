@@ -24,6 +24,17 @@ const COPY = {
   },
   hostRole: { id: 'Saya yang mengundang', en: 'I am inviting' },
   guestRole: { id: 'Saya diundang', en: 'I was invited' },
+  /*
+   * DESIGN-REWORK.md §6: once connected, the whole ceremony above collapses
+   * to this — a noun, not the first-person sentence the role-selection
+   * buttons use, because this is a fact stated about the session rather than
+   * a choice being made.
+   */
+  connectedRole: {
+    host: { id: 'Pengundang', en: 'Host' },
+    guest: { id: 'Tamu', en: 'Guest' },
+  },
+  showCode: { id: 'Lihat kode', en: 'Show code' },
   offerLabel: {
     id: '1. Kirim kode ini ke lawanmu',
     en: '1. Send this code to your opponent',
@@ -131,7 +142,7 @@ const COPY = {
   },
 } as const
 
-function CodeBox({ code, locale }: { code: string; locale: Locale }) {
+export function CodeBox({ code, locale }: { code: string; locale: Locale }) {
   const [copied, setCopied] = useState(false)
 
   return (
@@ -225,6 +236,40 @@ export function ConnectPanel({
   onJoin: (code: string) => void
   onConfirm: (code: string) => void
 }) {
+  /*
+   * DESIGN-REWORK.md §6: once connected, the ceremony above is over and the
+   * game is the only thing left, so this collapses to a one-line status
+   * strip — connection state and the peer's role — with the code that got
+   * this device here still reachable, not occupying the screen.
+   */
+  if (status === 'connected') {
+    const code = role === 'guest' ? answerCode : offerCode
+    return (
+      <section className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border border-trace-hairline bg-chart-deep/30 px-3 py-2 text-sm">
+        <p className="flex items-baseline gap-2">
+          <span className="font-numeral">{COPY.status.connected[locale]}</span>
+          <span aria-hidden="true" className="text-trace-faint">
+            ·
+          </span>
+          <span className="text-trace-soft">
+            {role === 'guest' ? COPY.connectedRole.guest[locale] : COPY.connectedRole.host[locale]}
+          </span>
+        </p>
+
+        {code ? (
+          <details>
+            <summary className="label-micro cursor-pointer select-none py-1">
+              {COPY.showCode[locale]}
+            </summary>
+            <div className="pt-2">
+              <CodeBox code={code} locale={locale} />
+            </div>
+          </details>
+        ) : null}
+      </section>
+    )
+  }
+
   return (
     <section className="flex flex-col gap-5 border border-trace-hairline bg-chart-deep/60 p-5">
       <div>
