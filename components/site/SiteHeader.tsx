@@ -17,7 +17,8 @@ import { ThemeToggle } from './ThemeToggle'
  *
  * Language and theme sit at the right as two compact controls. The language
  * link keeps you on the same page in the other language rather than sending
- * you home.
+ * you home. On a phone there is room for only one of them beside the four
+ * links, so the language switch moves to the footer there.
  */
 export function SiteHeader({ locale }: { locale: Locale }) {
   const t = copy(locale)
@@ -64,7 +65,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
                 href={href}
                 aria-current={active ? 'page' : undefined}
                 className={[
-                  'control-target inline-flex shrink-0 items-center rounded-ctl px-2 text-sm transition-colors sm:px-3',
+                  'control-target inline-flex shrink-0 items-center rounded-ctl px-1.5 text-sm transition-colors sm:px-3',
                   active
                     ? 'bg-chart-deep font-semibold text-trace'
                     : 'text-trace-soft hover:bg-chart-deep hover:text-trace',
@@ -82,7 +83,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             hrefLang={other}
             lang={other}
             aria-label={other === 'en' ? 'English' : 'Bahasa Indonesia'}
-            className="control-target-square inline-flex items-center justify-center rounded-ctl border border-trace-hairline bg-surface font-display text-xs font-bold tracking-wide transition-colors hover:bg-chart-deep"
+            className="control-target-square hidden items-center justify-center rounded-ctl border sm:inline-flex border-trace-hairline bg-surface font-display text-xs font-bold tracking-wide transition-colors hover:bg-chart-deep"
           >
             {other.toUpperCase()}
           </Link>

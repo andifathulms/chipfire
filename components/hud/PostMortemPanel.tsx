@@ -5,6 +5,7 @@ import { MiniBoard } from '@/components/board/MiniBoard'
 import { cellName } from '@/lib/engine/notation'
 import type { GameRecord } from '@/lib/engine/replay'
 import type { Locale } from '@/lib/i18n'
+import { BUTTON } from '@/components/ui/styles'
 
 /**
  * Where the game got away from you.
@@ -169,7 +170,7 @@ export function PostMortemPanel({
           type="button"
           onClick={onRun}
           disabled={running}
-          className="self-start border border-trace-rule px-3 py-1.5 text-sm transition-colors hover:bg-chart-deep disabled:opacity-50"
+          className={`${BUTTON} self-start`}
         >
           {running ? COPY.running[locale] : COPY.ask[locale]}
         </button>
@@ -189,7 +190,7 @@ export function PostMortemPanel({
     <section className="flex flex-col gap-sm text-sm">
       <h3 className="heading-panel">{COPY.title[locale]}</h3>
 
-      <div className="flex flex-col gap-xs border-l-2 border-trace-rule py-1 pl-sm">
+      <div className="flex flex-col gap-xs rounded-ctl bg-chart-deep p-sm">
         <p className="label-micro">{COPY.turningPoint[locale]}</p>
         {point === null ? (
           <p className="max-w-measure text-trace-soft">{COPY.neverAhead[locale]}</p>
@@ -209,7 +210,7 @@ export function PostMortemPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-xs border-l-2 border-trace-rule py-1 pl-sm">
+      <div className="flex flex-col gap-xs rounded-ctl bg-chart-deep p-sm">
         <p className="label-micro">{COPY.costliest[locale]}</p>
         {costliest === null ? (
           <p className="max-w-measure text-trace-soft">{COPY.clean[locale]}</p>

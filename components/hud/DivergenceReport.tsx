@@ -116,8 +116,8 @@ export function DivergenceReport({
   return (
     <div
       className={[
-        'flex flex-col gap-xs border-l-2 py-1 pl-sm text-sm',
-        alarming ? 'border-p1 text-p1-ink' : 'border-trace-rule',
+        'flex flex-col gap-xs rounded-panel border bg-surface p-4 text-sm',
+        alarming ? 'border-p1 text-p1-ink' : 'border-trace-hairline',
       ].join(' ')}
     >
       <p className="heading-panel">{COPY.title[locale]}</p>

@@ -8,6 +8,7 @@ import { NO_OWNER } from '@/lib/engine/board'
 import { codeFromHash, decodeRecord, RecordCodeError } from '@/lib/share'
 import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
+import { BUTTON } from '@/components/ui/styles'
 
 /**
  * A game is its move list, so the replay viewer needs nothing hosted anywhere:
@@ -86,11 +87,11 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
           spellCheck={false}
           aria-label={COPY.codeLabel[locale]}
           placeholder={COPY.codeLabel[locale]}
-          className="min-w-[16rem] flex-1 resize-none border border-trace-rule bg-chart p-2 font-mono text-xs"
+          className="min-w-[16rem] flex-1 resize-none rounded-ctl border border-trace-rule bg-surface p-3 font-mono text-xs"
         />
         <button
           type="submit"
-          className="border border-trace px-3 py-2 text-sm transition-colors hover:bg-chart-deep"
+          className={BUTTON}
         >
           {COPY.load[locale]}
         </button>
@@ -105,7 +106,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
       {frame !== undefined && record !== null ? (
         <>
           <div
-            className="mx-auto w-full [--chrome:30rem] sm:[--chrome:24rem]"
+            className="mx-auto w-full [--chrome:33rem] sm:[--chrome:27rem]"
             style={{
               maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
                 frame.state.board.cols / frame.state.board.rows
@@ -149,7 +150,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setStep((value) => Math.max(0, value - 1))}
                 disabled={step === 0}
-                className="border border-trace-rule px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+                className={BUTTON}
               >
                 {COPY.prev[locale]}
               </button>
@@ -157,7 +158,7 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
                 type="button"
                 onClick={() => setStep((value) => Math.min(frames.length - 1, value + 1))}
                 disabled={step >= frames.length - 1}
-                className="border border-trace-rule px-3 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40"
+                className={BUTTON}
               >
                 {COPY.next[locale]}
               </button>

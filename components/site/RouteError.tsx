@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { DEFAULT_LOCALE, isLocale } from '@/lib/i18n'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 
 /**
  * DESIGN-REWORK.md §7: one `error.tsx` per route, all six wrapping this. A
@@ -46,13 +47,13 @@ export function RouteError({
         <button
           type="button"
           onClick={reset}
-          className="border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+          className={BUTTON_PRIMARY}
         >
           {COPY.retry[locale]}
         </button>
         <Link
           href={`/${locale}/`}
-          className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+          className={BUTTON}
         >
           {COPY.home[locale]}
         </Link>

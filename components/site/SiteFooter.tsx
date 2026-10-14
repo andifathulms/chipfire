@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { copy, type Locale } from '@/lib/i18n'
 import { MakerSignature } from './MakerSignature'
 
@@ -22,7 +23,18 @@ export function SiteFooter({ locale }: { locale: Locale }) {
    */
   return (
     <footer className="mx-auto flex w-full max-w-6xl flex-col gap-3 border-t border-trace-hairline px-3 py-5 text-sm sm:flex-row sm:items-center sm:justify-between sm:px-4 lg:px-8">
-      <span className="text-trace-faint">{t.footer}</span>
+      <span className="flex flex-col gap-1 text-trace-faint">
+        {t.footer}
+        {/* The header's language switch is hidden on a phone; this is that
+            switch there. It goes to the other language's home page, since the
+            footer has no idea which page it is on. */}
+        <Link
+          href={locale === 'id' ? '/en/' : '/id/'}
+          className="self-start underline decoration-trace-faint underline-offset-2 sm:hidden"
+        >
+          {locale === 'id' ? 'English' : 'Bahasa Indonesia'}
+        </Link>
+      </span>
       <MakerSignature locale={locale} />
     </footer>
   )

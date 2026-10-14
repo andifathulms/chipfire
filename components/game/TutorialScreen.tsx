@@ -13,6 +13,7 @@ import type { GameState } from '@/lib/engine/state'
 import { TUTORIAL } from '@/lib/tutorial'
 import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 
 /**
  * The lesson runs on the real engine and the real board component. Every move
@@ -124,7 +125,7 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
             key={entry.id}
             aria-current={slot === position ? 'step' : undefined}
             className={[
-              'h-1 flex-1 transition-colors',
+              'h-1.5 flex-1 rounded-full transition-colors',
               slot < position || finished ? 'bg-trace' : slot === position ? 'bg-trace-data' : 'bg-trace-hairline',
             ].join(' ')}
           />
@@ -175,14 +176,14 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
                   ref={doneRef}
                   type="button"
                   onClick={() => goTo(position + 1)}
-                  className="animate-settle border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+                  className={`${BUTTON_PRIMARY} animate-settle`}
                 >
                   {COPY.next[locale]}
                 </button>
                 <button
                   type="button"
                   onClick={() => goTo(position)}
-                  className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+                  className={BUTTON}
                 >
                   {COPY.again[locale]}
                 </button>
@@ -197,14 +198,14 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/${locale}/main/`}
-              className="border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+              className={BUTTON_PRIMARY}
             >
               {COPY.play[locale]}
             </Link>
             <button
               type="button"
               onClick={() => goTo(0)}
-              className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+              className={BUTTON}
             >
               {COPY.restart[locale]}
             </button>

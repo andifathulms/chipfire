@@ -6,6 +6,8 @@ import type { FailureCause, IceReport, LinkStatus } from '@/lib/net/channel'
 import { formatForReading } from '@/lib/net/signal'
 import type { Locale } from '@/lib/i18n'
 import type { Role } from '@/components/game/useP2PGame'
+import { Icon } from '@/components/ui/Icon'
+import { BUTTON, BUTTON_PRIMARY, PANEL } from '@/components/ui/styles'
 
 /**
  * Honest about state at every step: generating, waiting, connecting,
@@ -23,6 +25,9 @@ const COPY = {
     en: 'Two devices, connected directly. There is no server — the two of you exchange the codes.',
   },
   hostRole: { id: 'Saya yang mengundang', en: 'I am inviting' },
+  you: { id: 'Kamu', en: 'You' },
+  friend: { id: 'Teman', en: 'Friend' },
+  direct: { id: 'langsung · tanpa server', en: 'direct · no server' },
   guestRole: { id: 'Saya diundang', en: 'I was invited' },
   /*
    * DESIGN-REWORK.md §6: once connected, the whole ceremony above collapses
@@ -142,6 +147,18 @@ const COPY = {
   },
 } as const
 
+/** A numbered step in the exchange. Two of them per side, always in order. */
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <p className="flex items-center gap-2.5 text-sm font-medium">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-trace font-display text-xs font-bold text-chart">
+        {n}
+      </span>
+      {children}
+    </p>
+  )
+}
+
 export function CodeBox({ code, locale }: { code: string; locale: Locale }) {
   const [copied, setCopied] = useState(false)
 
@@ -151,17 +168,18 @@ export function CodeBox({ code, locale }: { code: string; locale: Locale }) {
         readOnly
         value={formatForReading(code)}
         rows={4}
-        className="w-full resize-none border border-trace-rule bg-chart-deep p-2 font-mono text-xs"
+        className="w-full resize-none rounded-ctl border border-dashed border-trace-rule bg-chart-deep p-3 font-mono text-xs text-trace-soft"
         onFocus={(event) => event.currentTarget.select()}
       />
       <button
         type="button"
-        className="self-start border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+        className={`${BUTTON_PRIMARY} self-start`}
         onClick={() => {
           void navigator.clipboard?.writeText(code)
           setCopied(true)
         }}
       >
+        <Icon name="copy" className="h-4 w-4" />
         {copied ? COPY.copied[locale] : COPY.copy[locale]}
       </button>
     </div>
@@ -190,12 +208,12 @@ function PasteBox({
         onChange={(event) => setValue(event.target.value)}
         rows={4}
         spellCheck={false}
-        className="w-full resize-none border border-trace-rule bg-chart p-2 font-mono text-xs"
+        className="w-full resize-none rounded-ctl border border-trace-rule bg-surface p-3 font-mono text-xs"
       />
       <button
         type="submit"
         disabled={value.trim().length === 0}
-        className="self-start border border-trace px-3 py-1 text-sm transition-colors hover:bg-chart-deep disabled:opacity-40"
+        className={`${BUTTON} self-start`}
       >
         {COPY.submit[locale]}
       </button>
@@ -245,9 +263,10 @@ export function ConnectPanel({
   if (status === 'connected') {
     const code = role === 'guest' ? answerCode : offerCode
     return (
-      <section className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border border-trace-hairline bg-chart-deep/30 px-3 py-2 text-sm">
-        <p className="flex items-baseline gap-2">
-          <span className="font-numeral">{COPY.status.connected[locale]}</span>
+      <section className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-panel border border-trace-hairline bg-surface px-4 py-2 text-sm">
+        <p className="flex items-center gap-2">
+          <span aria-hidden="true" className="h-2 w-2 rounded-full bg-p4" />
+          <span className="font-semibold">{COPY.status.connected[locale]}</span>
           <span aria-hidden="true" className="text-trace-faint">
             ·
           </span>
@@ -271,29 +290,64 @@ export function ConnectPanel({
   }
 
   return (
-    <section className="flex flex-col gap-5 border border-trace-hairline bg-chart-deep/60 p-5">
-      <div>
-        <h2 className="font-numeral text-xl">{COPY.title[locale]}</h2>
-        <p className="mt-1 max-w-prose text-sm text-trace-soft">{COPY.intro[locale]}</p>
+    <section className={`flex flex-col gap-5 ${PANEL} sm:p-6`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        {/* The page is already titled Tanding; the panel opens with what it
+            is instead of naming itself a second time. */}
+        <p className="max-w-prose text-sm text-trace-soft">{COPY.intro[locale]}</p>
+        {/* The state as a chip, not a line of tracked capitals: it changes
+            while you watch, and a chip reads as a status at a glance. */}
+        <p
+          className={[
+            'inline-flex items-center gap-2 rounded-full bg-chart-deep px-3 py-1 text-xs font-medium',
+            status === 'failed' ? 'text-p1-ink' : 'text-trace-soft',
+          ].join(' ')}
+        >
+          <span
+            aria-hidden="true"
+            className={[
+              'h-2 w-2 rounded-full',
+              status === 'failed' ? 'bg-p1' : status === 'idle' ? 'bg-trace-faint' : 'animate-pulse bg-p3',
+            ].join(' ')}
+          />
+          {COPY.status[status][locale]}
+        </p>
       </div>
 
-      <p className="font-mono text-xs uppercase tracking-widest text-trace-faint">
-        {COPY.status[status][locale]}
-      </p>
+      {/*
+       * The exchange, drawn: two devices and a line between them with no
+       * server in the middle. "No server" is the claim this mode makes, and
+       * a picture of it is quicker than the sentence above.
+       */}
+      <div
+        aria-hidden="true"
+        className="flex flex-col items-center gap-2 rounded-ctl bg-chart-deep px-4 py-4"
+      >
+        <div className="flex items-center gap-3 sm:gap-5">
+          <span className="flex h-16 w-11 items-center justify-center rounded-[8px] border-2 border-trace text-[0.625rem] font-semibold">
+            {COPY.you[locale]}
+          </span>
+          <span className="h-0 w-20 border-t-2 border-dashed border-trace-soft sm:w-40" />
+          <span className="flex h-16 w-11 items-center justify-center rounded-[8px] border-2 border-dashed border-trace-soft text-[0.625rem] font-semibold text-trace-soft">
+            {COPY.friend[locale]}
+          </span>
+        </div>
+        <span className="text-xs text-trace-soft">{COPY.direct[locale]}</span>
+      </div>
 
       {role === null ? (
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={onHost}
-            className="border border-trace px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+            className={BUTTON_PRIMARY}
           >
             {COPY.hostRole[locale]}
           </button>
           <button
             type="button"
             onClick={() => onRole('guest')}
-            className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+            className={BUTTON}
           >
             {COPY.guestRole[locale]}
           </button>
@@ -304,13 +358,13 @@ export function ConnectPanel({
         <div className="flex flex-col gap-4">
           {offerCode ? (
             <div className="flex flex-col gap-2">
-              <p className="text-sm">{COPY.offerLabel[locale]}</p>
+              <Step n={1}>{COPY.offerLabel[locale]}</Step>
               <CodeBox code={offerCode} locale={locale} />
             </div>
           ) : null}
           {offerCode ? (
             <div className="flex flex-col gap-2">
-              <p className="text-sm">{COPY.answerWait[locale]}</p>
+              <Step n={2}>{COPY.answerWait[locale]}</Step>
               <PasteBox locale={locale} onSubmit={onConfirm} />
               {/* Beside the box that caused it, not in the failure panel — the
                   connection is still fine and still waiting for the right code. */}
@@ -327,7 +381,7 @@ export function ConnectPanel({
       {role === 'guest' ? (
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <p className="text-sm">{COPY.pasteOffer[locale]}</p>
+            <Step n={1}>{COPY.pasteOffer[locale]}</Step>
             <PasteBox locale={locale} onSubmit={onJoin} />
             {codeError !== null ? (
               <p role="alert" className="max-w-prose border-l-2 border-p1 pl-3 text-sm text-p1-ink">
@@ -337,7 +391,7 @@ export function ConnectPanel({
           </div>
           {answerCode ? (
             <div className="flex flex-col gap-2">
-              <p className="text-sm">{COPY.sendAnswer[locale]}</p>
+              <Step n={2}>{COPY.sendAnswer[locale]}</Step>
               <CodeBox code={answerCode} locale={locale} />
             </div>
           ) : null}
@@ -345,7 +399,7 @@ export function ConnectPanel({
       ) : null}
 
       {status === 'failed' ? (
-        <div role="alert" className="flex flex-col gap-2 border border-p1 p-3 text-sm">
+        <div role="alert" className="flex flex-col gap-2 rounded-panel border border-p1 bg-surface p-4 text-sm">
           <p className="max-w-prose">{COPY.failure[cause ?? 'unknown'][locale]}</p>
           {/* The numbers the verdict was read off, so it can be checked rather
               than believed. Local to this device, which is all it can see. */}

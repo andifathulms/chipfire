@@ -13,6 +13,7 @@ import { recordResult } from '@/lib/stats'
 import { NO_OWNER } from '@/lib/engine/board'
 import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 
 const COPY = {
   yourTurn: { id: 'Giliranmu', en: 'Your turn' },
@@ -60,7 +61,7 @@ const COPY = {
  * in a column that already has ten. Not shared as a component with
  * PlayScreen's — one string, two call sites, not yet a real abstraction.
  */
-const CLUSTER = 'flex flex-col gap-3 border border-trace-hairline bg-chart-deep/30 p-3'
+const CLUSTER = 'flex flex-col gap-3 rounded-panel border border-trace-hairline bg-surface p-4'
 
 export function P2PScreen({ locale }: { locale: Locale }) {
   const [speed] = useState<Speed>('normal')
@@ -184,7 +185,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               {game.desync !== null ? (
                 <section
                   role="alert"
-                  className="flex flex-col gap-3 border-l-2 border-p1 bg-chart-deep p-4 text-sm"
+                  className="flex flex-col gap-3 rounded-panel border border-p1 bg-surface p-4 text-sm"
                 >
                   <p className="font-numeral text-base text-p1-ink">{COPY.desyncTitle[locale]}</p>
                   <p className="max-w-prose text-trace-soft">{COPY.desyncBody[locale]}</p>
@@ -194,7 +195,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                   <button
                     type="button"
                     onClick={game.offerResync}
-                    className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
+                    className={`${BUTTON_PRIMARY} self-start`}
                   >
                     {COPY.offerList[locale]}
                   </button>
@@ -202,7 +203,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
               ) : null}
 
               {game.offeredMoves !== null ? (
-                <section className="flex flex-col gap-2 border border-trace p-4 text-sm">
+                <section className="flex flex-col gap-2 rounded-panel border border-trace bg-surface p-4 text-sm">
                   <p>
                     {COPY.incoming[locale]} — {game.offeredMoves.length} {COPY.moves[locale]}
                   </p>
@@ -220,7 +221,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                   <button
                     type="button"
                     onClick={game.acceptResync}
-                    className="self-start border border-trace bg-trace px-3 py-1.5 text-chart transition-opacity hover:opacity-85"
+                    className={`${BUTTON_PRIMARY} self-start`}
                   >
                     {COPY.accept[locale]}
                   </button>
@@ -235,7 +236,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                * now reads below the board rather than above it.
                */}
               <div
-                className="mx-auto w-full [--chrome:30rem] sm:[--chrome:25rem]"
+                className="mx-auto w-full [--chrome:33rem] sm:[--chrome:28rem]"
                 style={{
                   maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
                     session.state.board.cols / session.state.board.rows
@@ -316,7 +317,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                       game.setPreview(!game.previewMine)
                       setPreviewIndex(null)
                     }}
-                    className="ml-auto border border-trace-rule px-3 py-1 text-xs transition-colors hover:bg-chart-deep"
+                    className={`${BUTTON} ml-auto`}
                   >
                     {game.previewMine ? COPY.previewWithdraw[locale] : COPY.previewAsk[locale]}
                   </button>
@@ -356,7 +357,7 @@ export function P2PScreen({ locale }: { locale: Locale }) {
           <button
             type="button"
             onClick={game.disconnect}
-            className="self-start border border-trace-rule px-3 py-1.5 text-sm transition-colors hover:bg-chart-deep"
+            className={`${BUTTON} self-start`}
           >
             {COPY.disconnect[locale]}
           </button>

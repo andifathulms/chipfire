@@ -12,6 +12,7 @@ import { legalMoves, type GameState } from '@/lib/engine/state'
 import { PUZZLE_COUNT, puzzleAt } from '@/lib/puzzle'
 import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 
 /**
  * One position, one winning move, find it.
@@ -187,7 +188,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
             key={slot}
             aria-current={slot === position ? 'step' : undefined}
             className={[
-              'h-1 flex-1 transition-colors',
+              'h-1.5 flex-1 rounded-full transition-colors',
               slot < position || finished ? 'bg-trace' : slot === position ? 'bg-trace-data' : 'bg-trace-hairline',
             ].join(' ')}
           />
@@ -201,14 +202,14 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
           <div className="flex flex-wrap gap-xs">
             <Link
               href={`/${locale}/main/`}
-              className="border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+              className={BUTTON_PRIMARY}
             >
               {COPY.play[locale]}
             </Link>
             <button
               type="button"
               onClick={() => reset(0)}
-              className="border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+              className={BUTTON}
             >
               {COPY.restart[locale]}
             </button>
@@ -220,7 +221,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
           <button
             type="button"
             onClick={() => reset(position + 1)}
-            className="self-start border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+            className={`${BUTTON} self-start`}
           >
             {COPY.next[locale]}
           </button>
@@ -277,7 +278,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
                   ref={outcomeRef}
                   type="button"
                   onClick={() => reset(position + 1)}
-                  className="self-start border border-trace bg-trace px-4 py-2 text-sm text-chart transition-opacity hover:opacity-85"
+                  className={`${BUTTON_PRIMARY} self-start`}
                 >
                   {COPY.next[locale]}
                 </button>
@@ -290,7 +291,7 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
                   ref={outcomeRef}
                   type="button"
                   onClick={() => reset(position)}
-                  className="self-start border border-trace-rule px-4 py-2 text-sm transition-colors hover:bg-chart-deep"
+                  className={`${BUTTON} self-start`}
                 >
                   {COPY.retry[locale]}
                 </button>

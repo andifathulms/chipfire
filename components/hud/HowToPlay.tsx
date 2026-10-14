@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Orbs } from '@/components/board/Orbs'
 import { playerName } from '@/lib/players'
 import type { Locale } from '@/lib/i18n'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 /**
  * Chain Reaction is not self-evident: the conversion rule is the whole game,
  * and nothing on the board announces it. This panel opens by itself the first
@@ -106,7 +107,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="border border-trace-rule px-3 py-1 text-sm transition-colors hover:bg-chart-deep"
+      className={BUTTON}
     >
       {COPY.reopen[locale]}
     </button>
@@ -128,7 +129,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
           if (event.target === dialogRef.current) dismiss()
         }}
       >
-        <section className="flex w-full animate-settle flex-col gap-4 border border-trace bg-chart p-5 shadow-lg sm:p-6">
+        <section className="flex w-full animate-settle flex-col gap-4 rounded-panel border border-trace-hairline bg-surface p-5 shadow-lg sm:p-6">
           <h2 id={TITLE_ID} className="font-numeral text-xl">
             {COPY.title[locale]}
           </h2>
@@ -166,7 +167,7 @@ export function HowToPlay({ locale, players }: { locale: Locale; players: number
               type="button"
               onClick={dismiss}
               autoFocus
-              className="border border-trace bg-trace px-4 py-1.5 text-sm text-chart transition-opacity hover:opacity-85"
+              className={BUTTON_PRIMARY}
             >
               {COPY.close[locale]}
             </button>
