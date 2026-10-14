@@ -24,6 +24,18 @@ type Copy = {
    */
   lede: string
   tagline: string
+  /** The home page's headline: the moment the game is about, in one line. */
+  heroTitle: readonly [string, string]
+  heroCta: string
+  learnCta: string
+  /** Names the site's top navigation for screen readers. */
+  navLabel: string
+  modesTitle: string
+  playMeta: string
+  versusMeta: string
+  puzzlesMeta: string
+  learnMeta: string
+  demoCaption: string
   rulesTitle: string
   figureBefore: string
   figureDuring: string
@@ -55,6 +67,16 @@ const DICTIONARY: Record<Locale, Copy> = {
     lede: 'Permainan papan strategi bergiliran untuk 2–4 orang. Langsung main di browser, tanpa pasang apa pun.',
     tagline:
       'Taruh orb sampai sebuah sel penuh, lalu sel itu meledak ke tetangganya — dan setiap sel yang kena berpindah jadi milikmu. Satu langkah bisa membalik wilayah yang tidak kamu sentuh.',
+    heroTitle: ['Satu orb.', 'Seluruh papan berbalik.'],
+    heroCta: 'Main sekarang',
+    learnCta: 'Belajar · 3 menit',
+    navLabel: 'Cara bermain',
+    modesTitle: 'Empat cara bermain',
+    playMeta: '2–4 pemain',
+    versusMeta: '2 pemain · tukar kode',
+    puzzlesMeta: '12 papan',
+    learnMeta: '± 3 menit',
+    demoCaption: 'Permainan sungguhan antara dua pemain acak, dijalankan mesin yang sama.',
     rulesTitle: 'Aturannya cuma tiga',
     figureBefore: 'Sebelum',
     figureDuring: 'Dua tahap kemudian',
@@ -63,11 +85,11 @@ const DICTIONARY: Record<Locale, Copy> = {
       'Jingga menaruh satu orb di sel tengah yang sudah berisi 3. Sel tengah punya 4 tetangga, jadi batasnya 4 — kini penuh, dan meledak. Tetangganya ikut penuh, lalu tetangganya lagi: empat tahap, lima ledakan. Biru tinggal satu sel.',
     moreWays: 'Cara lain',
     play: 'Main',
-    playHint: 'Hotseat 2–4 pemain, atau lawan AI di satu perangkat.',
+    playHint: 'Gantian di satu perangkat, atau lawan AI.',
     replay: 'Ulang',
     replayHint: 'Muat kode permainan dan telusuri langkah demi langkah.',
     versus: 'Tanding',
-    versusHint: 'Dua perangkat, sambungan langsung antar-browser.',
+    versusHint: 'Dua perangkat, langsung antar-browser. Tanpa server.',
     footer: 'Statis, tanpa server. Sebuah permainan adalah daftar langkahnya.',
     back: 'Kembali',
     rules: [
@@ -92,6 +114,16 @@ const DICTIONARY: Record<Locale, Copy> = {
     lede: 'A turn-based board game of strategy for 2–4 people. Plays in the browser, nothing to install.',
     tagline:
       'Add orbs until a cell is full, and it detonates into its neighbours — every cell the blast touches changes hands. One move can flip territory you never touched.',
+    heroTitle: ['One orb.', 'The whole board flips.'],
+    heroCta: 'Play now',
+    learnCta: 'Learn · 3 minutes',
+    navLabel: 'Ways to play',
+    modesTitle: 'Four ways to play',
+    playMeta: '2–4 players',
+    versusMeta: '2 players · swap codes',
+    puzzlesMeta: '12 boards',
+    learnMeta: '~3 minutes',
+    demoCaption: 'A real game between two random players, run by the same engine.',
     rulesTitle: 'There are only three rules',
     figureBefore: 'Before',
     figureDuring: 'Two generations in',
@@ -100,11 +132,11 @@ const DICTIONARY: Record<Locale, Copy> = {
       'Orange adds one orb to a middle cell already holding 3. A middle cell has 4 neighbours, so its limit is 4 — it is now full, and it fires. Its neighbours fill in turn, and theirs after that: four generations, five explosions. Blue is left with one cell.',
     moreWays: 'Other ways to play',
     play: 'Play',
-    playHint: 'Hotseat for 2–4 players, or take on the AI on one device.',
+    playHint: 'Take turns on one device, or take on the AI.',
     replay: 'Replay',
     replayHint: 'Load a game code and step through it move by move.',
     versus: 'Versus',
-    versusHint: 'Two devices, a direct browser-to-browser connection.',
+    versusHint: 'Two devices, browser to browser. No server.',
     footer: 'Static, no server. A game is its move list.',
     back: 'Back',
     rules: [

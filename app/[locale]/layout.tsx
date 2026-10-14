@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { LOCALES, isLocale } from '@/lib/i18n'
 import { SiteFooter } from '@/components/site/SiteFooter'
+import { SiteHeader } from '@/components/site/SiteHeader'
 import { FONT_VARIABLES, THEME_INIT_SCRIPT, baseMetadata, viewport } from '../chrome'
 import '../globals.css'
 
@@ -45,6 +46,7 @@ export default function LocaleLayout({
       </head>
       <body>
         <div className="flex min-h-screen flex-col">
+          <SiteHeader locale={params.locale} />
           <div className="flex flex-1 flex-col">{children}</div>
           <SiteFooter locale={params.locale} />
         </div>

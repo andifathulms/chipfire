@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { ConnectPanel } from '@/components/connect/ConnectPanel'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
@@ -12,7 +11,7 @@ import { MoveAnnouncer } from '@/components/hud/MoveAnnouncer'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { recordResult } from '@/lib/stats'
 import { NO_OWNER } from '@/lib/engine/board'
-import { copy, type Locale } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
 
 const COPY = {
@@ -135,11 +134,8 @@ export function P2PScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
-        <h1 className="font-numeral text-3xl">Tanding</h1>
-        <Link href={`/${locale}/`} className="text-sm underline">
-          {copy(locale).back}
-        </Link>
+      <header className="flex items-baseline justify-between gap-4">
+        <h1 className="font-moment text-3xl sm:text-4xl">Tanding</h1>
       </header>
 
       {/*

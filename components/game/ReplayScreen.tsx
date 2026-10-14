@@ -1,13 +1,12 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import { Board } from '@/components/board/Board'
 import { replayFrames, type GameRecord } from '@/lib/engine/replay'
 import { countExplosions } from '@/lib/engine/events'
 import { NO_OWNER } from '@/lib/engine/board'
 import { codeFromHash, decodeRecord, RecordCodeError } from '@/lib/share'
-import { copy, type Locale } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
 
 /**
@@ -64,14 +63,11 @@ export function ReplayScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-3xl flex-col gap-6 px-4 py-8">
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
+      <header className="flex items-baseline justify-between gap-4">
         <div>
-          <h1 className="font-numeral text-3xl">{COPY.title[locale]}</h1>
+          <h1 className="font-moment text-3xl sm:text-4xl">{COPY.title[locale]}</h1>
           <p className="max-w-prose text-sm text-trace-soft">{COPY.intro[locale]}</p>
         </div>
-        <Link href={`/${locale}/`} className="text-sm underline">
-          {copy(locale).back}
-        </Link>
       </header>
 
       <form

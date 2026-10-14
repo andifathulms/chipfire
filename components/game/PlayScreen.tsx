@@ -38,7 +38,6 @@ import { CascadeReplay } from '@/components/hud/CascadeReplay'
 import { EvaluationPanel } from '@/components/hud/EvaluationPanel'
 import { PostMortemPanel } from '@/components/hud/PostMortemPanel'
 import { HowToPlay } from '@/components/hud/HowToPlay'
-import { Wordmark } from '@/components/site/Mark'
 import { previewMove, type MovePreview } from '@/lib/engine/preview'
 import { EMPTY_STATS, readStats, recordResult, type Stats } from '@/lib/stats'
 import { playWin } from '@/lib/sound'
@@ -51,6 +50,7 @@ const COPY = {
     id: 'Satu perangkat, bergantian.',
     en: 'One device, taking turns.',
   },
+  subtitleAi: { id: 'Kamu lawan AI.', en: 'You against the AI.' },
   thinking: { id: 'AI berpikir', en: 'AI thinking' },
   confirmTap: {
     id: 'Ketuk lagi untuk menaruh orb.',
@@ -405,19 +405,14 @@ export function PlayScreen({ locale }: { locale: Locale }) {
 
   return (
     <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-3 py-5 sm:px-4 lg:px-8">
-      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace-hairline pb-3">
-        <div className="flex items-baseline gap-3">
-          <Link
-            href={`/${locale}/`}
-            className="font-numeral text-sm text-trace-soft transition-colors hover:text-trace"
-          >
-            <Wordmark nameClassName="underline" />
-          </Link>
-          <span aria-hidden="true" className="text-trace-faint">
-            /
-          </span>
-          <h1 className="font-numeral text-2xl leading-none">{COPY.title[locale]}</h1>
-          <p className="hidden text-sm text-trace-soft sm:block">{COPY.subtitle[locale]}</p>
+      {/* The site bar above already links home; this row names the page
+          and holds the rules. */}
+      <header className="flex items-center justify-between gap-x-4">
+        <div className="flex min-w-0 items-baseline gap-3">
+          <h1 className="font-moment text-2xl sm:text-3xl">{COPY.title[locale]}</h1>
+          <p className="hidden truncate text-sm text-trace-soft sm:block">
+            {mode === 'ai' ? COPY.subtitleAi[locale] : COPY.subtitle[locale]}
+          </p>
         </div>
         <HowToPlay locale={locale} players={session.state.players} />
       </header>
@@ -516,8 +511,9 @@ export function PlayScreen({ locale }: { locale: Locale }) {
              * a tall board never demands a scroll to see the move you are about
              * to make. --chrome is the vertical space everything else needs:
              *
+             *   site bar          one row, shared          3.5rem
              *   page padding      py-5                      2.5rem
-             *   header + rule     text-2xl + pb-3          ~3rem
+             *   title row         h1 + rules button        2.5rem
              *   player bar        two rows of a chip       ~4rem
              *   gaps              gap-3 ×3                 2.25rem
              *   readout           min-h-[3.25rem]          3.25rem
@@ -530,7 +526,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
              * fold by design, so it is not counted.
              */}
             <div
-              className="mx-auto w-full [--chrome:35rem] sm:[--chrome:30rem] lg:[--chrome:25rem]"
+              className="mx-auto w-full [--chrome:38rem] sm:[--chrome:33rem] lg:[--chrome:28rem]"
               style={{
                 // The max() floor matters: on a short viewport (a phone in
                 // landscape) the subtraction goes negative and the board would
@@ -767,7 +763,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
              */
             <section className={`flex flex-col gap-5 ${PANEL}`}>
               <div className="flex flex-col gap-1">
-                <h2 className="font-moment text-3xl">{COPY.newGame[locale]}</h2>
+                <h2 className="font-moment text-2xl sm:text-3xl">{COPY.newGame[locale]}</h2>
                 <p className="text-sm text-trace-soft">
                   {phase === 'siap' ? COPY.newGameHint[locale] : COPY.newGameMidGame[locale]}
                 </p>

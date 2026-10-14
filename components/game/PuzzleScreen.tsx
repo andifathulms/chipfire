@@ -10,7 +10,7 @@ import { NO_OWNER } from '@/lib/engine/board'
 import { replay } from '@/lib/engine/replay'
 import { legalMoves, type GameState } from '@/lib/engine/state'
 import { PUZZLE_COUNT, puzzleAt } from '@/lib/puzzle'
-import { copy, type Locale } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 import { playerName } from '@/lib/players'
 
 /**
@@ -173,14 +173,11 @@ export function PuzzleScreen({ locale }: { locale: Locale }) {
       <p role="status" className="sr-only">
         {verdict}
       </p>
-      <header className="flex items-baseline justify-between gap-4 border-b border-trace-hairline pb-4">
+      <header className="flex items-baseline justify-between gap-4">
         <div>
-          <h1 className="font-numeral text-2xl">{COPY.title[locale]}</h1>
+          <h1 className="font-moment text-3xl sm:text-4xl">{COPY.title[locale]}</h1>
           <p className="text-sm text-trace-soft">{COPY.subtitle[locale]}</p>
         </div>
-        <Link href={`/${locale}/`} className="text-sm underline">
-          {copy(locale).back}
-        </Link>
       </header>
 
       {/* Progress as a row of ticks, the same shape the tutorial uses. */}

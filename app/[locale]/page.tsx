@@ -3,9 +3,11 @@ import { pageMetadata } from '../chrome'
 import Link from 'next/link'
 import { copy, isLocale, type Locale } from '@/lib/i18n'
 import { notFound } from 'next/navigation'
-import { Wordmark } from '@/components/site/Mark'
 import { CascadeFigure } from '@/components/site/CascadeFigure'
 import { SandpilePlate } from '@/components/site/SandpilePlate'
+import { HeroBoard } from '@/components/site/HeroBoard'
+import { MiniBoard, EMPTY_CELL, type MiniCell } from '@/components/board/MiniBoard'
+import { BUTTON, BUTTON_PRIMARY } from '@/components/ui/styles'
 
 export { generateStaticParams } from './layout'
 
@@ -16,133 +18,163 @@ export function generateMetadata({ params }: { params: { locale: string } }): Me
   return pageMetadata(isLocale(params.locale) ? params.locale : 'id', '')
 }
 
+/** A small position for a mode card, written the way the fixtures are:
+ *  `a2` is player 0 with two orbs, `.` is empty. */
+function cells(spec: string): MiniCell[] {
+  return spec
+    .trim()
+    .split(/\s+/)
+    .map((token) => (token === '.' ? EMPTY_CELL : ([token.charCodeAt(0) - 97, Number(token.slice(1))] as const)))
+}
+
+const ILLUSTRATIONS = {
+  main: { cols: 5, cells: cells('a1 a2 . b1 b2  a2 . . . b1  . a1 . b2 .'), played: 1 },
+  teka: { cols: 5, cells: cells('. b2 b1 . .  a1 a3 b2 . .  . a1 . b1 .'), played: 6 },
+  belajar: { cols: 5, cells: cells('. . a1 . .  . a1 a3 a1 .  . . a1 . .'), played: 7 },
+} as const
+
 export default function HomePage({ params }: { params: { locale: string } }) {
   if (!isLocale(params.locale)) notFound()
   const locale: Locale = params.locale
   const t = copy(locale)
 
   /*
-   * Tanding and Ulang each presuppose something a first-time visitor does not
-   * have — a second device with a person waiting at it, and a code from a game
-   * nobody has played yet. They used to occupy a full row of cards the size of
-   * the rules, which spent the most expensive space on the page on two dead
-   * ends. One line, below everything.
-   *
-   * Teka is not in that category: a visitor can start it cold, and it is first
-   * here for that reason. It sits below the fold anyway because Belajar is the
-   * better cold start and two teaching links side by side above it would be a
-   * choice rather than a path.
+   * Four cards of equal weight, because they are four equal ways in. Tanding
+   * used to be one line of small text at the bottom — the feature that makes
+   * this game unusual, behind the least visible link on the page. It gets the
+   * one ink border among the four.
    */
-  const secondary = [
-    { href: `/${locale}/teka/`, title: t.puzzles, hint: t.puzzlesHint },
-    { href: `/${locale}/tanding/`, title: t.versus, hint: t.versusHint },
-    { href: `/${locale}/ulang/`, title: t.replay, hint: t.replayHint },
-  ]
+  const modes = [
+    { href: `/${locale}/main/`, title: t.play, hint: t.playHint, meta: t.playMeta, art: 'main' },
+    {
+      href: `/${locale}/tanding/`,
+      title: t.versus,
+      hint: t.versusHint,
+      meta: t.versusMeta,
+      art: 'tanding',
+    },
+    {
+      href: `/${locale}/teka/`,
+      title: t.puzzles,
+      hint: t.puzzlesHint,
+      meta: t.puzzlesMeta,
+      art: 'teka',
+    },
+    {
+      href: `/${locale}/belajar/`,
+      title: t.learn,
+      hint: t.learnHint,
+      meta: t.learnMeta,
+      art: 'belajar',
+    },
+  ] as const
 
   return (
-    <main className="bg-lattice mx-auto flex w-full flex-1 max-w-5xl flex-col justify-center gap-xl px-6 py-xl">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-2xl px-4 py-xl lg:px-8">
       {/*
-       * Two columns where there is room, so the sentence that says what this
-       * is and the picture that proves it are one glance apart rather than one
-       * scroll. Below lg they stack in the same reading order.
+       * The thesis first: the moment the game is about, in the moment face,
+       * beside a real game being played. Below lg they stack in the same
+       * reading order.
        */}
-      <div className="grid items-center gap-xl lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <section className="grid items-center gap-xl lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
         <div className="flex flex-col gap-lg">
-          <header className="flex flex-col gap-sm">
-            {/* The mark is the game's rule drawn once — a core shedding to four
-                neighbours. It identifies the page; it cannot explain it, so it
-                no longer outweighs the sentence that does. */}
-            <h1>
-              <Wordmark size="lg" />
-            </h1>
-            {/* Full trace ink at the top of the ramp: on a first visit this is
-                the most important text on the page, and it should look it. */}
-            <p className="max-w-measure text-xl leading-snug">{t.lede}</p>
-            <p className="max-w-measure text-base text-trace-soft">{t.tagline}</p>
-          </header>
-
-          {/*
-           * A stack, not a wrapped row. The two tiles never actually had room
-           * to sit side by side at any supported width — the hero column
-           * tops out around 470px and the pair need close to 840px together —
-           * so `flex-wrap` was only ever landing on its second line, and each
-           * tile's width was whatever its own hint text happened to need.
-           * That made "Main" and "Belajar" different widths by accident of
-           * copy length, and would keep drifting with every translation.
-           * `flex-col` makes the stack the actual layout instead of a wrap
-           * fallback, and default `align-items: stretch` gives both tiles the
-           * same width — the column's — by construction.
-           */}
-          <nav className="flex flex-col gap-sm">
-            {/* The primary action is filled, not outlined. On a page of
-                hairlines one solid block is unmistakably the way in. */}
-            <Link
-              href={`/${locale}/main/`}
-              className="flex flex-col border border-trace bg-trace px-lg py-sm text-chart transition-opacity hover:opacity-90"
-            >
-              <span className="font-numeral text-xl leading-snug">{t.play}</span>
-              <span className="text-sm opacity-90">{t.playHint}</span>
+          <h1 className="font-moment text-6xl">
+            {t.heroTitle[0]}
+            <br />
+            <span className="text-p1-ink">{t.heroTitle[1]}</span>
+          </h1>
+          <p className="max-w-measure text-xl leading-snug">{t.lede}</p>
+          <p className="max-w-measure text-base text-trace-soft">{t.tagline}</p>
+          <div className="flex flex-wrap gap-sm">
+            <Link href={`/${locale}/main/`} className={`${BUTTON_PRIMARY} px-6 text-base`}>
+              {t.heroCta}
             </Link>
-
-            <Link
-              href={`/${locale}/belajar/`}
-              className="flex flex-col border border-trace-rule px-lg py-sm transition-colors hover:border-trace hover:bg-chart-deep"
-            >
-              <span className="font-numeral text-xl leading-snug">{t.learn}</span>
-              <span className="text-sm text-trace-soft">{t.learnHint}</span>
+            <Link href={`/${locale}/belajar/`} className={`${BUTTON} px-5 text-base`}>
+              {t.learnCta}
             </Link>
-          </nav>
+          </div>
         </div>
 
-        <CascadeFigure locale={locale} />
-      </div>
-
-      {/*
-       * The rules were four sentences of 14px grey below three rows of
-       * navigation — the only thing on the page that explained the game, and
-       * the last thing anyone would read. Three steps now, at body size, sat
-       * directly under the figure they describe.
-       */}
-      <section className="flex flex-col gap-sm">
-        <h2 className="label-micro">{t.rulesTitle}</h2>
-        <ol className="grid max-w-measure gap-sm text-base text-trace-soft sm:max-w-none sm:grid-cols-3">
-          {t.rules.map((rule, position) => (
-            <li key={rule} className="flex gap-sm border-t border-trace-hairline pt-sm">
-              <span className="font-numeral text-base text-trace">{position + 1}</span>
-              <span>{rule}</span>
-            </li>
-          ))}
-        </ol>
+        <figure className="flex flex-col gap-sm">
+          <HeroBoard locale={locale} />
+          <figcaption className="text-xs text-trace-faint">{t.demoCaption}</figcaption>
+        </figure>
       </section>
 
-      {/*
-       * After the rules, deliberately. Above them it would compete with the
-       * one thing on this page that teaches; here it is what a reader who
-       * already understands the game gets for scrolling.
-       */}
-      <section className="border-t border-trace-hairline pt-lg">
-        <SandpilePlate locale={locale} />
-      </section>
-
-      <section className="flex flex-col gap-xs">
-        <h2 className="label-micro">{t.moreWays}</h2>
-        <ul className="flex flex-col gap-xs text-sm sm:flex-row sm:flex-wrap sm:gap-x-lg sm:gap-y-xs">
-          {secondary.map((link) => (
-            <li key={link.href} className="flex items-baseline gap-xs">
+      <section className="flex flex-col gap-md">
+        <h2 className="label-micro">{t.modesTitle}</h2>
+        <ul className="grid gap-sm sm:grid-cols-2 lg:grid-cols-4">
+          {modes.map((mode) => (
+            <li key={mode.href} className="flex">
               <Link
-                href={link.href}
-                className="underline decoration-trace-rule underline-offset-4 transition-colors hover:decoration-trace"
+                href={mode.href}
+                className={[
+                  'group flex w-full flex-col gap-sm rounded-panel border bg-surface p-md transition-[border-color,box-shadow] hover:shadow-panel',
+                  mode.art === 'tanding'
+                    ? 'border-trace'
+                    : 'border-trace-hairline hover:border-trace-rule',
+                ].join(' ')}
               >
-                {link.title}
+                <span
+                  aria-hidden="true"
+                  className="flex h-20 items-center justify-center rounded-ctl bg-chart-deep"
+                >
+                  {mode.art === 'tanding' ? (
+                    <span className="flex items-center gap-2">
+                      <span className="h-12 w-7 rounded-[5px] border-2 border-trace" />
+                      <span className="h-0 w-12 border-t-2 border-dashed border-trace-soft" />
+                      <span className="h-12 w-7 rounded-[5px] border-2 border-trace" />
+                    </span>
+                  ) : (
+                    <span className="w-24">
+                      <MiniBoard
+                        cells={ILLUSTRATIONS[mode.art].cells}
+                        cols={ILLUSTRATIONS[mode.art].cols}
+                        played={ILLUSTRATIONS[mode.art].played}
+                      />
+                    </span>
+                  )}
+                </span>
+                <span className="font-display text-lg font-extrabold leading-tight [font-stretch:110%]">
+                  {mode.title}
+                </span>
+                <span className="text-sm text-trace-soft">{mode.hint}</span>
+                <span className="mt-auto text-xs text-trace-faint">{mode.meta}</span>
               </Link>
-              <span className="text-trace-soft">{link.hint}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* The bottom bar that used to live here is now SiteFooter, shared by
-          every page — one seam for the whole site rather than one per page. */}
+      {/*
+       * The rules, then the worked example they describe: a move, two
+       * generations in, and the result, drawn from applyMove's own frames.
+       */}
+      <section className="grid gap-xl lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+        <div className="flex flex-col gap-md">
+          <h2 className="font-moment text-3xl">{t.rulesTitle}</h2>
+          <ol className="flex flex-col gap-sm">
+            {t.rules.map((rule, position) => (
+              <li
+                key={rule}
+                className="flex gap-md rounded-panel border border-trace-hairline bg-surface p-md"
+              >
+                <span className="font-moment text-3xl text-trace-faint">{position + 1}</span>
+                <span className="text-base">{rule}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <CascadeFigure locale={locale} />
+      </section>
+
+      {/*
+       * Last, deliberately: what a reader who already understands the game
+       * gets for scrolling.
+       */}
+      <section className="border-t border-trace-hairline pt-xl">
+        <SandpilePlate locale={locale} />
+      </section>
     </main>
   )
 }
