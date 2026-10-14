@@ -22,36 +22,48 @@
  */
 :root {
   /* ── Colour ──
-   * The identity is unchanged from PRD §12; this only moves it into variables.
-   * Measured, not eyeballed, against both chart grounds — and reverified by
-   * scripts/contrast.mjs / tests/style/contrast.test.ts, so this comment
-   * cannot drift from the tokens it describes without CI catching it:
+   * Vellum: the cool green-grey of engineering chart paper, replacing the warm
+   * cream stock. Measured, not eyeballed, against all three grounds text is
+   * painted on — and reverified by scripts/contrast.mjs and
+   * tests/style/contrast.test.ts, so this comment cannot drift from the tokens
+   * without CI catching it:
    *
-   *   trace 13.1:1 · soft 6.9:1 · faint 5.1:1   on #EDEAE3
-   *   trace 11.8:1 · soft 6.2:1 · faint 4.6:1   on #E3DFD5
+   *   trace 14.86:1 · soft 7.67:1 · faint 5.45:1   on #EEF2EF (ground)
+   *   trace 13.62:1 · soft 7.02:1 · faint 4.99:1   on #E2E9E5 (raised)
+   *   trace 16.15:1 · soft 8.33:1 · faint 5.92:1   on #F9FBF9 (surface)
    *
-   * Every -ink player value clears 4.5:1 on both (lowest, p3 on deep, 4.52:1),
-   * which is what makes it safe for words. The identity hues deliberately do
-   * not — p3 is 2.76:1 — and are for orbs and large marks only.
+   * Every -ink player value clears 4.5:1 on all three (lowest, p1-ink on
+   * raised, 4.71:1), which is what makes it safe for words. The identity hues
+   * p1, p3 and p4 deliberately do not and are for orbs and large marks only.
    */
-  --color-chart: 237 234 227; /* chart stock  #EDEAE3 */
-  --color-chart-deep: 227 223 213; /* #E3DFD5 */
-  --color-chart-line: 214 209 196; /* #D6D1C4 */
+  --color-chart: 238 242 239; /* vellum ground  #EEF2EF */
+  --color-chart-deep: 226 233 229; /* raised tint  #E2E9E5 */
+  --color-chart-line: 211 221 216; /* #D3DDD8 */
+  /* The instrument's own body. Surface is a panel that sits on the ground;
+     bezel is the board's housing; well is the recess a cell sits in. */
+  --color-surface: 249 251 249; /* #F9FBF9 */
+  --color-bezel: 220 228 224; /* #DCE4E0 */
+  --color-well: 245 248 246; /* #F5F8F6 */
 
-  --color-trace: 31 36 33; /* trace ink    #1F2421 */
-  --color-trace-soft: 74 80 75; /* #4A504B */
-  --color-trace-faint: 94 99 94; /* #5E635E */
+  --color-trace: 19 32 27; /* trace ink    #13201B */
+  --color-trace-soft: 63 79 72; /* #3F4F48 */
+  --color-trace-faint: 85 101 94; /* #55655E */
 
   --color-mark: 192 80 30; /* #C0501E — the mark's core, never a player */
 
-  --color-p1: 196 86 30; /* signal orange #C4561E */
-  --color-p1-ink: 163 71 25; /* #A34719 */
-  --color-p2: 44 95 135; /* station blue  #2C5F87 */
-  --color-p2-ink: 44 95 135; /* passes as-is */
-  --color-p3: 176 135 33; /* ochre         #B08721 */
-  --color-p3-ink: 123 95 23; /* #7B5F17 */
-  --color-p4: 62 107 90; /* slate green   #3E6B5A */
-  --color-p4-ink: 62 107 90; /* passes as-is */
+  /*
+   * Player hues from the Okabe–Ito set, chosen to stay apart under the common
+   * colour-vision deficiencies. The previous orange and ochre sat close enough
+   * that, for a deuteranope, only orb shape separated players 1 and 3.
+   */
+  --color-p1: 213 94 0; /* vermilion     #D55E00 */
+  --color-p1-ink: 169 72 0; /* #A94800 */
+  --color-p2: 0 103 168; /* blue          #0067A8 */
+  --color-p2-ink: 0 103 168; /* passes as-is */
+  --color-p3: 180 80 140; /* reddish purple #B4508C */
+  --color-p3-ink: 154 63 118; /* #9A3F76 */
+  --color-p4: 0 135 106; /* bluish green  #00876A */
+  --color-p4-ink: 0 112 90; /* #00705A */
 
   /* ── Type ──
    * One ramp, roughly 1.25 between display steps, and it is the only ramp:
@@ -62,7 +74,7 @@
    * for .label-micro — uppercase, tracked instrument lettering, which is a
    * label on a machine panel and not body copy.
    */
-  --text-2xs: 0.6875rem; /* 11px — .label-micro only */
+  --text-2xs: 0.75rem; /* 12px — .label-micro only */
   --text-xs: 0.8125rem; /* 13px — meta, captions */
   --text-sm: 0.9375rem; /* 15px — dense game chrome */
   --text-base: 1rem; /* 16px — prose floor */
@@ -71,6 +83,9 @@
   --text-2xl: 1.75rem; /* 28px */
   --text-3xl: 2.25rem; /* 36px */
   --text-4xl: 2.875rem; /* 46px */
+  /* The two moment sizes. Used for a win and a chain count, nothing else. */
+  --text-5xl: 3.5rem; /* 56px */
+  --text-6xl: clamp(3rem, 8vw, 5.5rem); /* up to 88px */
 
   --leading-flat: 1; /* counters, single glyphs */
   --leading-tight: 1.15; /* display */
@@ -131,7 +146,25 @@
    * on it, and it is applied through one class so a future control inherits it
    * instead of being remembered about.
    */
-  --control-min: 2.25rem;
+  --control-min: 2.5rem;
+
+  /* ── Radius ──
+   * Small and consistent. A cut corner reads as printed; a slight radius reads
+   * as an instrument that was built. Charts and the seismogram keep hard
+   * edges — those are readings, not objects.
+   */
+  --radius-cell: 6px;
+  --radius-ctl: 8px;
+  --radius-panel: 12px;
+  --radius-housing: 16px;
+
+  /* ── Depth ──
+   * One panel shadow by day. By night surfaces separate by tone instead, and
+   * the orbs emit — --orb-glow is 0 on paper and a few pixels of bloom on the
+   * night ground, so one drop-shadow rule serves both.
+   */
+  --shadow-panel: 0 1px 0 rgb(var(--color-trace) / 0.04), 0 10px 30px -14px rgb(var(--color-trace) / 0.22);
+  --orb-glow: 0px;
 
   /* ── The glow ──
    * The trace of the last cascade. One token, and it does opposite things in
@@ -162,24 +195,22 @@
  * construction, because nothing outside this block holds a literal colour. That
  * is what the token pass was for, and this is the first thing to test it.
  *
- * Two values change role rather than merely darkening, which is the part worth
- * noticing: today's trace ink becomes the raised surface, and today's chart
- * stock becomes the ink. The palette folds in on itself instead of being
- * replaced by a second one.
+ * Phosphor: a blue-black display ground where the player hues are lifted
+ * until they read as light, and the board lets orbs bloom (--orb-glow).
  *
- * Computed against both grounds, the same treatment the light values above
+ * Computed against all three grounds, the same treatment the light values above
  * get — scripts/contrast.mjs (`pnpm contrast`) recomputes these from the live
  * custom properties rather than trusting the comment, and
  * tests/style/contrast.test.ts asserts every pairing here in CI, so a token
  * edit that quietly drops a ratio fails the build instead of shipping:
  *
- *   trace 13.83:1 · soft 7.68:1 · faint 5.38:1   on #171A18
- *   trace 12.43:1 · soft 6.90:1 · faint 4.83:1   on #1F2421
+ *   trace 15.96:1 · soft 9.24:1 · faint 6.07:1   on #0B1110 (ground)
+ *   trace 13.54:1 · soft 7.84:1 · faint 5.15:1   on #18231F (raised)
+ *   trace 14.70:1 · soft 8.51:1 · faint 5.59:1   on #121B19 (surface)
  *
- * Lowest text pairing overall is 4.83:1 (faint on the raised surface). The
- * player colours clear 4.5:1 unaided at every lift below (lowest, p1 on the
- * raised surface, 4.96:1), so their darkened -ink variants are not needed
- * here and are set back to the identity colours.
+ * The player colours clear 4.5:1 unaided on every night ground (lowest, p1 on
+ * raised, 6.25:1), so their darkened -ink variants are not needed here and are
+ * set back to the identity colours.
  *
  * Two ways in, one destination. `prefers-color-scheme` is the system's own
  * word and stays the default with no `data-theme` set at all — a page that
@@ -194,23 +225,27 @@
  */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --color-chart: 23 26 24; /* night ground   #171A18 */
-    --color-chart-deep: 31 36 33; /* today's trace ink, raised   #1F2421 */
-    --color-chart-line: 42 48 44; /* the lattice, barely there   #2A302C */
+    --color-chart: 11 17 16; /* phosphor ground  #0B1110 */
+    --color-chart-deep: 24 35 31; /* raised  #18231F */
+    --color-chart-line: 34 48 43; /* #22302B */
+    --color-surface: 18 27 25; /* #121B19 */
+    --color-bezel: 22 32 29; /* #16201D */
+    --color-well: 15 23 21; /* #0F1715 */
 
-    --color-trace: 232 228 220; /* today's chart stock, now the ink  13.83:1 */
-    --color-trace-soft: 168 173 166; /* 7.68:1 */
-    --color-trace-faint: 138 144 138; /* 5.38:1 */
+    --color-trace: 228 237 233; /* #E4EDE9 */
+    --color-trace-soft: 169 184 177; /* #A9B8B1 */
+    --color-trace-faint: 133 149 142; /* #85958E */
 
-    /* Lifted until each carries words on the night ground. */
-    --color-p1: 226 112 58; /* 5.52:1 */
-    --color-p1-ink: 226 112 58;
-    --color-p2: 111 168 214; /* 6.89:1 */
-    --color-p2-ink: 111 168 214;
-    --color-p3: 217 174 73; /* 8.44:1 */
-    --color-p3-ink: 217 174 73;
-    --color-p4: 111 174 146; /* 6.80:1 */
-    --color-p4-ink: 111 174 146;
+    /* Lifted until each carries words on the night ground, and emissive:
+       the board lets these glow (see --orb-glow). */
+    --color-p1: 255 123 46;
+    --color-p1-ink: 255 123 46;
+    --color-p2: 82 174 255;
+    --color-p2-ink: 82 174 255;
+    --color-p3: 238 143 203;
+    --color-p3-ink: 238 143 203;
+    --color-p4: 47 211 161;
+    --color-p4-ink: 47 211 161;
 
     /*
      * The mark's rust core does not move. The brand rules fix it: the tile
@@ -221,29 +256,36 @@
     /* Emission needs more room than a smudge on paper does. */
     --alpha-glow-min: 0.08;
     --alpha-glow-max: 0.32;
+    --orb-glow: 5px;
   }
 }
 
 :root[data-theme='dark'] {
-  --color-chart: 23 26 24;
-  --color-chart-deep: 31 36 33;
-  --color-chart-line: 42 48 44;
+  --color-chart: 11 17 16; /* phosphor ground  #0B1110 */
+  --color-chart-deep: 24 35 31; /* raised  #18231F */
+  --color-chart-line: 34 48 43; /* #22302B */
+  --color-surface: 18 27 25; /* #121B19 */
+  --color-bezel: 22 32 29; /* #16201D */
+  --color-well: 15 23 21; /* #0F1715 */
 
-  --color-trace: 232 228 220;
-  --color-trace-soft: 168 173 166;
-  --color-trace-faint: 138 144 138;
+  --color-trace: 228 237 233; /* #E4EDE9 */
+  --color-trace-soft: 169 184 177; /* #A9B8B1 */
+  --color-trace-faint: 133 149 142; /* #85958E */
 
-  --color-p1: 226 112 58;
-  --color-p1-ink: 226 112 58;
-  --color-p2: 111 168 214;
-  --color-p2-ink: 111 168 214;
-  --color-p3: 217 174 73;
-  --color-p3-ink: 217 174 73;
-  --color-p4: 111 174 146;
-  --color-p4-ink: 111 174 146;
+  /* Lifted until each carries words on the night ground, and emissive:
+     the board lets these glow (see --orb-glow). */
+  --color-p1: 255 123 46;
+  --color-p1-ink: 255 123 46;
+  --color-p2: 82 174 255;
+  --color-p2-ink: 82 174 255;
+  --color-p3: 238 143 203;
+  --color-p3-ink: 238 143 203;
+  --color-p4: 47 211 161;
+  --color-p4-ink: 47 211 161;
 
   --alpha-glow-min: 0.08;
   --alpha-glow-max: 0.32;
+  --orb-glow: 5px;
 }
 
 html,
@@ -294,10 +336,23 @@ body {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-size: var(--text-2xs);
   line-height: var(--leading-flat);
-  font-weight: 500;
+  font-weight: 650;
+  font-stretch: 80%;
   text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: rgb(var(--color-trace-faint));
+  letter-spacing: 0.06em;
+  color: rgb(var(--color-trace-soft));
+}
+
+/*
+ * The moment face: Archivo pushed to its widest and heaviest. Reserved for a
+ * win, a chain count and page titles — if everything is expanded, nothing is.
+ */
+.font-moment {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 850;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
 }
 
 /*
@@ -377,9 +432,10 @@ dialog::backdrop {
  */
 .heading-panel {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);
   line-height: var(--leading-snug);
-  font-weight: 500;
+  font-weight: 700;
+  font-stretch: 105%;
   color: rgb(var(--color-trace));
 }
 
@@ -391,7 +447,6 @@ dialog::backdrop {
 :where(a, button, input, select, summary, [tabindex]):focus-visible {
   outline: 2px solid rgb(var(--color-trace));
   outline-offset: 2px;
-  border-radius: 1px;
 }
 
 @media (prefers-reduced-motion: reduce) {

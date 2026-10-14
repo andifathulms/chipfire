@@ -53,6 +53,8 @@ const config: Config = {
       '2xl': ['var(--text-2xl)', { lineHeight: 'var(--leading-tight)' }],
       '3xl': ['var(--text-3xl)', { lineHeight: 'var(--leading-tight)' }],
       '4xl': ['var(--text-4xl)', { lineHeight: 'var(--leading-tight)' }],
+      '5xl': ['var(--text-5xl)', { lineHeight: '0.95' }],
+      '6xl': ['var(--text-6xl)', { lineHeight: '0.92' }],
     },
     extend: {
       colors: {
@@ -61,6 +63,11 @@ const config: Config = {
           deep: token('chart-deep'),
           line: token('chart-line'),
         },
+        // The instrument's body: a panel on the ground, the board's housing,
+        // and the recess each cell sits in. See globals.css.
+        surface: token('surface'),
+        bezel: token('bezel'),
+        well: token('well'),
         // The ink ramp. Three steps, and the floor is WCAG AA on chart stock —
         // hierarchy is carried by size, weight and tracking, never by fading
         // text below the threshold where it can be read at all.
@@ -95,10 +102,10 @@ const config: Config = {
          * and are not the same value.
          */
         mark: token('mark'),
-        p1: { DEFAULT: token('p1'), ink: token('p1-ink') }, // signal orange
-        p2: { DEFAULT: token('p2'), ink: token('p2-ink') }, // station blue
-        p3: { DEFAULT: token('p3'), ink: token('p3-ink') }, // ochre
-        p4: { DEFAULT: token('p4'), ink: token('p4-ink') }, // slate green
+        p1: { DEFAULT: token('p1'), ink: token('p1-ink') }, // vermilion
+        p2: { DEFAULT: token('p2'), ink: token('p2-ink') }, // blue
+        p3: { DEFAULT: token('p3'), ink: token('p3-ink') }, // reddish purple
+        p4: { DEFAULT: token('p4'), ink: token('p4-ink') }, // bluish green
       },
       // Named alongside Tailwind's numeric scale rather than replacing it:
       // `gap-lg` states a rhythm, `gap-3` states a measurement.
@@ -113,6 +120,15 @@ const config: Config = {
       },
       maxWidth: {
         measure: 'var(--measure)',
+      },
+      borderRadius: {
+        cell: 'var(--radius-cell)',
+        ctl: 'var(--radius-ctl)',
+        panel: 'var(--radius-panel)',
+        housing: 'var(--radius-housing)',
+      },
+      boxShadow: {
+        panel: 'var(--shadow-panel)',
       },
       lineHeight: {
         flat: 'var(--leading-flat)',

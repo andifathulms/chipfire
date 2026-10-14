@@ -66,7 +66,7 @@ export function readPalettes(cssPath = GLOBALS_CSS_PATH) {
  * DESIGN.md documents them as orbs/large-marks only, not text — only their
  * -ink variants (and p2/p4, which pass through unchanged) have to clear it.
  */
-const GROUNDS = ['chart', 'chart-deep']
+const GROUNDS = ['chart', 'chart-deep', 'surface']
 const TEXT_TOKENS = ['trace', 'trace-soft', 'trace-faint', 'p1-ink', 'p2-ink', 'p3-ink', 'p4-ink']
 const AA_FLOOR = 4.5
 

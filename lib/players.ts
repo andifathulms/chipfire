@@ -48,7 +48,7 @@ export const PLAYER_STYLES: readonly PlayerStyle[] = [
     text: 'text-p3',
     ink: 'text-p3-ink',
     border: 'border-p3',
-    names: { id: 'Oker', en: 'Ochre' },
+    names: { id: 'Ungu', en: 'Purple' },
   },
   {
     id: 3,

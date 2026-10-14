@@ -18,14 +18,21 @@ import { THEME_STORAGE_KEY } from '@/lib/theme'
 
 /*
  * Type per PRD §12, actually loaded. The families are vendored into the repo as
- * latin-subset woff2 (72 kB for all three) and self-hosted by next/font, so
+ * latin-subset woff2 (140 kB for all three) and self-hosted by next/font, so
  * neither the build nor the export ever touches a font CDN — and unlike naming
  * the families in CSS and hoping they are installed, the intended figures
  * really do render.
  */
+/*
+ * Archivo, variable on both weight (100–900) and width (62–125%). The width
+ * axis is the point: expanded and heavy for a win or a chain count,
+ * semi-condensed for instrument labels — one family carrying the whole range
+ * from a whisper to a shout, where a single-width face could only get louder.
+ */
 const display = localFont({
-  src: './fonts/SpaceGrotesk.woff2',
-  weight: '300 700',
+  src: './fonts/Archivo.woff2',
+  weight: '100 900',
+  declarations: [{ prop: 'font-stretch', value: '62% 125%' }],
   variable: '--font-display',
   display: 'swap',
   fallback: ['ui-sans-serif', 'system-ui', 'sans-serif'],
@@ -78,8 +85,8 @@ export const viewport: Viewport = {
   /* The browser chrome follows the ground the page is actually on. One value
      here would frame a night board in daylight. */
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#EDEAE3' },
-    { media: '(prefers-color-scheme: dark)', color: '#171A18' },
+    { media: '(prefers-color-scheme: light)', color: '#EEF2EF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0B1110' },
   ],
   width: 'device-width',
   initialScale: 1,

@@ -24,8 +24,8 @@ export default function GlobalError({
         <title>Chipfire</title>
         <style>{`
           @media (prefers-color-scheme: dark) {
-            body { background-color: #171A18 !important; color: #E8E4DC !important; }
-            button { border-color: #E8E4DC !important; background-color: #E8E4DC !important; color: #171A18 !important; }
+            body { background-color: #0B1110 !important; color: #E4EDE9 !important; }
+            button { border-color: #E4EDE9 !important; background-color: #E4EDE9 !important; color: #0B1110 !important; }
           }
         `}</style>
       </head>
@@ -40,8 +40,8 @@ export default function GlobalError({
           gap: '1rem',
           padding: '2rem',
           textAlign: 'center',
-          backgroundColor: '#EDEAE3',
-          color: '#1F2421',
+          backgroundColor: '#EEF2EF',
+          color: '#13201B',
           fontFamily: 'ui-sans-serif, system-ui, sans-serif',
         }}
       >
@@ -54,9 +54,9 @@ export default function GlobalError({
           type="button"
           onClick={reset}
           style={{
-            border: '1px solid #1F2421',
-            backgroundColor: '#1F2421',
-            color: '#EDEAE3',
+            border: '1px solid #13201B',
+            backgroundColor: '#13201B',
+            color: '#EEF2EF',
             padding: '0.5rem 1.25rem',
             fontSize: '0.875rem',
             cursor: 'pointer',
