@@ -179,7 +179,9 @@ Every player ink clears 4.5:1 everywhere; the floor across all 42 pairings is 4.
 
 Every page is one `max-w-6xl` column under a one-row **site bar** (mark, Main · Teka-teki · Tanding · Belajar, language, theme). Ulang is reached from where a code exists — the new-game lobby and the end of a game — not from the bar. On a phone the bar keeps one row: the mark without its name, the four links, and the theme button; the language switch moves to the footer.
 
-The game screen reads top to bottom as a turn is taken: the **player bar** (one chip per player, the one to move lit in their colour with a "Giliran" tag), the **board**, the **readout** (what the move under the cursor would do), and the **toolbar** (undo, restart, change board, speed, preview and sound). At `lg` a 20rem **rail** sits beside it: the "Posisi ini" panel (load gauge, longest chain, moves played, cascade rewind) above a tabbed Rekaman / Langkah panel.
+The game screen reads top to bottom as a turn is taken: the **player bar** (one chip per player, the one to move lit in their colour with a "Giliran" tag), the **board**, the **readout** (what the move under the cursor would do), and the **toolbar** (undo, restart, change board, preview and sound; below `lg` also a speed button that cycles). At `lg` a 20rem **rail** sits beside it: the "Posisi ini" panel (load gauge, longest chain, moves played, cascade rewind, and the speed as a segmented control, since speed paces the rewind too) above a tabbed Rekaman / Langkah panel.
+
+**The One-Width Rule.** Everything in the board's column is exactly as wide as the board. `--board-w` is computed once on `<main>`; the player bar, readout and toolbar cap at it, and at `lg` the grid is `--board-w` plus the rail, centred, with the title row and summary aligned to that total. The board is fitted to the viewport's height, so on a laptop it is often narrower than the column — and a board in a band of empty space under a wider player bar reads as a mistake.
 
 The board is sized to fit the viewport (`(100dvh − chrome) × aspect-ratio`) so a tall board never forces a scroll to see the move about to be made. `--chrome` on `/main/` is 38 / 33 / 28rem (phone / `sm` / `lg`) and accounts for the site bar, the title row, the player bar, the readout and the toolbar; on `/tanding/` 33 / 28rem. On phones the column width almost always binds first (`CHROME-MEASUREMENTS.md`).
 
@@ -230,7 +232,7 @@ Shared classes live in `components/ui/styles.ts` and icons in `components/ui/Ico
 ### Buttons
 - **Primary** (`BUTTON_PRIMARY`): ink fill, ground text, 8px radius. Never more than one in view.
 - **Secondary** (`BUTTON`): surface fill, hairline border that strengthens on hover.
-- **Ghost** (`BUTTON_GHOST`) and **icon** (`BUTTON_ICON` / `BUTTON_ICON_ON`): the toolbar's presentation switches are icon buttons, filled when on, always with an `aria-label`.
+- **Ghost** (`BUTTON_GHOST`) and **icon** (`BUTTON_ICON` / `BUTTON_ICON_ON`): the toolbar's presentation switches are icon buttons, always with an `aria-label`. On is an ink border on the raised tone, never a filled ink block — a filled switch is the brightest thing on a night screen.
 - Focus-visible is one 2px offset ring in ink, app-wide.
 
 ### Segmented control (a Chipfire signature)

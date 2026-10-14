@@ -6,7 +6,7 @@ import { Board } from '@/components/board/Board'
 import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePlayer'
 import { useCascadeReview } from '@/components/cascade/useCascadeReview'
 import { buildAfterglow } from '@/components/cascade/frames'
-import { Controls } from '@/components/hud/Controls'
+import { Controls, SpeedControl } from '@/components/hud/Controls'
 import { Icon } from '@/components/ui/Icon'
 import {
   BUTTON,
@@ -129,6 +129,12 @@ const COPY = {
   tabMoves: { id: 'Langkah', en: 'Moves' },
   recordTabs: { id: 'Catatan permainan', en: 'Game record' },
 } as const
+
+/**
+ * The width everything outside the board grid lines up to: the board alone
+ * below lg, the board plus the rail and its gap at lg.
+ */
+const ALIGNED = 'mx-auto w-full max-w-[var(--board-w)] lg:max-w-[calc(var(--board-w)+21.25rem)]'
 
 export function PlayScreen({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState<Speed>('normal')
@@ -404,10 +410,43 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const lastExplosions = session.history.at(-1)?.explosions ?? 0
 
   return (
-    <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-3 py-5 sm:px-4 lg:px-8">
+    /*
+     * --board-w is the board's width, fitted to the viewport: the height left
+     * after everything else (--chrome) times the board's aspect ratio, with a
+     * floor for short landscape screens where the subtraction goes negative.
+     *
+     * It is set once here because everything in the column takes it — the
+     * player bar, the readout and the toolbar are exactly as wide as the
+     * board, and at lg the grid is the board plus the rail, centred. Before,
+     * the board was the only thing fitted to the viewport and everything
+     * around it stretched to the column, so on a laptop the board sat in a
+     * band of empty space narrower than its own player bar.
+     *
+     * --chrome is the vertical space the column needs besides the board:
+     *
+     *   site bar          one row, shared          3.5rem
+     *   page padding      py-5                      2.5rem
+     *   title row         h1 + rules button        2.5rem
+     *   player bar        a row of chips           ~4rem
+     *   gaps              gap-3 ×3                 2.25rem
+     *   readout           min-h-[3.25rem]          3.25rem
+     *   toolbar           one row of controls      2.5rem
+     *   site footer       shared, outside <main>   ~4rem
+     *
+     * On a phone the column width caps the board long before this binds
+     * (CHROME-MEASUREMENTS.md).
+     */
+    <main
+      className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-3 py-5 [--chrome:38rem] sm:px-4 sm:[--chrome:33rem] lg:px-8 lg:[--chrome:28rem]"
+      style={
+        {
+          '--board-w': `max(15rem, calc((100dvh - var(--chrome)) * ${board.cols / board.rows}))`,
+        } as React.CSSProperties
+      }
+    >
       {/* The site bar above already links home; this row names the page
           and holds the rules. */}
-      <header className="flex items-center justify-between gap-x-4">
+      <header className={`flex items-center justify-between gap-x-4 ${ALIGNED}`}>
         <div className="flex min-w-0 items-baseline gap-3">
           <h1 className="font-moment text-2xl sm:text-3xl">{COPY.title[locale]}</h1>
           <p className="hidden truncate text-sm text-trace-soft sm:block">
@@ -429,7 +468,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
        * reads top to bottom as the turn is taken: who is to move, the board,
        * what the move under the cursor would do, and the toolbar.
        */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,var(--board-w))_20rem] lg:items-start lg:justify-center">
         <MoveAnnouncer
           state={session.state}
           history={session.history}
@@ -438,7 +477,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           settled={!animating}
         />
 
-        <div className="flex flex-col gap-3">
+        <div className="mx-auto flex w-full max-w-[var(--board-w)] flex-col gap-3">
           {/*
            * Mounted in every phase, unlike the rail's instruments: it says who
            * moves first before a game and the final counts after one, and
@@ -506,36 +545,8 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 </div>
               </div>
             ) : null}
-            {/*
-             * The board is sized to fit the viewport rather than the column, so
-             * a tall board never demands a scroll to see the move you are about
-             * to make. --chrome is the vertical space everything else needs:
-             *
-             *   site bar          one row, shared          3.5rem
-             *   page padding      py-5                      2.5rem
-             *   title row         h1 + rules button        2.5rem
-             *   player bar        two rows of a chip       ~4rem
-             *   gaps              gap-3 ×3                 2.25rem
-             *   readout           min-h-[3.25rem]          3.25rem
-             *   toolbar           one row of controls      2.5rem
-             *   site footer       shared, outside <main>   ~4rem
-             *
-             * On a phone the column width caps the board long before this
-             * binds (CHROME-MEASUREMENTS.md); it matters on short, wide
-             * viewports. Below lg the rail stacks underneath and is below the
-             * fold by design, so it is not counted.
-             */}
-            <div
-              className="mx-auto w-full [--chrome:38rem] sm:[--chrome:33rem] lg:[--chrome:28rem]"
-              style={{
-                // The max() floor matters: on a short viewport (a phone in
-                // landscape) the subtraction goes negative and the board would
-                // collapse to nothing.
-                maxWidth: `max(15rem, calc((100dvh - var(--chrome)) * ${
-                  board.cols / board.rows
-                }))`,
-              }}
-            >
+            {/* As wide as the column, which is as wide as --board-w allows. */}
+            <div className="w-full">
               <Board
                 board={board}
                 view={view}
@@ -706,6 +717,12 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                   busy={animating || finished}
                   locale={locale}
                 />
+
+                {/* At lg the speed lives here, beside the rewind it also
+                    paces; below lg it is a button in the toolbar. */}
+                <div className="hidden lg:block">
+                  <SpeedControl locale={locale} speed={speed} onSpeed={setSpeed} />
+                </div>
               </section>
 
               {/*
@@ -814,26 +831,28 @@ export function PlayScreen({ locale }: { locale: Locale }) {
       </div>
 
       {finished ? (
-        <GameSummary
-          locale={locale}
-          record={session.record}
-          stats={stats}
-          history={session.history}
-          players={session.state.players}
-          review={
-            reviewSubject === null ? null : (
-              <PostMortemPanel
-                review={postMortem.result}
-                running={postMortem.running}
-                error={postMortem.error}
-                cols={board.cols}
-                record={session.record}
-                locale={locale}
-                onRun={() => postMortem.run(session.record, reviewSubject)}
-              />
-            )
-          }
-        />
+        <div className={ALIGNED}>
+          <GameSummary
+            locale={locale}
+            record={session.record}
+            stats={stats}
+            history={session.history}
+            players={session.state.players}
+            review={
+              reviewSubject === null ? null : (
+                <PostMortemPanel
+                  review={postMortem.result}
+                  running={postMortem.running}
+                  error={postMortem.error}
+                  cols={board.cols}
+                  record={session.record}
+                  locale={locale}
+                  onRun={() => postMortem.run(session.record, reviewSubject)}
+                />
+              )
+            }
+          />
+        </div>
       ) : null}
     </main>
   )

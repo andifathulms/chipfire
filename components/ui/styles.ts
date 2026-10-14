@@ -27,9 +27,13 @@ export const BUTTON_GHOST =
 export const BUTTON_ICON =
   'control-target-square inline-flex items-center justify-center rounded-ctl border border-trace-hairline bg-surface text-trace transition-colors hover:border-trace-rule hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40'
 
-/** The same icon button, switched on. */
+/**
+ * The same icon button, switched on: an ink border on the raised tone. Not a
+ * filled ink block — two of those in the toolbar were the brightest things on
+ * a night screen, louder than the board they sit under.
+ */
 export const BUTTON_ICON_ON =
-  'control-target-square inline-flex items-center justify-center rounded-ctl border border-trace bg-trace text-chart transition-opacity hover:opacity-90'
+  'control-target-square inline-flex items-center justify-center rounded-ctl border border-trace bg-chart-deep text-trace transition-colors hover:bg-surface'
 
 /**
  * A segmented control: one track, options as equal pills, the chosen one

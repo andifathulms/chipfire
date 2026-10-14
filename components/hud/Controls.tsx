@@ -33,7 +33,7 @@ const COPY = {
 const SPEEDS = Object.keys(SPEED_LABELS) as Speed[]
 
 /**
- * One toolbar row under the board.
+ * One toolbar row under the board, as wide as the board.
  *
  * It used to be three full-width segmented rows and four buttons stacked in
  * the rail, which took more room than the game's own record. Grouped by how
@@ -67,8 +67,6 @@ export function Controls({
    */
   onChangeSetup: () => void
 }) {
-  // On a phone the four speeds don't fit beside everything else, so the same
-  // choice becomes one button that steps through them in order.
   const nextSpeed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] ?? 'normal'
 
   return (
@@ -102,30 +100,15 @@ export function Controls({
         <Icon name="board" />
       </button>
 
-      <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-trace-hairline sm:block" />
-
-      <fieldset className="hidden border-0 p-0 sm:block">
-        <legend className="sr-only">{COPY.speed[locale]}</legend>
-        <div className={SEGMENTED}>
-          {SPEEDS.map((option) => (
-            <button
-              key={option}
-              type="button"
-              onClick={() => onSpeed(option)}
-              aria-pressed={speed === option}
-              className={`${SEGMENT} ${speed === option ? SEGMENT_ON : ''}`}
-            >
-              {SPEED_LABELS[option][locale]}
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
+      {/* Below lg the speed is one button that steps through the four. At lg
+          it is a segmented control in the rail instead (SpeedControl), beside
+          the rewind it also paces — the toolbar has to fit the board's width,
+          and on a laptop that is under 600px. */}
       <button
         type="button"
         onClick={() => onSpeed(nextSpeed)}
         aria-label={`${COPY.speed[locale]}: ${SPEED_LABELS[speed][locale]}`}
-        className={`${BUTTON} sm:hidden`}
+        className={`${BUTTON} lg:hidden`}
       >
         <Icon name="speed" />
         <span>{SPEED_LABELS[speed][locale]}</span>
@@ -145,5 +128,39 @@ export function Controls({
         <SoundToggle locale={locale} />
       </span>
     </div>
+  )
+}
+
+/**
+ * The four cascade speeds as one segmented control, for the rail at lg. It
+ * paces the live cascade and the rewind alike, which is why it sits with the
+ * rewind rather than with undo and restart.
+ */
+export function SpeedControl({
+  locale,
+  speed,
+  onSpeed,
+}: {
+  locale: Locale
+  speed: Speed
+  onSpeed: (speed: Speed) => void
+}) {
+  return (
+    <fieldset className="flex flex-col gap-2 border-0 p-0">
+      <legend className="label-micro mb-2 p-0">{COPY.speed[locale]}</legend>
+      <div className={`${SEGMENTED} w-full`}>
+        {SPEEDS.map((option) => (
+          <button
+            key={option}
+            type="button"
+            onClick={() => onSpeed(option)}
+            aria-pressed={speed === option}
+            className={`${SEGMENT} min-w-0 !px-1 ${speed === option ? SEGMENT_ON : ''}`}
+          >
+            {SPEED_LABELS[option][locale]}
+          </button>
+        ))}
+      </div>
+    </fieldset>
   )
 }

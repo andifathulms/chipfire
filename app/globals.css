@@ -229,7 +229,7 @@
     --color-chart-deep: 24 35 31; /* raised  #18231F */
     --color-chart-line: 34 48 43; /* #22302B */
     --color-surface: 18 27 25; /* #121B19 */
-    --color-bezel: 22 32 29; /* #16201D */
+    --color-bezel: 30 42 38; /* #1E2A26 — a step up from the wells, so the lattice reads at night */
     --color-well: 15 23 21; /* #0F1715 */
 
     --color-trace: 228 237 233; /* #E4EDE9 */
@@ -265,7 +265,7 @@
   --color-chart-deep: 24 35 31; /* raised  #18231F */
   --color-chart-line: 34 48 43; /* #22302B */
   --color-surface: 18 27 25; /* #121B19 */
-  --color-bezel: 22 32 29; /* #16201D */
+  --color-bezel: 30 42 38; /* #1E2A26 — a step up from the wells, so the lattice reads at night */
   --color-well: 15 23 21; /* #0F1715 */
 
   --color-trace: 228 237 233; /* #E4EDE9 */
