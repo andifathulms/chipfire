@@ -32,9 +32,15 @@ const POSITIONS: readonly (readonly (readonly [number, number])[])[] = [
   ],
 ]
 
-const RADIUS = 13
+/*
+ * Up to four orbs get the large radius; five share the centre with four
+ * corners and would touch at it, so they step down.
+ */
+const RADIUS = 15
+const RADIUS_CROWDED = 12
 
-function Shape({ shape, x, y }: { shape: OrbShape; x: number; y: number }) {
+function Shape({ shape, x, y, r }: { shape: OrbShape; x: number; y: number; r: number }) {
+  const RADIUS = r
   switch (shape) {
     case 'disc':
       return <circle cx={x} cy={y} r={RADIUS} fill="currentColor" />
@@ -77,10 +83,20 @@ export function Orbs({ player, count }: { player: number; count: number }) {
   const positions = POSITIONS[count]
 
   return (
-    <svg viewBox="0 0 100 100" className={`h-full w-full ${style.text}`} aria-hidden="true">
+    <svg
+      viewBox="0 0 100 100"
+      className={`orb-glow h-full w-full overflow-visible ${style.text}`}
+      aria-hidden="true"
+    >
       {positions ? (
         positions.map((position, slot) => (
-          <Shape key={slot} shape={style.shape} x={position[0]} y={position[1]} />
+          <Shape
+            key={slot}
+            shape={style.shape}
+            x={position[0]}
+            y={position[1]}
+            r={count >= 5 ? RADIUS_CROWDED : RADIUS}
+          />
         ))
       ) : (
         // Beyond five, the cluster stops being legible; the numeral is clearer.
@@ -90,6 +106,7 @@ export function Orbs({ player, count }: { player: number; count: number }) {
           textAnchor="middle"
           dominantBaseline="central"
           fontSize={46}
+          fontWeight={800}
           fill="currentColor"
           className="font-numeral"
         >

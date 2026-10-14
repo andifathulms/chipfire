@@ -16,16 +16,30 @@ export type Frame = {
   readonly exploding: readonly number[]
   /** Cells that changed hands in this frame. */
   readonly converted: readonly number[]
+  /** Who played the move, from its `place` event. Lets the renderer draw the
+   *  burst in the mover's colour without working out who that was. */
+  readonly mover: number
+  /** Explosions so far in this move, counting this frame's. What the chain
+   *  counter shows; the last frame's value is the move's total. */
+  readonly chain: number
 }
 
 type Mutable = { owners: Int8Array; counts: Uint8Array }
 
-function snapshot(cells: Mutable, exploding: number[], converted: number[]): Frame {
+function snapshot(
+  cells: Mutable,
+  exploding: number[],
+  converted: number[],
+  mover: number,
+  chain: number,
+): Frame {
   return {
     owners: Int8Array.from(cells.owners),
     counts: Uint8Array.from(cells.counts),
     exploding,
     converted,
+    mover,
+    chain,
   }
 }
 
@@ -43,10 +57,12 @@ export function buildFrames(base: Board, events: readonly GameEvent[]): Frame[] 
   let currentStep = -1
   let exploding: number[] = []
   let converted: number[] = []
+  let mover = -1
+  let chain = 0
 
   const flush = () => {
     if (currentStep === -1) return
-    frames.push(snapshot(cells, exploding, converted))
+    frames.push(snapshot(cells, exploding, converted, mover, chain))
     exploding = []
     converted = []
   }
@@ -56,7 +72,8 @@ export function buildFrames(base: Board, events: readonly GameEvent[]): Frame[] 
       case 'place':
         cells.owners[event.index] = event.player
         cells.counts[event.index] = event.count
-        frames.push(snapshot(cells, [], []))
+        mover = event.player
+        frames.push(snapshot(cells, [], [], mover, chain))
         break
 
       case 'explode':
@@ -67,6 +84,7 @@ export function buildFrames(base: Board, events: readonly GameEvent[]): Frame[] 
         cells.counts[event.index] -= base.adjacency.criticalMass[event.index]
         if (cells.counts[event.index] === 0) cells.owners[event.index] = -1
         exploding.push(event.index)
+        chain += 1
         break
 
       case 'convert':

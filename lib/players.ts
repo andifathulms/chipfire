@@ -19,6 +19,12 @@ export type PlayerStyle = {
    *  wherever the player's colour has to carry a name or a number. */
   readonly ink: string
   readonly border: string
+  /** A faint wash of the colour: an owned cell's well, an active player's card. */
+  readonly tint: string
+  /** Inset ring in the colour: a cell one orb from critical mass. */
+  readonly ring: string
+  /** Outline in the colour: the board's frame when this player is to move. */
+  readonly outline: string
   readonly names: Record<Locale, string>
 }
 
@@ -30,6 +36,9 @@ export const PLAYER_STYLES: readonly PlayerStyle[] = [
     text: 'text-p1',
     ink: 'text-p1-ink',
     border: 'border-p1',
+    tint: 'bg-p1/[0.08]',
+    ring: 'ring-p1/50',
+    outline: 'outline-p1',
     names: { id: 'Jingga', en: 'Orange' },
   },
   {
@@ -39,6 +48,9 @@ export const PLAYER_STYLES: readonly PlayerStyle[] = [
     text: 'text-p2',
     ink: 'text-p2-ink',
     border: 'border-p2',
+    tint: 'bg-p2/[0.08]',
+    ring: 'ring-p2/50',
+    outline: 'outline-p2',
     names: { id: 'Biru', en: 'Blue' },
   },
   {
@@ -48,6 +60,9 @@ export const PLAYER_STYLES: readonly PlayerStyle[] = [
     text: 'text-p3',
     ink: 'text-p3-ink',
     border: 'border-p3',
+    tint: 'bg-p3/[0.08]',
+    ring: 'ring-p3/50',
+    outline: 'outline-p3',
     names: { id: 'Ungu', en: 'Purple' },
   },
   {
@@ -57,6 +72,9 @@ export const PLAYER_STYLES: readonly PlayerStyle[] = [
     text: 'text-p4',
     ink: 'text-p4-ink',
     border: 'border-p4',
+    tint: 'bg-p4/[0.08]',
+    ring: 'ring-p4/50',
+    outline: 'outline-p4',
     names: { id: 'Hijau', en: 'Green' },
   },
 ]

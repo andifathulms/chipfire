@@ -347,6 +347,14 @@ body {
  * The moment face: Archivo pushed to its widest and heaviest. Reserved for a
  * win, a chain count and page titles — if everything is expanded, nothing is.
  */
+/*
+ * Orbs on the night ground emit. --orb-glow is 0px on paper, so this is a
+ * no-op by day and a few pixels of bloom by night, from one rule.
+ */
+.orb-glow {
+  filter: drop-shadow(0 0 var(--orb-glow) currentColor);
+}
+
 .font-moment {
   font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
   font-weight: 850;

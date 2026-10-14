@@ -154,6 +154,8 @@ export function TutorialScreen({ locale }: { locale: Locale }) {
               exploding={player.frame?.exploding ?? []}
               converted={player.frame?.converted ?? []}
               frameKey={player.index}
+              mover={player.frame?.mover ?? null}
+              chain={player.frame?.chain ?? 0}
               interactive={!done && !animating}
               onSelect={select}
               labelFor={labelFor}

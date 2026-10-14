@@ -29,8 +29,11 @@ function rippleDelay(index: number, origin: number | null, cols: number): number
 }
 
 /**
- * The grid is printed, not drawn: a fixed hairline lattice that exists before
- * the game starts, with cells sitting in it rather than being it (PRD §12).
+ * The board is an instrument with a housing: a bezel, and a recessed well per
+ * cell, so the lattice exists before the game starts and cells sit in it
+ * rather than being drawn as it (PRD §12). The housing's frame takes the
+ * colour of whoever is to move, which is the one thing a player glancing at
+ * the board most needs to know.
  *
  * This component renders a position. It computes nothing about the rules —
  * including the preview, which arrives already resolved by the engine.
@@ -80,7 +83,21 @@ type BoardProps = {
    * already saying it — and again once there is nothing to remember.
    */
   readonly afterglow?: Afterglow | null
+  /** Whose move it is. Colours the housing's frame; null leaves it plain
+   *  (game over, or a board that is only being illustrated). */
+  readonly turn?: number | null
+  /** Who played the move being animated, from the frame. Colours the burst
+   *  rings so a chain shows whose ground it is taking. */
+  readonly mover?: number | null
+  /** Explosions so far in the move being animated. Shown as a counter from
+   *  three up; zero when nothing is animating. */
+  readonly chain?: number
 }
+
+/** Chains shorter than this are ordinary moves and get no counter. */
+const CHAIN_COUNTER_FROM = 3
+/** Chains this long brighten the housing once. */
+const CHAIN_FLARE_FROM = 8
 
 export function Board({
   board,
@@ -99,6 +116,9 @@ export function Board({
   label,
   lastMove = null,
   afterglow = null,
+  turn = null,
+  mover = null,
+  chain = 0,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
@@ -175,6 +195,7 @@ export function Board({
     const captured = preview?.captured[index] === 1
     const origin = previewIndex === index
     const delay = reduced ? 0 : rippleDelay(index, lastMove, board.cols)
+    const ownerStyle = owner === NO_OWNER ? null : styleFor(owner)
 
     cells.push(
       <button
@@ -214,8 +235,11 @@ export function Board({
           // `transition-colors` doesn't reach outline-color, so the legal-move
           // and captured-cell rings used to snap in a beat after the wash
           // they sit beside had already eased.
-          'relative aspect-square border-[0.5px] border-trace/25 p-[12%] transition-[background-color,outline-color]',
+          'relative aspect-square rounded-cell bg-well p-[8%] shadow-[inset_0_1px_2px_rgb(0_0_0/0.07)] transition-[background-color,outline-color,box-shadow]',
           playable ? 'cursor-pointer hover:bg-chart-deep' : 'cursor-default',
+          // One orb from going off: a ring in the owner's colour, alongside
+          // the tremble, so the danger reads in a still frame too.
+          critical && ownerStyle !== null ? `ring-2 ring-inset ${ownerStyle.ring}` : '',
           flashing.has(index) ? 'bg-trace/10' : '',
           // The reach of the move under consideration, drawn on the lattice
           // itself rather than as a floating overlay.
@@ -232,10 +256,20 @@ export function Board({
          * board never said once the dust settled: the position told you what
          * happened and nothing about how it got there.
          */}
+        {/* Ownership as a faint wash of the owner's colour in the well, under
+            everything else. The orbs still carry it; this makes territory
+            readable at a glance across the whole board. */}
+        {ownerStyle !== null ? (
+          <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute inset-0 rounded-cell ${ownerStyle.tint}`}
+          />
+        ) : null}
+
         {afterglow !== null && afterglow.cells[index] > 0 ? (
           <span
             aria-hidden="true"
-            className="glow pointer-events-none absolute inset-0"
+            className="glow pointer-events-none absolute inset-0 rounded-cell"
             style={
               {
                 '--t': (afterglow.cells[index] - 1) / afterglow.depth,
@@ -245,11 +279,13 @@ export function Board({
         ) : null}
 
         {/* Capacity ticks: how many orbs this cell holds before it goes. The
-            rule that critical mass differs by position is otherwise invisible. */}
+            rule that critical mass differs by position is otherwise invisible.
+            Tucked into the corner so an empty board reads as calm, not as a
+            field of grey dots. */}
         {count === 0 && !flashing.has(index) ? (
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 flex items-center justify-center gap-[3px] opacity-25"
+            className="pointer-events-none absolute left-[9%] top-[9%] flex gap-[2px] opacity-40"
           >
             {Array.from({ length: mass }, (_, tick) => (
               <span key={tick} className="h-[3px] w-[3px] rounded-full bg-trace" />
@@ -268,7 +304,7 @@ export function Board({
             key={`claim-${frameKey}`}
             aria-hidden="true"
             style={{ animationDelay: `${delay}ms` }}
-            className={`pointer-events-none absolute inset-0 animate-claim ${styleFor(owner).fill}`}
+            className={`pointer-events-none absolute inset-0 rounded-cell animate-claim ${styleFor(owner).fill}`}
           />
         ) : null}
 
@@ -281,7 +317,9 @@ export function Board({
             key={`burst-${frameKey}`}
             aria-hidden="true"
             style={{ animationDelay: `${delay}ms` }}
-            className="pointer-events-none absolute inset-0 animate-burst border border-trace"
+            className={`pointer-events-none absolute -inset-[6%] rounded-full border-[3px] animate-burst ${
+              mover === null ? 'border-trace' : styleFor(mover).border
+            }`}
           />
         ) : null}
 
@@ -326,13 +364,45 @@ export function Board({
 
   return (
     <div
-      className="grid w-full border-[0.5px] border-trace/40 bg-chart"
-      style={{ gridTemplateColumns: `repeat(${board.cols}, minmax(0, 1fr))` }}
-      role="group"
-      aria-label={label}
-      onPointerLeave={() => onPreview?.(null)}
+      className={[
+        'relative rounded-housing bg-bezel p-1.5 shadow-panel outline outline-2 outline-offset-[3px] transition-[outline-color] duration-200 sm:p-2',
+        turn === null ? 'outline-transparent' : styleFor(turn).outline,
+      ].join(' ')}
     >
-      {cells}
+      {/*
+       * The chain counter. Keyed on the count so it lands again with every
+       * generation — the number climbing is the cascade, said in one glyph.
+       * Hidden from assistive tech: MoveAnnouncer reports the total once the
+       * move settles, which is when it means something.
+       */}
+      {chain >= CHAIN_COUNTER_FROM ? (
+        <span
+          key={`chain-${chain}`}
+          aria-hidden="true"
+          className="font-moment pointer-events-none absolute right-3 top-3 z-20 animate-count rounded-ctl bg-trace px-2.5 py-1 text-2xl text-chart sm:text-3xl"
+        >
+          ×{chain}
+        </span>
+      ) : null}
+
+      {/* A long chain brightens the frame once, in the mover's colour. */}
+      {chain >= CHAIN_FLARE_FROM && mover !== null && !reduced ? (
+        <span
+          key={`flare-${lastMove ?? -1}`}
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-0 rounded-housing animate-flare ${styleFor(mover).text}`}
+        />
+      ) : null}
+
+      <div
+        className="grid w-full gap-[3px] sm:gap-1"
+        style={{ gridTemplateColumns: `repeat(${board.cols}, minmax(0, 1fr))` }}
+        role="group"
+        aria-label={label}
+        onPointerLeave={() => onPreview?.(null)}
+      >
+        {cells}
+      </div>
     </div>
   )
 }

@@ -500,6 +500,9 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 exploding={review.frame?.exploding ?? player.frame?.exploding ?? []}
                 converted={review.frame?.converted ?? player.frame?.converted ?? []}
                 frameKey={review.open ? -review.index - 1 : player.index}
+                turn={finished ? null : (player.frame?.mover ?? session.state.current)}
+                mover={(review.frame ?? player.frame)?.mover ?? null}
+                chain={(review.frame ?? player.frame)?.chain ?? 0}
                 interactive={!animating && !finished && !aiTurn && !review.open}
                 onSelect={select}
                 labelFor={labelFor}

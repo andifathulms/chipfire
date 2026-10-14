@@ -253,6 +253,9 @@ export function P2PScreen({ locale }: { locale: Locale }) {
                   exploding={player.frame?.exploding ?? []}
                   converted={player.frame?.converted ?? []}
                   frameKey={player.index}
+                  turn={finished ? null : (player.frame?.mover ?? session.state.current)}
+                  mover={player.frame?.mover ?? null}
+                  chain={player.frame?.chain ?? 0}
                   interactive={myTurn && !animating && !finished}
                   onSelect={game.play}
                   labelFor={labelFor}

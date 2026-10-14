@@ -1,3 +1,4 @@
+import { styleFor } from '@/lib/players'
 import { Orbs } from './Orbs'
 
 /**
@@ -50,18 +51,27 @@ export function MiniBoard({
 
   return (
     <div
-      className="grid w-full border-[0.5px] border-trace/40 bg-chart"
+      className="grid w-full gap-[2px] rounded-panel bg-bezel p-1"
       style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
     >
       {cells.map((cell, index) => (
         <div
           key={index}
           className={[
-            'relative aspect-square border-[0.5px] border-trace/25 p-[12%]',
-            alight.has(index) ? 'bg-trace/10 outline outline-1 -outline-offset-1 outline-trace/50' : '',
+            'relative aspect-square rounded-[4px] bg-well p-[8%]',
+            alight.has(index) ? 'ring-2 ring-inset ring-trace/50' : '',
           ].join(' ')}
         >
-          <Orbs player={cell[0]} count={cell[1]} />
+          {/* The same territory wash the live board draws. */}
+          {cell[0] >= 0 ? (
+            <span
+              aria-hidden="true"
+              className={`absolute inset-0 rounded-[4px] ${styleFor(cell[0]).tint}`}
+            />
+          ) : null}
+          <span className="relative block h-full w-full">
+            <Orbs player={cell[0]} count={cell[1]} />
+          </span>
           {played === index ? <Played /> : null}
         </div>
       ))}

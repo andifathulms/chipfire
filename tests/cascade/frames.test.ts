@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyMove } from '@/lib/engine/apply'
 import { buildFrames } from '@/components/cascade/frames'
-import { cascadeDepth } from '@/lib/engine/events'
+import { cascadeDepth, countExplosions } from '@/lib/engine/events'
 import { parseState } from '../helpers'
 import { configFor, playRandomGame } from '../random'
 import { createGame } from '@/lib/engine/state'
@@ -26,6 +26,29 @@ describe('animation frames', () => {
         expect(last).toBeDefined()
         expect(Array.from(last?.owners ?? [])).toEqual(Array.from(result.state.board.owners))
         expect(Array.from(last?.counts ?? [])).toEqual(Array.from(result.state.board.counts))
+
+        state = result.state
+      }
+    }
+  })
+
+  it('carries the mover and a running chain count straight from the events', () => {
+    for (let index = 0; index < 20; index += 1) {
+      const played = playRandomGame(configFor(index))
+      let state = createGame(played.record.config)
+
+      for (const move of played.record.moves) {
+        const mover = state.current
+        const result = applyMove(state, toMove(state, move))
+        const frames = buildFrames(state.board, result.events)
+
+        let running = 0
+        for (const frame of frames) {
+          running += frame.exploding.length
+          expect(frame.mover).toBe(mover)
+          expect(frame.chain).toBe(running)
+        }
+        expect(frames.at(-1)?.chain).toBe(countExplosions(result.events))
 
         state = result.state
       }

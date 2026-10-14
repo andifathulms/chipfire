@@ -168,6 +168,20 @@ const config: Config = {
           '70%': { opacity: '0.2' },
           '100%': { opacity: '0' },
         },
+        // The chain counter landing. Overshoots once, then holds: it is the
+        // loudest thing in the app and should arrive like it.
+        count: {
+          '0%': { transform: 'scale(0.6)', opacity: '0' },
+          '60%': { transform: 'scale(1.08)', opacity: '1' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        // A long chain brightens the housing once. Never a shake: a moving
+        // board cannot be read, and reading it is the game.
+        flare: {
+          '0%': { boxShadow: '0 0 0 0 currentColor' },
+          '35%': { boxShadow: '0 0 0 6px currentColor' },
+          '100%': { boxShadow: '0 0 0 0 transparent' },
+        },
         // Orbs arriving. Small enough to register as weight, not as bounce.
         arrive: {
           '0%': { transform: 'scale(0.72)', opacity: '0.5' },
@@ -188,6 +202,8 @@ const config: Config = {
         burst: 'burst 300ms ease-out both',
         claim: 'claim 420ms ease-out both',
         arrive: 'arrive 180ms ease-out',
+        count: 'count 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both',
+        flare: 'flare 700ms ease-out both',
       },
     },
   },
