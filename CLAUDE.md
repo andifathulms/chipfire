@@ -161,4 +161,6 @@ Beyond the milestones, four things that follow from the concept rather than from
 - **Preview agreement** — the `preview` message in `lib/net/sync.ts` is the one thing on the wire that is neither a move nor a hash. It stays inside invariant 10 because it says nothing about the position: never read by the engine, never hashed, never an input to legality, and a peer who lies about it changes only what is drawn on their own opponent's screen. Asserted in `tests/net`.
 - **Sound** — `lib/sound.ts`, synthesised through Web Audio, no assets and no dependency. It is a second renderer of the event stream, hanging off `useCascadePlayer` so every animating surface sounds alike: one tone per cascade generation, pitch climbing a semitone each, capped at two octaves. Off by default; the context is created by the click that enables it. Elimination is not sounded yet.
 
+- **Visual system** — "the station, switched on": vellum / phosphor palette, Okabe–Ito player hues, Archivo, small consistent radii, the board in a housing. `DESIGN.md` is authoritative. Controls are built from `components/ui/styles.ts` and `components/ui/Icon.tsx`, never restated per component.
+
 Next, in order: QR for the connection codes, then PeerJS as optional sugar over the paste flow.

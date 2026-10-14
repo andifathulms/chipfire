@@ -2,43 +2,58 @@
 name: Chipfire
 description: A blast-monitoring station for a chain-reaction strategy game — chart paper, ink traces, precise instrumentation.
 colors:
-  chart-stock: "#EDEAE3"
-  chart-stock-deep: "#E3DFD5"
-  lattice-line: "#D6D1C4"
-  trace-ink: "#1F2421"
-  trace-ink-soft: "#4A504B"
-  trace-ink-faint: "#5E635E"
+  vellum-ground: "#EEF2EF"
+  vellum-raised: "#E2E9E5"
+  vellum-surface: "#F9FBF9"
+  vellum-bezel: "#DCE4E0"
+  vellum-well: "#F5F8F6"
+  lattice-line: "#D3DDD8"
+  trace-ink: "#13201B"
+  trace-ink-soft: "#3F4F48"
+  trace-ink-faint: "#55655E"
   signal-rust: "#C0501E"
-  signal-orange: "#C4561E"
-  signal-orange-ink: "#A34719"
-  station-blue: "#2C5F87"
-  ochre: "#B08721"
-  ochre-ink: "#7B5F17"
-  slate-green: "#3E6B5A"
+  vermilion: "#D55E00"
+  vermilion-ink: "#A94800"
+  blue: "#0067A8"
+  reddish-purple: "#B4508C"
+  reddish-purple-ink: "#9A3F76"
+  bluish-green: "#00876A"
+  bluish-green-ink: "#00705A"
 typography:
+  moment:
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "clamp(3rem, 8vw, 5.5rem)"
+    fontWeight: 850
+    fontStretch: "125%"
+    lineHeight: 0.95
+    letterSpacing: "-0.02em"
   display:
-    fontFamily: "Space Grotesk, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "clamp(1.75rem, 3.5vw, 2.875rem)"
-    fontWeight: 500
-    lineHeight: 1.15
-    letterSpacing: "-0.01em"
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "1rem"
+    fontWeight: 700
+    fontStretch: "105%"
+    lineHeight: 1.35
   body:
     fontFamily: "IBM Plex Sans, ui-sans-serif, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
     lineHeight: 1.6
   label:
-    fontFamily: "Space Grotesk, ui-sans-serif, system-ui, sans-serif"
-    fontSize: "0.6875rem"
-    fontWeight: 500
+    fontFamily: "Archivo, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "0.75rem"
+    fontWeight: 650
+    fontStretch: "80%"
     lineHeight: 1
-    letterSpacing: "0.14em"
+    letterSpacing: "0.06em"
   mono:
     fontFamily: "IBM Plex Mono, ui-monospace, SFMono-Regular, monospace"
     fontSize: "0.8125rem"
     fontWeight: 400
 rounded:
-  none: "0px"
+  cell: "6px"
+  control: "8px"
+  panel: "12px"
+  housing: "16px"
   dot: "9999px"
 spacing:
   2xs: "4px"
@@ -51,126 +66,135 @@ spacing:
 components:
   button-primary:
     backgroundColor: "{colors.trace-ink}"
-    textColor: "{colors.chart-stock}"
-    rounded: "{rounded.none}"
-    padding: "8px 24px"
-  button-primary-hover:
-    backgroundColor: "{colors.trace-ink}"
-    textColor: "{colors.chart-stock}"
+    textColor: "{colors.vellum-ground}"
+    rounded: "{rounded.control}"
+    padding: "8px 20px"
   button-secondary:
-    backgroundColor: "{colors.chart-stock}"
+    backgroundColor: "{colors.vellum-surface}"
     textColor: "{colors.trace-ink}"
-    rounded: "{rounded.none}"
-    padding: "6px 12px"
-  button-secondary-hover:
-    backgroundColor: "{colors.chart-stock-deep}"
+    rounded: "{rounded.control}"
+    padding: "8px 12px"
+  segmented:
+    backgroundColor: "{colors.vellum-raised}"
+    rounded: "10px"
+    padding: "3px"
+  panel:
+    backgroundColor: "{colors.vellum-surface}"
     textColor: "{colors.trace-ink}"
-  panel-cluster:
-    backgroundColor: "{colors.chart-stock-deep}"
-    textColor: "{colors.trace-ink}"
-    rounded: "{rounded.none}"
-    padding: "12px"
+    rounded: "{rounded.panel}"
+    padding: "16px"
+  board-housing:
+    backgroundColor: "{colors.vellum-bezel}"
+    rounded: "{rounded.housing}"
+    padding: "6px–8px"
   input-field:
-    backgroundColor: "{colors.chart-stock}"
+    backgroundColor: "{colors.vellum-surface}"
     textColor: "{colors.trace-ink}"
-    rounded: "{rounded.none}"
-    padding: "4px 8px"
+    rounded: "{rounded.control}"
+    padding: "4px 12px"
 ---
 
 # Design System: Chipfire
 
 ## Overview
 
-**Creative North Star: "The Blast-Monitoring Station"**
+**Creative North Star: "The Station, Switched On"**
 
-Chipfire's subject is a controlled detonation propagating through a lattice — accumulation, threshold, release. The visual world is not a game skin; it is the instrument that would actually sit in the room watching that happen: a seismograph and a blast-monitoring chart. A fine grid, ink traces, a station clock. Everything is precise and legible rather than arcade — no glow-for-its-own-sake, no celebratory chrome, no decoration that isn't also a reading. When the system needs to say something ("this cell is one orb from firing," "here is where the last cascade went"), it says it the way an instrument does: a mark, a number, a trace left on the paper — never a badge or a burst of color.
+Chipfire's subject is a controlled detonation propagating through a lattice — accumulation, threshold, release. The visual world is the instrument that would sit in the room watching that happen: a seismograph and a blast-monitoring chart. It is still that instrument, but switched on. The first version was drawn as a printed form — cream paper, hairlines, square corners, almost no colour — and it read as a document about a game rather than a game. This version keeps the instrument and gives it a body and a pulse: a board in a housing, players bright enough to carry a game, and one big moment per cascade.
 
-The system runs in exactly two states, never a blend. By day it is chart paper: cream stock, a hairline-printed grid, dark ink. By night it is the station's own display, which is emissive rather than reflective — the palette folds in on itself (today's ink becomes the raised surface, today's paper becomes the ink) rather than being replaced by an invented "dark theme." A detonation on an instrument is light at night, not ink; the system was built to make that true by construction, not by a media-query override on every color.
+The system runs in exactly two states, never a blend. By day it is **vellum**: the cool green-grey of engineering chart paper. By night it is **phosphor**: a blue-black display ground where the players are lifted until they read as light, and orbs bloom slightly. Both are complete designs; neither is the other with the lights off.
 
 Key Characteristics:
-- Flat, printed-paper materiality — a hairline lattice exists before any game state does, and cells sit *in* it rather than being drawn as it.
-- Zero border-radius on every container, button, card, and input. Roundness is reserved for two things only: a data point (a dot, a bar's flowing edge) — never a box.
-- One saturated hue per player, and saturated color appears nowhere else. Everything structural is ink, tinted paper, or a hairline.
-- Motion is a reading, not decoration: cascades propagate in event order, a cell one orb from firing trembles because it is genuinely about to, and a settled position's afterglow does not animate at all — it is a still fact about how the position was reached.
-- Type is instrument lettering: Space Grotesk carries display type and every numeral (tabular figures, so counters don't jitter), IBM Plex Sans carries prose, IBM Plex Mono carries anything meant to be read character-by-character and copied accurately (codes, hashes).
+- The board is the screen. It sits in a housing (a bezel with a recessed well per cell), its frame takes the colour of whoever is to move, and nothing that doesn't help choose a move sits in its way.
+- One saturated hue per player, and saturated colour appears nowhere else. Everything structural is ink, a tinted surface, or a hairline.
+- Small, consistent radii on every object; hard edges only on charts, which are readings rather than objects.
+- Motion is a reading, not decoration, with one loud exception that is still a reading: the cascade. Chains get a counter, coloured burst rings and, at length, a single frame flare. The afterglow never animates.
+- Type is one variable family doing everything from a whisper to a shout: Archivo, expanded and heavy for moments, semi-condensed for instrument labels. IBM Plex Sans carries prose; IBM Plex Mono carries anything meant to be read character by character.
 
 ## Colors
 
-Chart paper with ink on it, plus exactly four saturated hues that never appear anywhere except as player identity.
+Vellum and phosphor grounds, ink, and exactly four saturated hues that never appear anywhere except as player identity.
 
 ### Primary
-- **Signal Rust** (#C0501E): the brand mark's core only — the "Propagation" glyph's center dot. Deliberately never used as a player color, even though it sits one step from Signal Orange in hue; the mark has to stay legible as *the brand* independent of who is playing.
+- **Signal Rust** (#C0501E): the brand mark's core only. Never a player colour, even though it sits near vermilion; the mark has to stay legible as *the brand* independent of who is playing.
 
 ### Secondary — Player Identity (the system's only saturated colors)
-- **Signal Orange** (#C4561E): Player 1. Disc-shaped orbs. Large shapes and orb fills only — at 2.76:1 on chart stock it is not accessible as text; use Signal Orange Ink for anything that carries a word.
-- **Signal Orange Ink** (#A34719): the same hue, darkened to clear 4.5:1 on chart stock. Player 1's name, in text.
-- **Station Blue** (#2C5F87): Player 2. Ring-shaped orbs. Clears text contrast unaided — no separate ink variant needed.
-- **Ochre** (#B08721): Player 3. Diamond-shaped orbs. 2.76:1 on chart stock — orbs and large marks only.
-- **Ochre Ink** (#7B5F17): darkened Ochre for anywhere the color carries a word.
-- **Slate Green** (#3E6B5A): Player 4. Triangle-shaped orbs. Clears text contrast unaided.
+Taken from the Okabe–Ito set, which was designed to stay distinct under the common colour-vision deficiencies. The previous orange and ochre were close enough that, for a deuteranope, only orb shape separated players 1 and 3.
 
-### Neutral
-- **Chart Stock** (#EDEAE3): the ground. Page background, the paper everything else sits on.
-- **Chart Stock Deep** (#E3DFD5): a raised or grouped surface — hover states, the readout strip under the board, clustered HUD panels. Never a second background color; always this exact relationship to Chart Stock.
-- **Lattice Line** (#D6D1C4): the printed background grid on the page itself (`background-image`, 24px cells) — the paper's own texture, present before any component renders.
-- **Trace Ink** (#1F2421): primary text and structural borders. 13.1:1 on Chart Stock.
-- **Trace Ink Soft** (#4A504B): secondary text, hints, captions. 6.9:1.
-- **Trace Ink Faint** (#5E635E): tertiary text, meta lines, disabled-adjacent copy. 5.1:1 — still comfortably above AA; the palette never drops a text color below the floor to fake a fourth weight.
+- **Vermilion** (#D55E00) — Player 1, Jingga. Disc orbs. **Vermilion Ink** (#A94800) for words.
+- **Blue** (#0067A8) — Player 2, Biru. Ring orbs. Clears text contrast unaided.
+- **Reddish Purple** (#B4508C) — Player 3, Ungu. Diamond orbs. **Purple Ink** (#9A3F76) for words.
+- **Bluish Green** (#00876A) — Player 4, Hijau. Triangle orbs. **Green Ink** (#00705A) for words.
 
-### Night ground (the same system, inverted by construction)
-Only the color tokens are redefined; every border, alpha, and component inherits the change automatically because nothing outside the token layer holds a literal color. Night ground `#171A18`, raised surface `#1F2421` (today's Trace Ink, now a surface), ink `#E8E4DC` (today's Chart Stock, now the ink), and all four player hues lift in lightness until each clears text contrast unaided on the night ground (Orange → `#E2703A`, Blue → `#6FA8D6`, Ochre → `#D9AE49`, Green → `#6FAE92`). Signal Rust does not move; the brand mark's core is invariant across both grounds by rule, not by accident.
+### Neutral (vellum)
+- **Ground** (#EEF2EF): the page.
+- **Raised** (#E2E9E5): segmented-control tracks, stat tiles, code blocks, hover states.
+- **Surface** (#F9FBF9): panels, cards, buttons — anything that is an object sitting on the ground.
+- **Bezel** (#DCE4E0) and **Well** (#F5F8F6): the board's housing and the recess each cell sits in.
+- **Lattice Line** (#D3DDD8): the printed grid where the page still shows one.
+- **Trace Ink** (#13201B), **Soft** (#3F4F48), **Faint** (#55655E): text, in three steps that all clear AA.
 
-Applied by `prefers-color-scheme: dark` when there is no explicit choice, or forced either direction by the theme toggle (see Components) through a `data-theme` attribute — an explicit `light` wins on a dark system and an explicit `dark` wins on a light one, both by construction, not by a media query that only ever answers to the OS.
+### Phosphor (night)
+Ground #0B1110, raised #18231F, surface #121B19, bezel #16201D, well #0F1715, ink #E4EDE9 / #A9B8B1 / #85958E. Players lift to #FF7B2E, #52AEFF, #EE8FCB and #2FD3A1, each clearing text contrast unaided, so the `-ink` tokens are set back to the identity colours. `--orb-glow` is 5px here and 0px by day, so one `drop-shadow` rule gives orbs a bloom at night and nothing on paper.
 
-Measured against both night grounds, the same treatment the light values above get, and reverified continuously rather than trusted by eye: `scripts/contrast.mjs` recomputes every ratio below from the live custom properties, and `tests/style/contrast.test.ts` asserts them in CI, so a token edit that quietly drops one fails the build instead of shipping.
+Applied by `prefers-color-scheme: dark` when there is no explicit choice, or forced either direction by the theme button through a `data-theme` attribute.
 
-    trace 13.83:1 · soft 7.68:1 · faint 5.38:1   on #171A18
-    trace 12.43:1 · soft 6.90:1 · faint 4.83:1   on #1F2421
+### Measured contrast
+Recomputed from the live custom properties by `scripts/contrast.mjs` and asserted in CI by `tests/style/contrast.test.ts`, against all three grounds text is painted on (ground, raised, surface), in both schemes:
 
-Lowest text pairing overall is 4.83:1 (faint on the raised surface). Every player ink clears 4.5:1 at every lift — lowest, Orange on the raised surface, 4.96:1 — so unlike the light palette's Signal Orange Ink and Ochre Ink, no darkened night variant was needed; the `-ink` tokens are set back to the identity colours here.
+    vellum    trace 14.86 · soft 7.67 · faint 5.45   on ground
+              trace 13.62 · soft 7.02 · faint 4.99   on raised
+              trace 16.15 · soft 8.33 · faint 5.92   on surface
+    phosphor  trace 15.96 · soft 9.24 · faint 6.07   on ground
+              trace 13.54 · soft 7.84 · faint 5.15   on raised
+              trace 14.70 · soft 8.51 · faint 5.59   on surface
+
+Every player ink clears 4.5:1 everywhere; the floor across all 42 pairings is 4.71:1 (vermilion ink on vellum raised).
 
 ### Named Rules
-**The One-Hue-Per-Player Rule.** Saturated color exists in this system for exactly one purpose — telling players apart. It never decorates a button, a chart axis, an icon, or a piece of chrome. If a color other than ink, tinted paper, or an active player's hue appears on screen, something has drifted.
+**The One-Hue-Per-Player Rule.** Saturated colour exists for exactly one purpose — telling players apart. It never decorates a button, a chart axis, an icon, or a piece of chrome. The board frame and the active player's chip use it because they *are* statements about a player.
 
-**The Shape-Before-Color Rule.** Every player color is paired with a distinct orb silhouette (disc / ring / diamond / triangle) and every UI element that names a player repeats both. Color-vision deficiency must never cost a player the ability to read the board.
+**The Shape-Before-Color Rule.** Every player colour is paired with a distinct orb silhouette (disc / ring / diamond / triangle) and every UI element that names a player repeats both. The lobby's player-count chips show the shapes before the first move, so they are learned rather than discovered.
 
 ## Typography
 
-**Display Font:** Space Grotesk (weight range 300–700), self-hosted woff2, no CDN.
-**Body Font:** IBM Plex Sans (weights 400/500), self-hosted.
-**Label/Mono Font:** IBM Plex Mono (weight 400), self-hosted, not preloaded — it only appears in codes and hashes, never in a first paint.
+**Display, labels and numerals:** Archivo, variable on weight (100–900) and width (62–125%), self-hosted woff2.
+**Body:** IBM Plex Sans (400/500), self-hosted.
+**Mono:** IBM Plex Mono (400), self-hosted, not preloaded.
 
-**Character:** Mechanical and exact rather than warm — Space Grotesk's distinctive figures are the point, because this is a system where numerals (orb counts, critical mass, cascade length, move number) carry real information and have to be told apart from body prose at a glance. IBM Plex Sans is chosen for being unremarkable: legible instrument-panel prose that never competes with the numbers next to it.
+**Character:** One family with a width axis replaces a single-width display face. Expanded and heavy, Archivo makes a win or a ×12 chain the loudest thing on screen; semi-condensed, it sets instrument labels compactly without tiny, widely tracked capitals. Plex Sans is chosen for being unremarkable prose beside it.
 
 ### Hierarchy
-- **Display** (500, `clamp(1.75rem, 3.5vw, 2.875rem)` / 46px max, 1.15 line-height, −0.01em tracking): the wordmark's name, panel titles one step above their labels (`.heading-panel`), win/loss statements.
-- **Headline / Body-large** (400, 18–22px, 1.35–1.6): hero lede copy, the one line of text a landing page leads with.
-- **Body** (400, 16px, 1.6, 65ch-narrower measure than typical "prose" defaults — this copy is short by policy): paragraphs, rule explanations, captions.
-- **Numeral** (`.font-numeral`, Space Grotesk + `font-variant-numeric: tabular-nums`): every counter, hash-adjacent number, and score. Never system-ui; a counter that reflows its own width as it ticks is a small, constant tell that the interface isn't precise.
-- **Label** (500, 11px, uppercase, 0.14em tracking, `.label-micro`): instrument-panel lettering — field labels, panel micro-headers. Rationed: no more than one such label per logical group, or a rail of them reads as a list of shouted fragments rather than a hierarchy.
-- **Mono** (400, 13px): connection codes, state hashes, cell notation — anything meant to be read character-by-character and pasted accurately.
+- **Moment** (`.font-moment`: 850, 125% width, −0.02em, 0.95 leading; `text-6xl` up to 88px): the home headline, a winner's name, the chain counter, page titles. If everything is expanded, nothing is — reserve it.
+- **Panel heading** (`.heading-panel`: 700, 105% width, 16px): a panel's title, one step above its labels.
+- **Body** (400, 16px, 1.6): prose, rule text, captions at 13–15px.
+- **Numeral** (`.font-numeral`, tabular figures): every counter, score and hash-adjacent number.
+- **Label** (`.label-micro`: 650, 80% width, 12px, uppercase, 0.06em): field labels and instrument names. Rationed to one per group.
+- **Mono** (400, 13px): connection codes, state hashes, cell notation.
 
 ### Named Rules
-**The One Weight Above Rule.** A panel's title (`.heading-panel`, sentence case, display face) sits exactly one visual step above the `.label-micro` fields inside it. Every heading in a stack being the same 11px uppercase label was tried and read as one undifferentiated shout; the fix was a second, quieter step, not louder tracking.
+**The One Weight Above Rule.** A panel's title sits exactly one visual step above the labels inside it — larger and in sentence case, not louder tracking.
 
 ## Layout
 
-Two container widths, chosen by what the page is for: `max-w-5xl` for reading surfaces (the landing page), `max-w-6xl` for the game screen, where a wide two-column board-plus-rail layout needs the room. Section rhythm on reading pages uses the `xl` (40px) and `2xl` (64px) spacing steps; the game screen is denser, using `sm`/`md` (12–16px) between HUD elements since it is read continuously during play rather than scanned once.
+Every page is one `max-w-6xl` column under a one-row **site bar** (mark, Main · Teka-teki · Tanding · Belajar, language, theme). Ulang is reached from where a code exists — the new-game lobby and the end of a game — not from the bar. On a phone the bar keeps one row: the mark without its name, the four links, and the theme button; the language switch moves to the footer.
 
-The board itself is not laid out by the page grid at all — it is sized to fit the viewport (`(100dvh − chrome) × aspect-ratio`) so a tall board never forces a scroll to see the move about to be made, with every other element's height accounted for in one documented `--chrome` constant per screen (`32rem` on `/main/`, `30rem` on `/tanding/`, both below the `sm` breakpoint at every width phones actually come in). That constant is deliberately **not** fragmented per phase — see Phase below — which is what keeps the board's own rendered size identical across every phase transition without separate tuning. Measured against real content at three phone widths, and re-measured after phase gating landed to confirm the board's size genuinely held still (`CHROME-MEASUREMENTS.md`): the constant rarely even binds at those widths — a `15rem` floor or the column's own width is almost always the tighter limit — but board and readout still fit without scrolling at every configuration measured.
+The game screen reads top to bottom as a turn is taken: the **player bar** (one chip per player, the one to move lit in their colour with a "Giliran" tag), the **board**, the **readout** (what the move under the cursor would do), and the **toolbar** (undo, restart, change board, speed, preview and sound). At `lg` a 20rem **rail** sits beside it: the "Posisi ini" panel (load gauge, longest chain, moves played, cascade rewind) above a tabbed Rekaman / Langkah panel.
 
-Spacing is a named scale, not arbitrary Tailwind numerics: `2xs` 4px, `xs` 8px, `sm` 12px, `md` 16px, `lg` 24px, `xl` 40px, `2xl` 64px, referenced by role (`gap-lg` states a rhythm) rather than by raw measurement.
+The board is sized to fit the viewport (`(100dvh − chrome) × aspect-ratio`) so a tall board never forces a scroll to see the move about to be made. `--chrome` on `/main/` is 38 / 33 / 28rem (phone / `sm` / `lg`) and accounts for the site bar, the title row, the player bar, the readout and the toolbar; on `/tanding/` 33 / 28rem. On phones the column width almost always binds first (`CHROME-MEASUREMENTS.md`).
 
-Responsive collapse: the board-plus-rail two-column layout (`lg:grid-cols-[1fr_18rem]`) stacks to a single column below `lg`, with the turn indicator explicitly reordered above the board on narrow viewports rather than left to source order. Multi-panel figures (the landing page's before/during/after cascade diagram) stack vertically below `sm` rather than compressing three panels into a width too narrow to read.
+Spacing is a named scale: `2xs` 4px, `xs` 8px, `sm` 12px, `md` 16px, `lg` 24px, `xl` 40px, `2xl` 64px.
 
 ### Phase
 
 `/main/` is phase-aware rather than mounting every instrument regardless of what's happening. `lib/phase.ts` derives one of four phases from state alone, never stored, never decided by a renderer:
 
-- **`siap`** — before the first move. Mounts the board configurator (Setup, ModePicker); mounts no reading, because there is nothing yet to read.
-- **`main`** — a game in progress. Mounts the running readouts (TurnIndicator, LoadGauge, CascadeReplay, Seismogram, MoveList) and not the configurator.
-- **`longsor`** — the one turn immediately following a cascade of more than one generation. The same console as `main`, with the CascadeReplay cluster promoted: a full-weight border and an explosion-count reading, in place until the next move replaces it — because a phase is recomputed fresh every render, not remembered.
-- **`selesai`** — game over. Mounts the summary and analysis panels; unmounts the mid-game controls that no longer apply.
+- **`siap`** — before the first move. Mounts the lobby (ModePicker and Setup in one "Permainan baru" panel), where every choice applies at once and the empty board is the preview; mounts no reading, because there is nothing yet to read.
+- **`main`** — a game in progress. Mounts the running readouts (LoadGauge, CascadeReplay, Seismogram, MoveList) and the toolbar, and not the configurator.
+- **`longsor`** — the one turn immediately following a cascade of more than one generation. The same console as `main`, with the "Posisi ini" panel promoted: a full-weight border, the panel shadow and a ×n explosion reading, in place until the next move replaces it — because a phase is recomputed fresh every render, not remembered.
+- **`selesai`** — game over. The winner's colour floods the board and the result card lands over it; mounts the summary and analysis panels; unmounts the mid-game controls that no longer apply.
+
+The player bar (TurnIndicator) is the one exception to phase gating: it is mounted in every phase, because it says who moves first before a game and the final counts after one, and keeping it is what stops the board shifting down the page when play starts.
 
 `/tanding/` does not use this `Phase` type — an incoming peer move would interrupt a re-watch, so `longsor` does not exist there — and gates far less by phase overall: a desync (or a peer offering their move list to replay) hides the board, TurnIndicator, and session details entirely rather than sitting above them, because a desync means the position on screen may be wrong.
 
@@ -178,82 +202,68 @@ Responsive collapse: the board-plus-rail two-column layout (`lg:grid-cols-[1fr_1
 
 **The Board-Never-Resizes Rule.** The board's rendered pixel size stays fixed across every phase transition within one session. A board that grows when the game ends is disorienting, and worse, it makes the final position look different from the position that was actually played — which the afterglow, a still reading of how that position was reached, depends on the cells it marks staying exactly where they were.
 
-On a narrow viewport during `main`/`longsor`, the rail goes further: only the board, TurnIndicator, and Controls (plus the promoted CascadeReplay cluster) are on screen by default. LoadGauge, Seismogram, and MoveList live in an in-flow drawer instead — see the One Overlay Rule below for why that drawer is not a second floating surface.
+On a narrow viewport during `main`/`longsor`, the rail goes further: only the board, the player bar, the toolbar and the "Posisi ini" panel are on screen by default. LoadGauge and the Rekaman / Langkah tabs live in an in-flow drawer instead — see the One Overlay Rule below for why that drawer is not a second floating surface.
 
 ## Elevation & Depth
 
-Flat by default, with depth read from paper tone rather than shadow. Chart Stock Deep is the only "raised" surface in the system, and it is a tint, not a shadow — a grouped or active panel gets a slightly deeper paper tone and a hairline border, never a drop shadow. Structural elevation is expressed with an inset box-shadow exactly once, as a rule-edge (the active player's card gets `shadow-[inset_2px_0_0_0]` in the player's ink — a line, not a lift). A soft outer `shadow-lg` appears exactly once in the whole system, on the single native `<dialog>` overlay (How to Play), because that is the one element genuinely floating above the page rather than sitting in the paper's own layers.
+Depth by day is a tone and one soft shadow; by night it is tone and emission.
 
 ### Shadow Vocabulary
-- **Rule-edge** (`box-shadow: inset 2px 0 0 0; color: currentColor (trace or player ink)`): marks the active/selected state of a card in a list (the current player's turn) without relying on hue alone.
-- **Overlay lift** (`box-shadow: theme(shadow-lg)`): the one floating surface in the system — a native dialog. Not used on cards, panels, or dropdowns.
+- **Panel shadow** (`shadow-panel`): the board housing, the active player chip, the promoted `longsor` panel, a hovered mode card. Not on every panel — a resting panel is a surface and a hairline.
+- **Overlay lift** (`shadow-lg`): native `<dialog>`s only.
+- **Orb glow** (`--orb-glow`): 0px by day, 5px by night.
 
 ### Named Rules
-**The One Overlay Rule.** Only a true modal (a native `<dialog>`) gets a lift shadow. Everything else that needs to read as "above" its neighbor does so with a deeper paper tone or a border, because this system has exactly one thing that is ever actually floating above the page.
-
-The `/main/` phone drawer (a `chart-deep/30` cluster behind a segmented-control-styled handle, holding LoadGauge/Seismogram/MoveList below `lg`) is not a second exception to carve out: it expands **in the document flow**, pushing the page down rather than floating over the board, and the board stays visible and playable while it's open. It reads that way by this rule, not by the drawer's own restraint — a future bottom sheet, or anything else that would float, is refused here rather than argued about case by case later.
+**The One Overlay Rule.** Only a native `<dialog>` floats above the page. The phone drawer expands in document flow; the toolbar sits in flow under the board; the win card sits inside the board's own box. A bottom sheet or popover is refused by this rule rather than argued about case by case.
 
 ## Shapes
 
-Every container, button, card, and input has zero border-radius. The system reads as printed and cut, not molded — chart paper doesn't have rounded corners, and neither does anything drawn on it. Borders are hairline (0.5px–1px) and are the primary way structure is expressed; a component that would elsewhere get a card shadow gets a border instead.
-
-Two deliberate, narrow exceptions, both on data rather than containers: capacity-tick dots (`rounded-full`, 3px) inside an empty board cell, and the leading edge of the avalanche-distribution bar (`rounded-r-[4px]`), which reads as a value flowing to a point rather than stopping at a wall. Neither exception ever appears on a button, panel, card, or input.
+Small, consistent radii on every object: cells 6px, controls 8px, panels 12px, the board housing 16px, chips and status dots fully round. Charts — the seismogram strip, the avalanche bars, the load track — keep their own shapes because they are readings, not objects.
 
 ### Named Rules
-**The Sharp-Edged Rule.** Radius is zero everywhere except an actual data point. A rounded corner on a container is always a mistake in this system, not a style choice waiting to be made.
+**The Consistent-Radius Rule.** A radius is chosen by what the thing is (cell, control, panel, housing), never by eye. Four values, and no fifth.
 
 ## Components
 
-Every interactive surface reads as an instrument control: flat fills, hairline borders, and a state change expressed as an ink-weight or tone shift rather than a shadow, glow, or scale transform.
+Shared classes live in `components/ui/styles.ts` and icons in `components/ui/Icon.tsx`. A component composes them and adds layout; it does not restate a button.
 
 ### Buttons
-- **Shape:** square corners always (`{rounded.none}`), no exception.
-- **Primary:** filled — `background: {colors.trace-ink}`, `color: {colors.chart-stock}`, `border: 1px solid {colors.trace-ink}`, padding `8px 24px`. On a page of hairlines, the one solid filled block is unmistakably the way in; there is never more than one primary action visible at a time.
-- **Secondary / Ghost:** outlined — `border: 1px solid` a lighter trace alpha (`trace-rule`, ~32% ink), transparent fill, `color: {colors.trace-ink}`.
-- **Hover / Focus:** primary drops opacity to ~90% rather than changing hue; secondary fills with Chart Stock Deep. Focus-visible is one ring treatment app-wide: a 2px offset outline in Trace Ink, shown to keyboard users only, never to a mouse click.
-- **Segmented control (a Chipfire signature):** a set of mutually-exclusive options (speed, difficulty, preview on/off) rendered as equal-width buttons inside one shared border, the active option filled in Trace Ink/Chart Stock and the rest transparent. Reads as one instrument with a selector, not four loose buttons — used for every either/or or one-of-N choice in the HUD.
+- **Primary** (`BUTTON_PRIMARY`): ink fill, ground text, 8px radius. Never more than one in view.
+- **Secondary** (`BUTTON`): surface fill, hairline border that strengthens on hover.
+- **Ghost** (`BUTTON_GHOST`) and **icon** (`BUTTON_ICON` / `BUTTON_ICON_ON`): the toolbar's presentation switches are icon buttons, filled when on, always with an `aria-label`.
+- Focus-visible is one 2px offset ring in ink, app-wide.
 
-### Panels / Clusters (a Chipfire signature)
-- **Background:** `{colors.chart-stock-deep}` at reduced opacity (`chart-deep/30`), which is the system's only "grouped" surface treatment.
-- **Border:** 1px hairline (`trace-hairline`, ~20% ink).
-- **Internal Padding:** `sm` (12px).
-- **Purpose:** groups several related HUD readouts (e.g. "This position": load gauge + cascade replay) under one visual unit so a long instrument rail reads as sections rather than an undifferentiated list of same-weight fragments. A cluster gets a `.heading-panel` title only when its contents don't already carry their own.
+### Segmented control (a Chipfire signature)
+A raised track holding equal pills; the chosen one lifts onto the surface with a hairline shadow. Speed, AI level, and the Rekaman / Langkah tabs.
 
-### Cards / Containers (player state)
-- **Corner Style:** square.
-- **Background:** Chart Stock normally; Chart Stock Deep when active/current.
-- **Border:** hairline normally; full-weight Trace Ink border plus the rule-edge inset shadow when active.
-- **Identity:** shape (via the player's orb glyph) always accompanies color; never color alone.
+### Option cards
+The lobby's choices — opponent, player count, board size — are cards that say what each option is. The chosen one gets an ink border and ring. Board-size cards draw the size to scale.
 
-### Inputs / Fields
-- **Style:** `border: 1px solid {colors.trace-rule}`, `background: {colors.chart-stock}`, numeral font for numeric fields, no radius.
-- **Focus:** the app-wide focus ring (2px offset outline, Trace Ink).
-- **Label position:** always above the field, in `.label-micro`, never a placeholder standing in for a label.
+### Panels and stats
+`PANEL`: surface, hairline, 12px radius, 16px padding. `PANEL_PROMOTED`: ink border plus the panel shadow, for `longsor`. `STAT`: a raised tile with the value in the moment face and its name beneath.
 
 ### The Board (signature component)
-The defining custom component. A CSS Grid of square cells over a hairline lattice, `border-[0.5px] border-trace/25` between cells and `border-[0.5px] border-trace/40` around the whole board. Each cell can carry, layered: an "afterglow" reading (opacity-interpolated ink wash showing where the last cascade passed, never animated — a fact, not an effect), capacity-tick dots (empty cells only, showing critical mass at a glance), a claim wash in the capturing player's fill color, a burst ring (`scale + fade`, rippled outward from the triggering move by Manhattan distance), and registration-mark corner brackets on the most recently played cell. Every layer composites in a fixed order and every animation duration is fixed (never derived from the speed setting), so overlapping generations of a long cascade read as one propagating wave rather than a strobe.
+A housing (bezel, 16px radius, panel shadow) whose outline takes the colour of the player to move, and of the mover while their cascade plays. Each cell is a recessed well; an owned cell carries a faint wash of its owner's colour. Layers, in order: ownership wash, win flood, afterglow, capacity ticks (top-left corner, empty cells only), claim wash, burst ring (circular, 3px, in the mover's colour), orbs, last-move registration marks. A cell one orb from critical mass gets an inset ring in its owner's colour as well as the tremble. A chain of three or more shows a ×n counter that lands again each generation; eight or more flares the frame once. `mover` and `chain` come from the animation frames, which copy them from the event stream.
 
 ### Orbs (signature component)
-Player identity rendered as SVG shape (disc / ring / diamond / triangle) at fixed positions per count inside a cell — 1 through 5 have hand-placed layouts, 6+ falls back to a tabular numeral. Shape always carries the same information as color, independently.
+SVG shapes (disc / ring / diamond / triangle) at fixed positions, radius 15 for up to four and 12 for five; 6+ falls back to a numeral.
 
-### Theme Toggle
-A segmented-control instance — the same shell as the Buttons section above — with three mutually-exclusive options: ikuti sistem / siang / malam (follow system / day / night). Defaults to system, lives in the site footer so it's reachable from every route.
-
-This is a **display preference, not game state**: never part of the move list, never hashed, never on the wire (`lib/theme.ts`) — the same guarantee the P2P cascade-preview agreement holds itself to. Applied through a `data-theme` attribute stamped on `<html>` by an inline script that runs before first paint, so neither a fresh load nor a switch between devices ever flashes the wrong scheme.
+### Theme toggle
+One icon button in the site bar stepping through ikuti sistem → siang → malam, its label saying the current setting and what a press does. Display preference only: never in the move list, the hash, or on the wire.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** keep every container, button, card, and input at zero border-radius. Roundness is reserved for data points only (see The Sharp-Edged Rule).
-- **Do** express "raised" or "grouped" with `chart-deep` tone and a hairline border, never a drop shadow (see The One Overlay Rule).
-- **Do** pair every player-color usage with that player's orb shape; never rely on hue alone.
-- **Do** use `.font-numeral` (Space Grotesk, tabular figures) for every counter, score, and hash-adjacent number.
-- **Do** keep saturated color scoped to the four player hues and the brand mark's rust core; everything else is ink, tinted paper, or a hairline.
-- **Do** honor `prefers-reduced-motion`: any animation above trivial must degrade to an instant, still, fully-informative state.
+- **Do** take every radius from the four tokens.
+- **Do** pair every player-colour usage with that player's orb shape.
+- **Do** use `.font-numeral` for every counter and `.font-moment` only for real moments.
+- **Do** keep saturated colour scoped to the four player hues and the mark's rust core.
+- **Do** build controls from `components/ui/styles.ts`.
+- **Do** honour `prefers-reduced-motion`: every animation degrades to an instant, still, fully informative state.
 
 ### Don't:
-- **Don't** introduce a second "raised surface" tone. Chart Stock and Chart Stock Deep are the only two paper tones; a third invents a hierarchy nothing else in the system supports.
-- **Don't** use Signal Rust (the mark's core) as a player color, even for a fifth-player extension. It has to keep reading as "the brand" independent of who is playing.
-- **Don't** animate the afterglow, or add a decay/fade-over-time effect to it. It is a still reading of how the position was reached, and animating it would turn a fact into an effect.
-- **Don't** add a shadow, glow, or gradient fill to a button, card, or panel. If something needs to look "important," give it the filled-primary treatment or move it into its own cluster — not a shadow.
-- **Don't** derive a cascade animation's duration from the speed setting. Durations are fixed so overlapping generations read as one wave; only the *delay between* generations should change with speed.
+- **Don't** shake the board. A moving board cannot be read, and reading it is the game.
+- **Don't** use Signal Rust as a player colour.
+- **Don't** animate the afterglow or add a decay to it.
+- **Don't** derive a cascade animation's duration from the speed setting; only the delay between generations follows it.
+- **Don't** add a floating surface other than a native `<dialog>`.
