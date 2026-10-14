@@ -19,6 +19,17 @@ import { Orbs } from './Orbs'
  */
 const RIPPLE_STEP_MS = 22
 const RIPPLE_MAX_STEPS = 6
+/** The win flood travels slower and all the way: it is a single moment, not
+ *  one generation among many. */
+const FLOOD_STEP_MS = 45
+
+function distance(index: number, origin: number | null, cols: number): number {
+  if (origin === null) return 0
+  return (
+    Math.abs(Math.floor(index / cols) - Math.floor(origin / cols)) +
+    Math.abs((index % cols) - (origin % cols))
+  )
+}
 
 function rippleDelay(index: number, origin: number | null, cols: number): number {
   if (origin === null) return 0
@@ -92,6 +103,9 @@ type BoardProps = {
   /** Explosions so far in the move being animated. Shown as a counter from
    *  three up; zero when nothing is animating. */
   readonly chain?: number
+  /** The game is over: wash every owned cell in its owner's colour, rippling
+   *  out from the final move. Only ever one owner by then. */
+  readonly flood?: boolean
 }
 
 /** Chains shorter than this are ordinary moves and get no counter. */
@@ -119,6 +133,7 @@ export function Board({
   turn = null,
   mover = null,
   chain = 0,
+  flood = false,
 }: BoardProps) {
   // Touch has no hover, so a tap previews and a second tap commits.
   const touchRef = useRef(false)
@@ -263,6 +278,16 @@ export function Board({
           <span
             aria-hidden="true"
             className={`pointer-events-none absolute inset-0 rounded-cell ${ownerStyle.tint}`}
+          />
+        ) : null}
+
+        {flood && ownerStyle !== null ? (
+          <span
+            aria-hidden="true"
+            style={{
+              animationDelay: `${reduced ? 0 : distance(index, lastMove, board.cols) * FLOOD_STEP_MS}ms`,
+            }}
+            className={`pointer-events-none absolute inset-0 rounded-cell animate-flood ${ownerStyle.fill}`}
           />
         ) : null}
 

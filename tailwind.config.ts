@@ -182,6 +182,13 @@ const config: Config = {
           '35%': { boxShadow: '0 0 0 6px currentColor' },
           '100%': { boxShadow: '0 0 0 0 transparent' },
         },
+        // The win: the winner's colour washing over the board and staying as a
+        // tint, so the final position is plainly theirs.
+        flood: {
+          '0%': { opacity: '0' },
+          '45%': { opacity: '0.5' },
+          '100%': { opacity: '0.2' },
+        },
         // Orbs arriving. Small enough to register as weight, not as bounce.
         arrive: {
           '0%': { transform: 'scale(0.72)', opacity: '0.5' },
@@ -204,6 +211,7 @@ const config: Config = {
         arrive: 'arrive 180ms ease-out',
         count: 'count 260ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both',
         flare: 'flare 700ms ease-out both',
+        flood: 'flood 520ms ease-out both',
       },
     },
   },

@@ -2,12 +2,18 @@
 
 import type { Difficulty } from '@/lib/ai/search'
 import type { Locale } from '@/lib/i18n'
+import { SEGMENT, SEGMENT_ON, SEGMENTED } from '@/components/ui/styles'
 
 export type Mode = 'hotseat' | 'ai'
 
 const MODE_LABELS: Record<Mode, Record<Locale, string>> = {
   hotseat: { id: 'Hotseat', en: 'Hotseat' },
   ai: { id: 'Lawan AI', en: 'Versus AI' },
+}
+
+const MODE_HINTS: Record<Mode, Record<Locale, string>> = {
+  hotseat: { id: 'Gantian di satu perangkat', en: 'Take turns on one device' },
+  ai: { id: 'Kamu lawan mesin', en: 'You against the machine' },
 }
 
 const DIFFICULTY_LABELS: Record<Difficulty, Record<Locale, string>> = {
@@ -24,6 +30,12 @@ const COPY = {
     en: 'The AI sees the same board you do. Level only changes how deep it searches.',
   },
 } as const
+
+/** The option cards' shared shape; the chosen one gets an ink ring. */
+export const OPTION_CARD =
+  'flex flex-col items-start gap-0.5 rounded-panel border bg-surface px-3 py-2.5 text-left transition-[border-color,box-shadow] hover:border-trace-rule'
+export const OPTION_CARD_ON = 'border-trace ring-1 ring-trace'
+export const OPTION_CARD_OFF = 'border-trace-hairline'
 
 export function ModePicker({
   locale,
@@ -43,43 +55,42 @@ export function ModePicker({
 
   return (
     <div className="flex flex-col gap-3 text-sm">
-      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-        <legend className="label-micro mb-1.5 p-0">{COPY.opponent[locale]}</legend>
-        <div className="grid grid-cols-2 border border-trace-rule">
+      <fieldset className="flex flex-col gap-2 border-0 p-0">
+        <legend className="label-micro mb-2 p-0">{COPY.opponent[locale]}</legend>
+        {/* Two cards rather than two words: each says what the mode is, so the
+            choice can be made without knowing the jargon. */}
+        <div className="grid grid-cols-2 gap-2">
           {modes.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => onMode(option)}
               aria-pressed={mode === option}
-              className={[
-                'control-target px-3 py-1.5 transition-colors',
-                mode === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-              ].join(' ')}
+              className={`${OPTION_CARD} ${mode === option ? OPTION_CARD_ON : OPTION_CARD_OFF}`}
             >
-              {MODE_LABELS[option][locale]}
+              <span className="font-display text-base font-bold [font-stretch:110%]">
+                {MODE_LABELS[option][locale]}
+              </span>
+              <span className="text-xs text-trace-soft">{MODE_HINTS[option][locale]}</span>
             </button>
           ))}
         </div>
       </fieldset>
 
       {mode === 'ai' ? (
-        <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-          <legend className="label-micro mb-1.5 p-0">{COPY.difficulty[locale]}</legend>
+        <fieldset className="flex flex-col gap-2 border-0 p-0">
+          <legend className="label-micro mb-2 p-0">{COPY.difficulty[locale]}</legend>
           {/* Three levels, so they are shown rather than hidden behind a select:
               a menu you must open to see your options is a menu you compare
               badly. */}
-          <div className="grid grid-cols-3 border border-trace-rule">
+          <div className={`${SEGMENTED} w-full`}>
             {levels.map((level) => (
               <button
                 key={level}
                 type="button"
                 onClick={() => onDifficulty(level)}
                 aria-pressed={difficulty === level}
-                className={[
-                  'control-target px-2 py-1.5 transition-colors',
-                  difficulty === level ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-                ].join(' ')}
+                className={`${SEGMENT} ${difficulty === level ? SEGMENT_ON : ''}`}
               >
                 {DIFFICULTY_LABELS[level][locale]}
               </button>

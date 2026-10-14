@@ -9,6 +9,8 @@ import { buildAfterglow } from '@/components/cascade/frames'
 import { Controls } from '@/components/hud/Controls'
 import { Icon } from '@/components/ui/Icon'
 import {
+  BUTTON,
+  BUTTON_PRIMARY,
   PANEL,
   PANEL_PROMOTED,
   SEGMENT,
@@ -93,8 +95,10 @@ const COPY = {
     en: 'The AI failed to start. Switch to hotseat to keep playing.',
   },
   wins: { id: 'menang', en: 'wins' },
+  whereLost: { id: 'Di mana aku kalah?', en: 'Where did I lose?' },
+  analysis: { id: 'Lihat analisis', en: 'See the analysis' },
   again: { id: 'Main lagi', en: 'Play again' },
-  finalOrbs: { id: 'orb di akhir', en: 'orbs at the end' },
+  finalOrbs: { id: 'Orb di akhir', en: 'Orbs at the end' },
   inMoves: { id: 'langkah', en: 'moves' },
   turn: { id: 'Langkah', en: 'Move' },
   empty: { id: 'kosong', en: 'empty' },
@@ -110,6 +114,16 @@ const COPY = {
    */
   drawer: { id: 'Muatan · rekaman · daftar langkah', en: 'Load · record · move list' },
   longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
+  newGame: { id: 'Permainan baru', en: 'New game' },
+  newGameHint: {
+    id: 'Pilih lawan dan papan, lalu taruh orb pertama untuk mulai.',
+    en: 'Pick an opponent and a board, then place the first orb to begin.',
+  },
+  newGameMidGame: {
+    id: 'Mengganti lawan atau papan memulai permainan baru.',
+    en: 'Changing the opponent or board starts a new game.',
+  },
+  openCode: { id: 'Punya kode permainan? Buka di Ulang', en: 'Have a game code? Open it in Replay' },
   movesPlayed: { id: 'Langkah dimainkan', en: 'Moves played' },
   tabTrace: { id: 'Rekaman', en: 'Record' },
   tabMoves: { id: 'Langkah', en: 'Moves' },
@@ -453,23 +467,48 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                * result. The win message was legible only where no orb happened
                * to be behind it.
                */
-              <div className="absolute inset-0 z-10 flex animate-settle flex-col items-center justify-center gap-4 bg-chart/90 px-4 text-center">
-                <p className="font-numeral text-3xl">
-                  <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>{' '}
-                  {COPY.wins[locale]}
+              /*
+               * Held back until the flood under it has spread: the result
+               * lands on a board that already says whose it is. The scrim is
+               * translucent for the same reason.
+               */
+              <div
+                className="absolute inset-0 z-10 flex animate-settle flex-col items-center justify-center gap-3 overflow-hidden rounded-housing sm:gap-5 bg-chart/80 px-4 text-center backdrop-blur-[2px]"
+                style={{ animationDelay: '450ms' }}
+              >
+                <p className="label-micro">
+                  {session.record.moves.length} {COPY.inMoves[locale]} · {board.cols}×{board.rows}
                 </p>
-                <p className="font-numeral text-sm text-trace-soft">
-                  {session.state.orbs[winner]} {COPY.finalOrbs[locale]} ·{' '}
-                  {session.record.moves.length} {COPY.inMoves[locale]}
+                <p className="font-moment text-4xl sm:text-6xl">
+                  <span className={styleFor(winner).ink}>{playerName(winner, locale)}</span>
+                  <br />
+                  <span className="text-2xl sm:text-5xl">{COPY.wins[locale]}</span>
                 </p>
-                <button
-                  ref={againRef}
-                  type="button"
-                  onClick={() => startFresh()}
-                  className="border border-trace bg-trace px-5 py-2 text-chart transition-opacity hover:opacity-85"
-                >
-                  {COPY.again[locale]}
-                </button>
+                {/* On a phone the board may be only a few rows tall; the same
+                    numbers are in the summary directly below. */}
+                <div className="hidden flex-wrap justify-center gap-2 sm:flex">
+                  <div className={`${STAT} min-w-[6.5rem] bg-surface text-left`}>
+                    <span className="font-moment text-2xl">×{session.longestCascade}</span>
+                    <span className="text-xs text-trace-soft">{COPY.longest[locale]}</span>
+                  </div>
+                  <div className={`${STAT} min-w-[6.5rem] bg-surface text-left`}>
+                    <span className="font-moment text-2xl">{session.state.orbs[winner]}</span>
+                    <span className="text-xs text-trace-soft">{COPY.finalOrbs[locale]}</span>
+                  </div>
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <button
+                    ref={againRef}
+                    type="button"
+                    onClick={() => startFresh()}
+                    className={BUTTON_PRIMARY}
+                  >
+                    {COPY.again[locale]}
+                  </button>
+                  <a href="#analisis" className={BUTTON}>
+                    {mode === 'ai' && winner !== 0 ? COPY.whereLost[locale] : COPY.analysis[locale]}
+                  </a>
+                </div>
               </div>
             ) : null}
             {/*
@@ -511,6 +550,7 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 turn={finished ? null : (player.frame?.mover ?? session.state.current)}
                 mover={(review.frame ?? player.frame)?.mover ?? null}
                 chain={(review.frame ?? player.frame)?.chain ?? 0}
+                flood={finished}
                 interactive={!animating && !finished && !aiTurn && !review.open}
                 onSelect={select}
                 labelFor={labelFor}
@@ -719,7 +759,20 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           ) : null}
 
           {showSetup ? (
-            <>
+            /*
+             * The lobby. Before the first move every choice applies at once
+             * and the empty board beside it is the preview; over a game in
+             * progress the board choices are staged behind a button instead
+             * (see Setup's `live`).
+             */
+            <section className={`flex flex-col gap-5 ${PANEL}`}>
+              <div className="flex flex-col gap-1">
+                <h2 className="font-moment text-3xl">{COPY.newGame[locale]}</h2>
+                <p className="text-sm text-trace-soft">
+                  {phase === 'siap' ? COPY.newGameHint[locale] : COPY.newGameMidGame[locale]}
+                </p>
+              </div>
+
               <ModePicker
                 locale={locale}
                 mode={mode}
@@ -731,8 +784,23 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 onDifficulty={setDifficulty}
               />
 
-              <Setup locale={locale} config={session.config} onApply={applyConfig} />
-            </>
+              <Setup
+                locale={locale}
+                config={session.config}
+                onApply={applyConfig}
+                live={phase === 'siap'}
+              />
+
+              {/* Ulang's way in: it needs a code, and the place a code is
+                  thought of is where a game is chosen. */}
+              <Link
+                href={`/${locale}/ulang/`}
+                className="flex items-center gap-2 border-t border-trace-hairline pt-4 text-sm text-trace-soft transition-colors hover:text-trace"
+              >
+                <Icon name="play" className="h-4 w-4" />
+                {COPY.openCode[locale]}
+              </Link>
+            </section>
           ) : null}
 
           {showEvaluation ? (

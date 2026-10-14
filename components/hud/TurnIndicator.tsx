@@ -99,7 +99,9 @@ export function TurnIndicator({
                   {tag}
                 </span>
               ) : null}
-              {out ? <span className="label-micro shrink-0">{COPY.out[locale]}</span> : null}
+              {out ? (
+                <span className="label-micro hidden shrink-0 sm:inline">{COPY.out[locale]}</span>
+              ) : null}
               <span className="ml-auto font-numeral text-xl font-bold leading-none">{orbs}</span>
             </div>
 
