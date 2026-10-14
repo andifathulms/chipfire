@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { readSoundEnabled, setSoundEnabled, soundSupported } from '@/lib/sound'
 import type { Locale } from '@/lib/i18n'
+import { Icon } from '@/components/ui/Icon'
+import { BUTTON_ICON, BUTTON_ICON_ON } from '@/components/ui/styles'
 
 /**
  * Off until asked, and read from storage after mount rather than during render
@@ -15,9 +17,8 @@ import type { Locale } from '@/lib/i18n'
  * restart down under whichever finger or cursor was already on its way to them.
  */
 const COPY = {
-  label: { id: 'Suara', en: 'Sound' },
-  on: { id: 'Nyala', en: 'On' },
-  off: { id: 'Mati', en: 'Off' },
+  turnOn: { id: 'Nyalakan suara', en: 'Turn sound on' },
+  turnOff: { id: 'Matikan suara', en: 'Turn sound off' },
   hint: {
     id: 'Nada naik satu tingkat tiap tahap ledakan, jadi panjang rantai terdengar.',
     en: 'The pitch climbs a step per cascade generation, so chain depth is audible.',
@@ -46,37 +47,35 @@ export function SoundToggle({ locale }: { locale: Locale }) {
   }, [])
 
   const usable = status === 'ready'
+  const label =
+    status === 'unsupported'
+      ? COPY.unsupported[locale]
+      : on
+        ? `${COPY.turnOff[locale]}. ${COPY.hint[locale]}`
+        : COPY.turnOn[locale]
 
+  /*
+   * One icon button, pressed when sound is on. The hint that used to sit
+   * under the old segmented control is the button's title now — the toolbar
+   * has no room for a paragraph, and the pitch climbing is something you hear
+   * rather than read about.
+   */
   return (
-    <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-      <legend className="label-micro mb-1.5 p-0">{COPY.label[locale]}</legend>
-      <div className="grid grid-cols-2 border border-trace-rule">
-        {([false, true] as const).map((value) => (
-          <button
-            key={String(value)}
-            type="button"
-            disabled={!usable}
-            onClick={() => {
-              // The click itself is the gesture that lets the browser start
-              // audio, so the setting is applied here rather than in an effect.
-              setSoundEnabled(value)
-              setOn(value)
-            }}
-            aria-pressed={usable ? on === value : undefined}
-            className={[
-              'control-target px-2 py-1.5 text-xs transition-colors disabled:cursor-default',
-              usable && on === value ? 'bg-trace text-chart' : 'hover:enabled:bg-chart-deep',
-              usable ? '' : 'opacity-40',
-            ].join(' ')}
-          >
-            {value ? COPY.on[locale] : COPY.off[locale]}
-          </button>
-        ))}
-      </div>
-      {status === 'unsupported' ? (
-        <p className="text-xs text-trace-faint">{COPY.unsupported[locale]}</p>
-      ) : null}
-      {usable && on ? <p className="text-xs text-trace-faint">{COPY.hint[locale]}</p> : null}
-    </fieldset>
+    <button
+      type="button"
+      disabled={!usable}
+      onClick={() => {
+        // The click itself is the gesture that lets the browser start
+        // audio, so the setting is applied here rather than in an effect.
+        setSoundEnabled(!on)
+        setOn(!on)
+      }}
+      aria-pressed={usable ? on : undefined}
+      aria-label={label}
+      title={label}
+      className={usable && on ? BUTTON_ICON_ON : BUTTON_ICON}
+    >
+      <Icon name={usable && on ? 'sound' : 'sound-off'} />
+    </button>
   )
 }

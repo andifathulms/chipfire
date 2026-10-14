@@ -20,9 +20,8 @@ const COPY = {
  * player is actually asking — am I ahead? — without arithmetic done mid-turn.
  * The bar answers it at a glance; the numeral keeps the exact value.
  *
- * The layout is an auto-fitting grid rather than a row, so one component reads
- * correctly both as a wide strip above the board on a phone and as a stacked
- * rail beside it on a desktop.
+ * It sits above the board at every width now, as a player bar: the board's
+ * frame says whose turn it is in colour, and this says it in name and count.
  */
 export function TurnIndicator({
   state,
@@ -43,74 +42,78 @@ export function TurnIndicator({
   const players = Array.from({ length: state.players }, (_, player) => player)
   const total = players.reduce((sum, player) => sum + state.orbs[player], 0)
 
+  /*
+   * One chip per player, in a row above the board at every width. Two players
+   * share the row; three or four wrap to two columns on a phone rather than
+   * squeezing four names into 390px.
+   */
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="label-micro">{COPY.turn[locale]}</span>
-        {busy ? (
-          <span aria-hidden="true" className="label-micro animate-pulse text-trace-soft">
-            {COPY.propagating[locale]}
-          </span>
-        ) : null}
-      </div>
+    <div
+      className={[
+        'grid gap-2',
+        state.players === 2 ? 'grid-cols-2' : 'grid-cols-2 sm:grid-cols-4',
+      ].join(' ')}
+    >
+      {players.map((player) => {
+        const active = state.current === player && state.winner === null
+        const out = state.eliminated[player] === 1
+        const style = styleFor(player)
+        const orbs = state.orbs[player]
+        // Integer percentage — no float reaches anything the player reads.
+        const share = total === 0 ? 0 : Math.round((orbs * 100) / total)
+        const tag = !active
+          ? null
+          : thinkingPlayer === player
+            ? COPY.thinking[locale]
+            : busy
+              ? COPY.propagating[locale]
+              : COPY.turn[locale]
 
-      <div className="grid gap-2 [grid-template-columns:repeat(auto-fit,minmax(9rem,1fr))]">
-        {players.map((player) => {
-          const active = state.current === player && state.winner === null
-          const out = state.eliminated[player] === 1
-          const style = styleFor(player)
-          const orbs = state.orbs[player]
-          // Integer percentage — no float reaches anything the player reads.
-          const share = total === 0 ? 0 : Math.round((orbs * 100) / total)
-
-          return (
-            <div
-              key={player}
-              aria-current={active ? 'true' : undefined}
-              className={[
-                // `transition-colors` doesn't reach box-shadow, so the rule
-                // down the left edge used to pop in a frame after the border
-                // it sits beside had already eased. One explicit list, one
-                // handoff.
-                'flex flex-col gap-2 border px-3 py-2 transition-[color,background-color,border-color,box-shadow] duration-200',
-                // The active player gets ink-weight border, a raised ground and
-                // a rule down the left edge. Weight rather than hue, so the cue
-                // survives a colour-blind read.
-                active
-                  ? 'border-trace bg-chart-deep shadow-[inset_2px_0_0_0] shadow-trace'
-                  : 'border-trace-hairline',
-                out ? 'opacity-50' : '',
-              ].join(' ')}
-            >
-              <div className="flex items-center gap-2">
-                <span className="h-5 w-5 shrink-0">
-                  <Orbs player={player} count={1} />
-                </span>
-                <span className={`truncate text-sm font-medium ${style.ink}`}>
-                  {playerName(player, locale)}
-                </span>
-                <span className="ml-auto font-numeral text-lg leading-none">{orbs}</span>
-              </div>
-
-              {/* Share of every orb in play. Hidden from assistive tech: the
-                  count beside it is the same fact, stated precisely. */}
-              <span aria-hidden="true" className="block h-[3px] w-full bg-trace-wash">
-                <span
-                  className={`block h-full ${style.fill} transition-[width] duration-300`}
-                  style={{ width: `${share}%` }}
-                />
+        return (
+          <div
+            key={player}
+            aria-current={active ? 'true' : undefined}
+            className={[
+              'flex min-w-0 flex-col gap-1.5 rounded-panel border bg-surface px-3 py-2 transition-[opacity,border-color,box-shadow] duration-200',
+              // The player to move is lit in their own colour and everyone
+              // else steps back. The tag says it in words as well, so the cue
+              // survives a colour-blind read.
+              active ? `${style.border} shadow-panel ring-1 ${style.ring}` : 'border-trace-hairline opacity-70',
+              out ? 'opacity-40' : '',
+            ].join(' ')}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="h-5 w-5 shrink-0">
+                <Orbs player={player} count={1} />
               </span>
-
-              {out ? <span className="label-micro">{COPY.out[locale]}</span> : null}
-              {thinkingPlayer === player && !out ? (
-                <span aria-hidden="true" className="label-micro animate-pulse text-trace-soft">
-                  {COPY.thinking[locale]}
+              <span className={`truncate text-sm font-semibold ${style.ink}`}>
+                {playerName(player, locale)}
+              </span>
+              {tag !== null ? (
+                <span
+                  className={[
+                    'label-micro hidden shrink-0 rounded-full px-1.5 py-0.5 sm:inline',
+                    busy || thinkingPlayer === player ? 'animate-pulse' : '',
+                  ].join(' ')}
+                >
+                  {tag}
                 </span>
               ) : null}
+              {out ? <span className="label-micro shrink-0">{COPY.out[locale]}</span> : null}
+              <span className="ml-auto font-numeral text-xl font-bold leading-none">{orbs}</span>
             </div>
-          )
-        })}
-      </div>
+
+            {/* Share of every orb in play. Hidden from assistive tech: the
+                count beside it is the same fact, stated precisely. */}
+            <span aria-hidden="true" className="block h-1 w-full overflow-hidden rounded-full bg-chart-deep">
+              <span
+                className={`block h-full rounded-full ${style.fill} transition-[width] duration-300`}
+                style={{ width: `${share}%` }}
+              />
+            </span>
+          </div>
+        )
+      })}
     </div>
   )
 }

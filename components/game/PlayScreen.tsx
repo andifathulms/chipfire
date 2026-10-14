@@ -7,6 +7,15 @@ import { useCascadePlayer, type Speed } from '@/components/cascade/useCascadePla
 import { useCascadeReview } from '@/components/cascade/useCascadeReview'
 import { buildAfterglow } from '@/components/cascade/frames'
 import { Controls } from '@/components/hud/Controls'
+import { Icon } from '@/components/ui/Icon'
+import {
+  PANEL,
+  PANEL_PROMOTED,
+  SEGMENT,
+  SEGMENT_ON,
+  SEGMENTED,
+  STAT,
+} from '@/components/ui/styles'
 import { Setup } from '@/components/hud/Setup'
 import { TurnIndicator } from '@/components/hud/TurnIndicator'
 import { useGameSession } from '@/components/game/useGameSession'
@@ -100,25 +109,12 @@ const COPY = {
    * not a mystery disclosure.
    */
   drawer: { id: 'Muatan · rekaman · daftar langkah', en: 'Load · record · move list' },
+  longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
+  movesPlayed: { id: 'Langkah dimainkan', en: 'Moves played' },
+  tabTrace: { id: 'Rekaman', en: 'Record' },
+  tabMoves: { id: 'Langkah', en: 'Moves' },
+  recordTabs: { id: 'Catatan permainan', en: 'Game record' },
 } as const
-
-/**
- * A shared card treatment for the rail's clusters, below. The rail was a
- * dozen `label-micro` blocks in a row with nothing but a gap between them —
- * every one of them read as the same weight, which is the exact mistake
- * `.heading-panel` was introduced to fix for a single panel and had never
- * been applied to the rail as a whole. The wash and hairline are the same
- * two tokens the readout under the board already uses; this is not a new
- * visual language, just that one applied one level higher.
- */
-const CLUSTER = 'flex flex-col gap-3 border border-trace-hairline bg-chart-deep/30 p-3'
-
-/*
- * The same cluster, promoted: a full-weight border rather than a hairline —
- * the same distinction DESIGN.md draws for an active player's card — for the
- * one turn `derivePhase` reports `longsor`.
- */
-const CLUSTER_LONGSOR = 'flex flex-col gap-3 border border-trace bg-chart-deep/30 p-3'
 
 export function PlayScreen({ locale }: { locale: Locale }) {
   const [speed, setSpeed] = useState<Speed>('normal')
@@ -172,7 +168,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
    */
   const [setupOpen, setSetupOpen] = useState(false)
   const showSetup = phase === 'siap' || setupOpen
-  const showTurnIndicator = phase === 'main' || phase === 'longsor'
   const showPlayRail = phase === 'main' || phase === 'longsor'
   const showEvaluation = mode === 'ai' && phase !== 'siap'
   /*
@@ -361,8 +356,41 @@ export function PlayScreen({ locale }: { locale: Locale }) {
   const winner = session.state.winner ?? 0
   const board = session.state.board
 
+  /*
+   * The game's own record: the trace and the move list, one at a time.
+   * Mounted in the rail at `lg` and inside the phone drawer below it, so the
+   * two places can never show different instruments.
+   */
+  const record = (
+    <RecordTabs
+      locale={locale}
+      seismogram={
+        <Seismogram locale={locale} moves={session.history} players={session.state.players} />
+      }
+      moves={
+        <div className="flex flex-col gap-3">
+          <MoveList locale={locale} moves={session.history} cols={board.cols} />
+          {/*
+           * No longer a live region. It wrapped the turn number and the eight
+           * character state hash together, so every move read the hash aloud —
+           * a string that exists to be compared by machines, announced to a
+           * person who cannot act on it. The move announcer covers the turn;
+           * the hash stays visible for anyone who wants it.
+           */}
+          <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
+            <span className="label-micro">{COPY.turn[locale]}</span>
+            <span className="font-numeral text-trace">{session.state.turn}</span>
+            <span className="font-mono text-trace-faint">{session.hash}</span>
+          </p>
+        </div>
+      }
+    />
+  )
+
+  const lastExplosions = session.history.at(-1)?.explosions ?? 0
+
   return (
-    <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-4 py-6 lg:px-8">
+    <main className="mx-auto flex w-full flex-1 max-w-6xl flex-col gap-5 px-3 py-5 sm:px-4 lg:px-8">
       <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-b border-trace-hairline pb-3">
         <div className="flex items-baseline gap-3">
           <Link
@@ -388,11 +416,11 @@ export function PlayScreen({ locale }: { locale: Locale }) {
 
       {/*
        * The board is the product, so on a wide screen it takes the space and
-       * everything else becomes a rail beside it. The explicit placement keeps
-       * the phone order right — whose turn it is has to sit above the board,
-       * not below the fold — without rendering the scoreboard twice.
+       * everything else becomes a rail beside it. On every width the column
+       * reads top to bottom as the turn is taken: who is to move, the board,
+       * what the move under the cursor would do, and the toolbar.
        */}
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start">
         <MoveAnnouncer
           state={session.state}
           history={session.history}
@@ -401,29 +429,20 @@ export function PlayScreen({ locale }: { locale: Locale }) {
           settled={!animating}
         />
 
-        {showTurnIndicator ? (
-          <div className="lg:col-start-2 lg:row-start-1">
-            <TurnIndicator
-              state={session.state}
-              locale={locale}
-              busy={animating}
-              thinkingPlayer={ai.thinking ? session.state.current : null}
-            />
-          </div>
-        ) : null}
-
-        <div className="flex flex-col gap-3 lg:col-start-1 lg:row-span-2 lg:row-start-1">
-          <div className="relative">
+        <div className="flex flex-col gap-3">
           {/*
-           * Before the board in the DOM, not after it.
-           *
-           * The overlay sits on top of fifty-four cells that are still in the
-           * tab order — deliberately, since aria-disabled keeps the final
-           * position readable rather than hiding it from a screen reader. But
-           * source order was putting "Main lagi" behind all of them, so
-           * reaching the one control on screen meant tabbing through the whole
-           * board first. Reading order now matches what is on top.
+           * Mounted in every phase, unlike the rail's instruments: it says who
+           * moves first before a game and the final counts after one, and
+           * keeping it means the board never shifts down when play starts.
            */}
+          <TurnIndicator
+            state={session.state}
+            locale={locale}
+            busy={animating}
+            thinkingPlayer={ai.thinking ? session.state.current : null}
+          />
+
+          <div className="relative">
             {finished ? (
               /*
                * z-10 is load-bearing, not decoration. This sits first in the
@@ -456,34 +475,23 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             {/*
              * The board is sized to fit the viewport rather than the column, so
              * a tall board never demands a scroll to see the move you are about
-             * to make. --chrome is the vertical space everything else needs.
+             * to make. --chrome is the vertical space everything else needs:
              *
-             * What it accounts for, so the next person to add a panel knows
-             * whether they have invalidated it:
-             *
-             *   page padding      py-6                      3rem
+             *   page padding      py-5                      2.5rem
              *   header + rule     text-2xl + pb-3          ~3rem
-             *   gap               gap-5                    1.25rem
-             *   turn indicator    label + player cards     ~6rem
-             *   gap               gap-5                    1.25rem
-             *   [board]
-             *   gap               gap-3                    0.75rem
+             *   player bar        two rows of a chip       ~4rem
+             *   gaps              gap-3 ×3                 2.25rem
              *   readout           min-h-[3.25rem]          3.25rem
+             *   toolbar           one row of controls      2.5rem
              *   site footer       shared, outside <main>   ~4rem
              *
-             * Everything else in the rail sits below the readout and is below
-             * the fold by design, which is why this session's additions —
-             * the gauge, the cascade replay, the move list — did not move it.
-             * On lg the rail is a side column and only the header, readout and
-             * footer are stacked with the board, hence the much smaller value.
-             *
-             * The calc only binds on short, wide viewports; elsewhere the
-             * column width caps the board first. UNVERIFIED against a real
-             * browser — the numbers are estimates from the classes above, and
-             * a landscape phone is the case to check.
+             * On a phone the column width caps the board long before this
+             * binds (CHROME-MEASUREMENTS.md); it matters on short, wide
+             * viewports. Below lg the rail stacks underneath and is below the
+             * fold by design, so it is not counted.
              */}
             <div
-              className="mx-auto w-full [--chrome:32rem] sm:[--chrome:27rem] lg:[--chrome:17rem]"
+              className="mx-auto w-full [--chrome:35rem] sm:[--chrome:30rem] lg:[--chrome:25rem]"
               style={{
                 // The max() floor matters: on a short viewport (a phone in
                 // landscape) the subtraction goes negative and the board would
@@ -517,7 +525,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
                 }}
               />
             </div>
-
           </div>
 
           {/*
@@ -531,8 +538,11 @@ export function PlayScreen({ locale }: { locale: Locale }) {
            * status: re-reading "point at a cell" every time focus left one was
            * the region talking for the sake of talking.
            */}
-          <div className="flex min-h-[3.25rem] items-center gap-5 border border-trace-hairline bg-chart-deep/50 px-3 py-2">
-            <span aria-live="polite" className="flex flex-1 items-center gap-5">
+          <div className="flex min-h-[3.25rem] items-center rounded-panel border border-trace-hairline bg-surface px-4 py-2">
+            <span
+              aria-live="polite"
+              className={`flex items-center gap-5 ${preview !== null ? 'flex-1' : ''}`}
+            >
               {preview !== null ? (
                 <>
                   <span className="flex flex-col gap-0.5">
@@ -572,200 +582,142 @@ export function PlayScreen({ locale }: { locale: Locale }) {
               </span>
             ) : null}
           </div>
+
+          {showPlayRail ? (
+            <Controls
+              locale={locale}
+              speed={speed}
+              onSpeed={setSpeed}
+              onUndo={session.undo}
+              onReset={() => startFresh()}
+              canUndo={session.record.moves.length > 0 && !animating}
+              preview={previewOn}
+              onPreview={(on) => {
+                setPreviewOn(on)
+                setPreviewEnabled(on)
+                // Whatever was being considered is no longer being shown.
+                setPreviewIndex(null)
+                setAwaitingTap(null)
+              }}
+              onChangeSetup={() => setSetupOpen((open) => !open)}
+            />
+          ) : null}
         </div>
 
         {/*
          * DESIGN-REWORK.md §3: the rail mounts by phase rather than showing
-         * every instrument at once regardless of what's happening. `siap`
-         * gets the configurator; `main`/`longsor` get the running readouts;
-         * an instrument with nothing to say — the opposite phase's group —
-         * is absent, not disabled or collapsed to a header.
+         * every instrument at once. `siap` gets the configurator; `main`/
+         * `longsor` get the running readouts; an instrument with nothing to
+         * say — the opposite phase's group — is absent, not disabled or
+         * collapsed to a header.
          */}
-        <div className="flex flex-col gap-4 lg:col-start-2 lg:row-start-2">
+        <div className="flex flex-col gap-4">
           {showPlayRail ? (
             <>
               {/*
-               * "This position": the reading and the rewind, clustered rather
-               * than loose in the rail. Both are about the move just played
-               * rather than the game as a whole, which is what the next
-               * cluster down is for.
+               * "This position": the reading and the rewind, about the move
+               * just played rather than the game as a whole.
                *
                * Promoted for the one turn right after a cascade of more than
-               * one generation — DESIGN-REWORK.md §3's `longsor` phase: the
-               * full-weight border and the explosion count make this the
-               * moment the game is actually about, rather than a cluster the
-               * same weight as everything else whether there was an avalanche
-               * to look at or not. It demotes on the next move because `phase`
-               * is recomputed fresh every render, not because anything here
-               * remembers it was promoted.
+               * one generation — DESIGN-REWORK.md §3's `longsor` phase: a
+               * full-weight border and the explosion count. It demotes on the
+               * next move because `phase` is recomputed fresh every render,
+               * not because anything here remembers it was promoted.
                *
-               * Two variants, one per breakpoint, rather than one cluster
-               * reflowed with CSS: DESIGN-REWORK.md §5 keeps LoadGauge out of
-               * this cluster entirely on a phone — it moves to the drawer
-               * below — while `lg` and up keep the step-4 arrangement
-               * unchanged ("those instruments are in the rail as they are
-               * now"). CascadeReplay stays here at every width; it is the
-               * one thing `longsor` promotes, and the drawer is for readings
-               * that can wait, not the transport for the cascade that just
-               * ran.
+               * The load gauge is here at `lg` only; on a phone it waits in
+               * the drawer below (DESIGN-REWORK.md §5), and the rewind stays
+               * here at every width because it is the one thing `longsor`
+               * promotes.
                */}
-              <div className="lg:hidden">
-                <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
-                    {phase === 'longsor' ? (
-                      <span className="flex items-baseline gap-1">
-                        <span className="label-micro">{COPY.reach[locale]}</span>
-                        <span className="font-numeral text-base leading-none">
-                          {session.history.at(-1)?.explosions ?? 0}
-                        </span>
-                      </span>
-                    ) : null}
-                  </div>
-
-                  <CascadeReplay
-                    review={review}
-                    explosions={session.history.at(-1)?.explosions ?? 0}
-                    busy={animating || finished}
-                    locale={locale}
-                  />
+              <section className={`flex flex-col gap-4 ${phase === 'longsor' ? PANEL_PROMOTED : PANEL}`}>
+                <div className="flex items-baseline justify-between gap-2">
+                  <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
+                  {phase === 'longsor' ? (
+                    <span className="flex items-baseline gap-1.5">
+                      <span className="label-micro">{COPY.reach[locale]}</span>
+                      <span className="font-moment text-2xl">×{lastExplosions}</span>
+                    </span>
+                  ) : null}
                 </div>
-              </div>
 
-              <div className="hidden lg:block">
-                <div className={phase === 'longsor' ? CLUSTER_LONGSOR : CLUSTER}>
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h2 className="heading-panel">{COPY.positionNow[locale]}</h2>
-                    {phase === 'longsor' ? (
-                      <span className="flex items-baseline gap-1">
-                        <span className="label-micro">{COPY.reach[locale]}</span>
-                        <span className="font-numeral text-base leading-none">
-                          {session.history.at(-1)?.explosions ?? 0}
-                        </span>
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {/*
-                   * Driven by the animation frame rather than the settled state,
-                   * so the needle moves with the cascade instead of jumping to
-                   * the answer before the board has finished showing the
-                   * working. Watching load spike and then drop as an avalanche
-                   * runs is the clearest statement of the mechanic the app can
-                   * make without words.
-                   */}
+                {/*
+                 * Driven by the animation frame rather than the settled state,
+                 * so the needle moves with the cascade instead of jumping to
+                 * the answer before the board has finished showing the
+                 * working.
+                 */}
+                <div className="hidden lg:block">
                   <LoadGauge
                     locale={locale}
                     board={{ ...board, owners: view.owners, counts: view.counts }}
                   />
-
-                  <CascadeReplay
-                    review={review}
-                    explosions={session.history.at(-1)?.explosions ?? 0}
-                    busy={animating || finished}
-                    locale={locale}
-                  />
                 </div>
-              </div>
 
-              <Controls
-                locale={locale}
-                speed={speed}
-                onSpeed={setSpeed}
-                onUndo={session.undo}
-                onReset={() => startFresh()}
-                canUndo={session.record.moves.length > 0 && !animating}
-                longestCascade={session.longestCascade}
-                preview={previewOn}
-                onPreview={(on) => {
-                  setPreviewOn(on)
-                  setPreviewEnabled(on)
-                  // Whatever was being considered is no longer being shown.
-                  setPreviewIndex(null)
-                  setAwaitingTap(null)
-                }}
-                onChangeSetup={() => setSetupOpen((open) => !open)}
-              />
+                <div className="grid grid-cols-2 gap-2">
+                  <div className={STAT}>
+                    <span className="font-moment text-2xl">{session.longestCascade}</span>
+                    <span className="text-xs text-trace-soft">{COPY.longest[locale]}</span>
+                  </div>
+                  <div className={STAT}>
+                    <span className="font-moment text-2xl">{session.record.moves.length}</span>
+                    <span className="text-xs text-trace-soft">{COPY.movesPlayed[locale]}</span>
+                  </div>
+                </div>
+
+                <CascadeReplay
+                  review={review}
+                  explosions={lastExplosions}
+                  busy={animating || finished}
+                  locale={locale}
+                />
+              </section>
 
               {/*
-               * DESIGN-REWORK.md §5: below the controls bar, in document flow
-               * — never an overlay, per DESIGN.md's One Overlay Rule, which
-               * reserves that treatment for the single native <dialog> in the
-               * whole system. The board stays visible and playable with this
-               * open; the page scrolls to it rather than anything scrolling
-               * over the board. Closed by default, and every place a fresh
-               * game starts (`startFresh`) closes it again.
+               * DESIGN-REWORK.md §5: below the controls, in document flow —
+               * never an overlay, per DESIGN.md's One Overlay Rule. The board
+               * stays visible and playable with this open. Closed by default,
+               * and every place a fresh game starts (`startFresh`) closes it.
                */}
-              <div className="border border-trace-hairline bg-chart-deep/30 lg:hidden">
+              <div className="overflow-hidden rounded-panel border border-trace-hairline bg-surface lg:hidden">
                 <button
                   type="button"
                   onClick={() => setDrawerOpen((open) => !open)}
                   aria-expanded={drawerOpen}
                   aria-controls={drawerId}
-                  className={[
-                    'control-target w-full px-3 py-2 text-left text-sm transition-colors',
-                    drawerOpen ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-                  ].join(' ')}
+                  className="control-target flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-medium transition-colors hover:bg-chart-deep"
                 >
-                  {COPY.drawer[locale]}
+                  <Icon name="trace" />
+                  <span>{COPY.drawer[locale]}</span>
+                  <span
+                    aria-hidden="true"
+                    className={`ml-auto transition-transform ${drawerOpen ? 'rotate-90' : ''}`}
+                  >
+                    <Icon name="forward" />
+                  </span>
                 </button>
 
                 {drawerOpen ? (
                   <div
                     id={drawerId}
-                    className="flex animate-settle flex-col gap-4 border-t border-trace-hairline p-3"
+                    className="flex animate-settle flex-col gap-4 border-t border-trace-hairline p-4"
                   >
                     <LoadGauge
                       locale={locale}
                       board={{ ...board, owners: view.owners, counts: view.counts }}
                     />
-
-                    <Seismogram
-                      locale={locale}
-                      moves={session.history}
-                      players={session.state.players}
-                    />
-
-                    <MoveList locale={locale} moves={session.history} cols={board.cols} />
+                    {record}
                   </div>
                 ) : null}
               </div>
 
-              {/*
-               * The game's own record, clustered apart from the controls above it:
-               * a monitoring station keeps a trace and an event log side by side,
-               * and neither one is a setting you change between turns.
-               *
-               * Above the move list, not instead of it. The list is precise and
-               * per-move; the strip is the shape of the whole game — "how big was
-               * move 24" against "what has this game been like". Each already
-               * carries its own heading, so the cluster needs none of its own.
-               *
-               * `lg` and up only — below that, the same two instruments live in
-               * the drawer above instead.
-               */}
-              <div className="hidden lg:block">
-                <div className={CLUSTER}>
-                  <Seismogram
-                    locale={locale}
-                    moves={session.history}
-                    players={session.state.players}
-                  />
+              <section className={`hidden lg:block ${PANEL}`}>{record}</section>
 
-                  <MoveList locale={locale} moves={session.history} cols={board.cols} />
-                </div>
-              </div>
+              {ai.thinking ? (
+                <p className="label-micro animate-pulse">{COPY.thinking[locale]}</p>
+              ) : null}
             </>
           ) : null}
 
-          {/*
-           * `siap`: the configurator is the primary content, not a fold — but
-           * `Controls`' "change board" button re-mounts this same pair over a
-           * game already in progress (`setupOpen`), which is why the
-           * visibility check isn't just `phase === 'siap'`. Ending the game in
-           * progress this way is exactly what `Setup`/`ModePicker` already do
-           * once submitted, per the warning `Setup` itself states.
-           */}
           {showSetup ? (
             <>
               <ModePicker
@@ -783,14 +735,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             </>
           ) : null}
 
-          {/*
-           * Only in AI mode, folded away, and — per DESIGN-REWORK.md §3 — not
-           * `siap`, where there is no position yet to evaluate. It answers "is
-           * this thing actually searching, or is it just weighted toward
-           * corners" — a question worth being able to answer and not one
-           * asked every turn. Left open it would quietly coach, which is not
-           * what it is for.
-           */}
           {showEvaluation ? (
             <details className="border-t border-trace-hairline pt-3">
               <summary className="label-micro cursor-pointer select-none py-1">
@@ -802,25 +746,6 @@ export function PlayScreen({ locale }: { locale: Locale }) {
             </details>
           ) : null}
 
-          {showPlayRail ? (
-            /*
-             * No longer a live region. It wrapped the turn number and the eight
-             * character state hash together, so every move read the hash aloud —
-             * a string that exists to be compared by machines, announced to a
-             * person who cannot act on it. The move announcer covers the turn;
-             * the hash stays visible for anyone who wants it.
-             */
-            <p className="flex flex-wrap items-baseline gap-x-2 text-xs">
-              <span className="label-micro">{COPY.turn[locale]}</span>
-              <span className="font-numeral text-trace">{session.state.turn}</span>
-              <span className="font-mono text-trace-faint">{session.hash}</span>
-              {ai.thinking ? (
-                <span className="label-micro animate-pulse text-trace-soft">
-                  {COPY.thinking[locale]}
-                </span>
-              ) : null}
-            </p>
-          ) : null}
         </div>
       </div>
 
@@ -847,5 +772,65 @@ export function PlayScreen({ locale }: { locale: Locale }) {
         />
       ) : null}
     </main>
+  )
+}
+
+/**
+ * Two instruments that are both "the game so far", shown one at a time.
+ *
+ * Tabs rather than a stack because the stack was what made the rail scroll:
+ * the trace and the list are each worth their full height, and nobody reads
+ * them simultaneously. Arrow keys move between tabs, per the ARIA tabs pattern.
+ */
+function RecordTabs({
+  locale,
+  seismogram,
+  moves,
+}: {
+  locale: Locale
+  seismogram: React.ReactNode
+  moves: React.ReactNode
+}) {
+  const [tab, setTab] = useState<'trace' | 'moves'>('trace')
+  const id = useId()
+  const tabs = [
+    { key: 'trace', label: COPY.tabTrace[locale] },
+    { key: 'moves', label: COPY.tabMoves[locale] },
+  ] as const
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div
+        role="tablist"
+        aria-label={COPY.recordTabs[locale]}
+        className={`${SEGMENTED} w-full`}
+        onKeyDown={(event) => {
+          if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+          event.preventDefault()
+          const next = tab === 'trace' ? 'moves' : 'trace'
+          setTab(next)
+          document.getElementById(`${id}-${next}-tab`)?.focus()
+        }}
+      >
+        {tabs.map((option) => (
+          <button
+            key={option.key}
+            id={`${id}-${option.key}-tab`}
+            type="button"
+            role="tab"
+            aria-selected={tab === option.key}
+            aria-controls={`${id}-panel`}
+            tabIndex={tab === option.key ? 0 : -1}
+            onClick={() => setTab(option.key)}
+            className={`${SEGMENT} ${tab === option.key ? SEGMENT_ON : ''}`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+      <div id={`${id}-panel`} role="tabpanel" aria-labelledby={`${id}-${tab}-tab`}>
+        {tab === 'trace' ? seismogram : moves}
+      </div>
+    </div>
   )
 }

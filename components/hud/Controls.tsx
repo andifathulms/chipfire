@@ -2,6 +2,15 @@
 
 import type { Locale } from '@/lib/i18n'
 import type { Speed } from '@/components/cascade/useCascadePlayer'
+import { Icon } from '@/components/ui/Icon'
+import {
+  BUTTON,
+  BUTTON_ICON,
+  BUTTON_ICON_ON,
+  SEGMENT,
+  SEGMENT_ON,
+  SEGMENTED,
+} from '@/components/ui/styles'
 import { SoundToggle } from './SoundToggle'
 
 const SPEED_LABELS: Record<Speed, Record<Locale, string>> = {
@@ -13,15 +22,25 @@ const SPEED_LABELS: Record<Speed, Record<Locale, string>> = {
 
 const COPY = {
   speed: { id: 'Kecepatan', en: 'Speed' },
-  preview: { id: 'Pratinjau ledakan', en: 'Cascade preview' },
-  on: { id: 'Nyala', en: 'On' },
-  off: { id: 'Mati', en: 'Off' },
-  undo: { id: 'Batal langkah', en: 'Undo' },
+  previewOn: { id: 'Matikan pratinjau ledakan', en: 'Turn cascade preview off' },
+  previewOff: { id: 'Nyalakan pratinjau ledakan', en: 'Turn cascade preview on' },
+  undo: { id: 'Batal', en: 'Undo' },
+  undoLong: { id: 'Batal langkah', en: 'Undo move' },
   reset: { id: 'Mulai ulang', en: 'Restart' },
   changeSetup: { id: 'Ubah papan', en: 'Change board' },
-  longest: { id: 'Rantai terpanjang', en: 'Longest chain' },
 } as const
 
+const SPEEDS = Object.keys(SPEED_LABELS) as Speed[]
+
+/**
+ * One toolbar row under the board.
+ *
+ * It used to be three full-width segmented rows and four buttons stacked in
+ * the rail, which took more room than the game's own record. Grouped by how
+ * often each is reached for: the move actions on the left, then how a cascade
+ * is shown, then the two presentation switches as icons on the right. None of
+ * the presentation controls changes a single thing the engine does.
+ */
 export function Controls({
   locale,
   speed,
@@ -29,7 +48,6 @@ export function Controls({
   onUndo,
   onReset,
   canUndo,
-  longestCascade,
   preview,
   onPreview,
   onChangeSetup,
@@ -40,7 +58,6 @@ export function Controls({
   onUndo: () => void
   onReset: () => void
   canUndo: boolean
-  longestCascade: number
   preview: boolean
   onPreview: (on: boolean) => void
   /**
@@ -50,25 +67,53 @@ export function Controls({
    */
   onChangeSetup: () => void
 }) {
-  const speeds = Object.keys(SPEED_LABELS) as Speed[]
+  // On a phone the four speeds don't fit beside everything else, so the same
+  // choice becomes one button that steps through them in order.
+  const nextSpeed = SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length] ?? 'normal'
 
   return (
-    <div className="flex flex-col gap-3 border-t border-trace-hairline pt-4 text-sm">
-      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-        <legend className="label-micro mb-1.5 p-0">{COPY.speed[locale]}</legend>
-        {/* A segmented control that fills the rail: equal columns, so the
-            options read as one instrument rather than four loose buttons. */}
-        <div className="grid grid-cols-4 border border-trace-rule">
-          {speeds.map((option) => (
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={onUndo}
+        disabled={!canUndo}
+        aria-label={COPY.undoLong[locale]}
+        className={BUTTON}
+      >
+        <Icon name="undo" />
+        <span className="hidden sm:inline">{COPY.undo[locale]}</span>
+      </button>
+      <button
+        type="button"
+        onClick={onReset}
+        aria-label={COPY.reset[locale]}
+        title={COPY.reset[locale]}
+        className={BUTTON_ICON}
+      >
+        <Icon name="restart" />
+      </button>
+      <button
+        type="button"
+        onClick={onChangeSetup}
+        aria-label={COPY.changeSetup[locale]}
+        title={COPY.changeSetup[locale]}
+        className={BUTTON_ICON}
+      >
+        <Icon name="board" />
+      </button>
+
+      <span aria-hidden="true" className="mx-1 hidden h-6 w-px bg-trace-hairline sm:block" />
+
+      <fieldset className="hidden border-0 p-0 sm:block">
+        <legend className="sr-only">{COPY.speed[locale]}</legend>
+        <div className={SEGMENTED}>
+          {SPEEDS.map((option) => (
             <button
               key={option}
               type="button"
               onClick={() => onSpeed(option)}
               aria-pressed={speed === option}
-              className={[
-                'control-target px-1 py-1.5 text-xs transition-colors',
-                speed === option ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-              ].join(' ')}
+              className={`${SEGMENT} ${speed === option ? SEGMENT_ON : ''}`}
             >
               {SPEED_LABELS[option][locale]}
             </button>
@@ -76,65 +121,29 @@ export function Controls({
         </div>
       </fieldset>
 
-      {/*
-       * Preview and sound sit with speed because all three are about how a
-       * cascade is presented rather than about the game itself. None of them
-       * changes a single thing the engine does.
-       */}
-      <fieldset className="flex flex-col gap-1.5 border-0 p-0">
-        <legend className="label-micro mb-1.5 p-0">{COPY.preview[locale]}</legend>
-        <div className="grid grid-cols-2 border border-trace-rule">
-          {([true, false] as const).map((value) => (
-            <button
-              key={String(value)}
-              type="button"
-              onClick={() => onPreview(value)}
-              aria-pressed={preview === value}
-              className={[
-                'control-target px-2 py-1.5 text-xs transition-colors',
-                preview === value ? 'bg-trace text-chart' : 'hover:bg-chart-deep',
-              ].join(' ')}
-            >
-              {value ? COPY.on[locale] : COPY.off[locale]}
-            </button>
-          ))}
-        </div>
-      </fieldset>
-
-      <SoundToggle locale={locale} />
-
-      {/* Undo and restart are peers, so they get equal width. Both are large
-          enough to be a comfortable touch target on a phone. */}
-      <div className="grid grid-cols-2 gap-2">
-        <button
-          type="button"
-          onClick={onUndo}
-          disabled={!canUndo}
-          className="control-target border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          {COPY.undo[locale]}
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="control-target border border-trace-rule px-3 py-1.5 transition-colors hover:bg-chart-deep"
-        >
-          {COPY.reset[locale]}
-        </button>
-      </div>
-
       <button
         type="button"
-        onClick={onChangeSetup}
-        className="control-target border border-trace-rule px-3 py-1.5 text-left transition-colors hover:bg-chart-deep"
+        onClick={() => onSpeed(nextSpeed)}
+        aria-label={`${COPY.speed[locale]}: ${SPEED_LABELS[speed][locale]}`}
+        className={`${BUTTON} sm:hidden`}
       >
-        {COPY.changeSetup[locale]}
+        <Icon name="speed" />
+        <span>{SPEED_LABELS[speed][locale]}</span>
       </button>
 
-      <p className="flex items-baseline justify-between gap-2">
-        <span className="label-micro">{COPY.longest[locale]}</span>
-        <span className="font-numeral text-base leading-none">{longestCascade}</span>
-      </p>
+      <span className="ml-auto flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPreview(!preview)}
+          aria-pressed={preview}
+          aria-label={preview ? COPY.previewOn[locale] : COPY.previewOff[locale]}
+          title={preview ? COPY.previewOn[locale] : COPY.previewOff[locale]}
+          className={preview ? BUTTON_ICON_ON : BUTTON_ICON}
+        >
+          <Icon name={preview ? 'eye' : 'eye-off'} />
+        </button>
+        <SoundToggle locale={locale} />
+      </span>
     </div>
   )
 }

@@ -41,44 +41,38 @@ export function LoadGauge({ board, locale }: { board: Board; locale: Locale }) {
   const load = boardLoad(board)
 
   return (
-    <div className="flex flex-col gap-2xs">
-      <div className="flex items-baseline justify-between gap-md">
-        <span className="label-micro">{COPY.load[locale]}</span>
-        <span className="font-numeral text-sm text-trace-soft">
-          {load.orbs}/{load.capacity}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-end justify-between gap-md">
+        <span className="flex flex-col gap-1">
+          <span className="label-micro">{COPY.load[locale]}</span>
+          <span className="font-numeral text-xs text-trace-soft">
+            {load.orbs}/{load.capacity}
+          </span>
         </span>
+        <span className="font-moment text-4xl tabular-nums">{load.percent}%</span>
       </div>
 
       {/*
-       * A trace on chart paper: a hairline track with the reading drawn over
-       * it, not a progress bar. It fills toward a threshold rather than toward
-       * a goal, so it never reads as completion.
+       * The reading drawn over a track, not a progress bar. It fills toward a
+       * threshold rather than toward a goal, so it never reads as completion.
+       *
+       * Hidden rather than labelled: the percentage is printed beside it as
+       * text, and a drawing of a number that is already there is decorative.
        */}
-      <div className="flex items-center gap-sm">
-        {/*
-         * Hidden rather than labelled. It carried role="img" and a sentence
-         * restating the percentage and the primed count — both printed beside
-         * it as text — so a screen reader read the same two facts twice. A
-         * drawing of numbers that are already there is decorative, and the fix
-         * for over-labelling is to delete the label, not to reword it.
-         */}
-        <div aria-hidden="true" className="h-1.5 flex-1 border border-trace-hairline bg-chart">
-          <div className="h-full bg-trace-data" style={{ width: `${load.percent}%` }} />
-        </div>
-        <span className="font-numeral text-base leading-flat tabular-nums">{load.percent}%</span>
+      <div aria-hidden="true" className="h-2 overflow-hidden rounded-full bg-chart-deep">
+        <div
+          className="h-full rounded-full bg-trace-data transition-[width] duration-300"
+          style={{ width: `${Math.min(100, load.percent)}%` }}
+        />
       </div>
 
       <p className="text-xs leading-snug text-trace-faint">
         {load.percent > 100 ? COPY.overflow[locale] : COPY.basis[locale](load.capacity)}
       </p>
 
-      <div className="flex items-baseline justify-between gap-md">
+      <div className="mt-1 flex items-baseline justify-between gap-md">
         <span className="label-micro">{COPY.primed[locale]}</span>
-        {/*
-         * The same ink as the tremble it counts. A player who has noticed cells
-         * shaking should be able to connect the two without being told.
-         */}
-        <span className="font-numeral text-base leading-flat">{load.primed}</span>
+        <span className="font-numeral text-xl font-bold leading-flat">{load.primed}</span>
       </div>
 
       <p className="text-xs leading-snug text-trace-faint">{COPY.primedBasis[locale]}</p>

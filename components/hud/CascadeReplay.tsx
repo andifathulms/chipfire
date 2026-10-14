@@ -2,6 +2,8 @@
 
 import type { CascadeReview } from '@/components/cascade/useCascadeReview'
 import type { Locale } from '@/lib/i18n'
+import { Icon } from '@/components/ui/Icon'
+import { BUTTON, BUTTON_ICON } from '@/components/ui/styles'
 
 /**
  * The controls for re-watching the last cascade.
@@ -21,9 +23,6 @@ const COPY = {
   stage: { id: 'Tahap', en: 'Generation' },
   of: { id: 'dari', en: 'of' },
 } as const
-
-const BUTTON =
-  'control-target-square border border-trace-rule px-2 py-1 transition-colors hover:bg-chart-deep disabled:opacity-40 disabled:hover:bg-transparent'
 
 export function CascadeReplay({
   review,
@@ -53,11 +52,12 @@ export function CascadeReplay({
           type="button"
           onClick={review.start}
           disabled={busy || review.total === 0 || explosions === 0}
-          className={`${BUTTON} text-sm`}
+          className={`${BUTTON} w-full`}
         // A move that detonated nothing still has frames — the placement — and
         // offering to replay it would be offering to watch one orb land.
           title={explosions === 0 ? COPY.none[locale] : undefined}
         >
+          <Icon name="play" />
           {COPY.rewatch[locale]}
         </button>
       </div>
@@ -65,19 +65,24 @@ export function CascadeReplay({
   }
 
   return (
-    <div className={`${shell} flex-wrap gap-xs border border-trace-rule px-2 py-1.5 text-sm`}>
+    <div className={`${shell} flex-wrap gap-xs rounded-ctl bg-chart-deep p-1.5 text-sm`}>
       <button
         type="button"
         onClick={() => review.step(-1)}
         disabled={!review.canStepBack}
         aria-label={COPY.back[locale]}
-        className={BUTTON}
+        className={BUTTON_ICON}
       >
-        <span aria-hidden="true">←</span>
+        <Icon name="back" />
       </button>
 
-      <button type="button" onClick={review.toggle} className={`${BUTTON} min-w-[4.5rem]`}>
-        {review.playing ? COPY.pause[locale] : COPY.play[locale]}
+      <button
+        type="button"
+        onClick={review.toggle}
+        aria-label={review.playing ? COPY.pause[locale] : COPY.play[locale]}
+        className={BUTTON_ICON}
+      >
+        <Icon name={review.playing ? 'pause' : 'play'} />
       </button>
 
       <button
@@ -85,9 +90,9 @@ export function CascadeReplay({
         onClick={() => review.step(1)}
         disabled={!review.canStepOn}
         aria-label={COPY.forward[locale]}
-        className={BUTTON}
+        className={BUTTON_ICON}
       >
-        <span aria-hidden="true">→</span>
+        <Icon name="forward" />
       </button>
 
       {/*
@@ -102,8 +107,13 @@ export function CascadeReplay({
         <span className="font-numeral">{review.total}</span>
       </span>
 
-      <button type="button" onClick={review.stop} className={`${BUTTON} text-xs`}>
-        {COPY.close[locale]}
+      <button
+        type="button"
+        onClick={review.stop}
+        aria-label={COPY.close[locale]}
+        className={BUTTON_ICON}
+      >
+        <Icon name="close" />
       </button>
     </div>
   )
